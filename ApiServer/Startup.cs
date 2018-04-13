@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using VDS.AspNetCore;
 using VDS.Helpers.Extensions;
 using VDS.Storage.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ApiServer.Model;
 using IdentityServer4.Services;
+using ApiServer.Core.Authorization;
 using ApiServer.Controllers;
+using ApiServer.Controllers.Auth;
+
 namespace ApiServer
 {
     public class Startup
@@ -32,10 +32,11 @@ namespace ApiServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvcCore()
-                .AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            services.AddMvc()
+                .AddJsonOptions(
+                options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
-            //services.AddDbContext<VdsContext>(options => options.UseSqlServer("Default"));
+
             services.AddDomain(options =>
             {
                 options.DefaultNameOrConnectionString = Configuration.GetConnectionString("Default");
@@ -43,9 +44,19 @@ namespace ApiServer
                 // Configure storage
                 options.Storage.UseEntityFrameworkCore(c =>
                 {
-                    c.AddDbContext<VdsContext>(config => config.DbContextOptions.UseSqlServer(Configuration.GetConnectionString("Default")));
+                    c.AddDbContext<VdsContext>(config =>
+                            config.DbContextOptions.UseSqlServer(Configuration.GetConnectionString("Default")));
                 });
             });
+
+            services.AddTransient<IProfileService, ProfileService>();
+            services.AddTransient<PermissionsController>();
+            services.AddTransient<RolesController>();
+            services.AddTransient<UsersController>();
+            services.AddTransient<ProjectsController>();
+            services.AddTransient<ImagesController>();
+            services.AddTransient<TagsController>();
+            services.AddTransient<QuantityChecksController>();
 
             services.AddAuthentication(options =>
             {
@@ -58,8 +69,6 @@ namespace ApiServer
                 opts.RequireHttpsMetadata = false;
                 opts.Audience = "vds-api";
             });
-
-            services.AddTransient<QuantityCheckTypesController>();
 
             // Configure CORS for angular5 UI
             services.AddCors(
@@ -82,6 +91,7 @@ namespace ApiServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

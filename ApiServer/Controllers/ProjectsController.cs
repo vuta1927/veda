@@ -139,21 +139,51 @@ namespace ApiServer.Controllers
 
         // GET: api/Projects/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProject([FromRoute] Guid id)
+        public async Task<IActionResult> GetProject([FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var project = await _context.Projects.SingleOrDefaultAsync(m => m.Id == id && !m.IsDisabled);
+            var p = await _context.Projects.SingleOrDefaultAsync(m => m.Id == Guid.Parse(id));
 
-            if (project == null)
+            var users = _context.ProjectUsers.Where(x => x.Project.Id == p.Id).Include(u => u.User).Select(u => u.User).ToList();
+            var usernames = string.Empty;
+
+            for (var i = 0; i < users.Count(); i++)
+            {
+                if (i != (users.Count() - 1))
+                {
+                    usernames += users[i].UserName + "; ";
+                }
+                else
+                {
+                    usernames += users[i].UserName;
+                }
+
+            }
+
+            var results = new ProjectModel.ProjectForView()
+            {
+                Id = p.Id,
+                Description = p.Description,
+                IsDisabled = p.IsDisabled,
+                Name = p.Name,
+                Note = p.Note,
+                TotalImg = p.TotalImg,
+                TotalImgNotClassed = p.TotalImgNotClassed,
+                TotalImgNotQC = p.TotalImgNotQC,
+                TotalImgNotTagged = p.TotalImgNotTagged,
+                TotalImgQC = p.TotalImgQC,
+                Usernames = usernames
+            };
+            if (p == null)
             {
                 return NotFound();
             }
 
-            return Ok(project);
+            return Ok(results);
         }
 
         // PUT: api/Projects/5
