@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VDS.IdentityServer4\VDS.IdentityServer4.csproj" />
+    <ProjectReference Include="..\VDS.Storage.EntityFrameworkCore\VDS.Storage.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+</Project>

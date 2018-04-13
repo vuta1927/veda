@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Models\Class.cs~RF5ff771.TMP" />
+    <None Remove="Models\ImageTag.cs~RF551c910.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
+    <PackageReference Include="Polly" Version="5.9.0" />
+    <PackageReference Include="runtime.native.System.Net.Http" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.2" />
+
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\VDS.AspNetCore\VDS.AspNetCore.csproj" />
+    <ProjectReference Include="..\Core\VDS.BackgroundJobs.Hangfire\VDS.BackgroundJobs.Hangfire.csproj" />
+    <ProjectReference Include="..\Core\VDS.Common\VDS.Common.csproj" />
+    <ProjectReference Include="..\Core\VDS.IdentityServer4.EntityFrameworkCore\VDS.IdentityServer4.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Core\VDS.IdentityServer4\VDS.IdentityServer4.csproj" />
+    <ProjectReference Include="..\Core\VDS.Storage.EntityFrameworkCore\VDS.Storage.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Core\VDS\VDS.csproj" />
+  </ItemGroup>
+
+</Project>
