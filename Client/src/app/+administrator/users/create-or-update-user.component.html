@@ -1,0 +1,140 @@
+<div class="modal-header">
+  <h4 class="modal-title">
+    <span>{{ userForCreateOrEdit.isEditMode ? "Edit user: " + userForCreateOrEdit.user.username : "Create new user" }}</span>
+  </h4>
+</div>
+<div class="modal-body">
+  <div class="tabtable-line">
+    <ul class="nav nav-tabs m-tabs-line" role="tablist">
+      <li class="nav-item m-tabs__item">
+        <a href="#userInfomationsTab" data-toggle="tab" role="tab" class="nav-link m-tabs__link active">
+          User infomations
+        </a>
+      </li>
+      <li class="nav-item m-tabs__item">
+        <a href="#rolesTab" data-toggle="tab" class="nav-link m-tabs__link">
+          Roles
+          <b class="m-badge m-badge--success">
+            <span id="assigned-role-count">{{ userForCreateOrEdit.assignedRoleCount }}</span>
+          </b>
+        </a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="userInfomationsTab">
+
+
+        <div class="form-control-feedback" *ngxErrorTemplate="let item; maxError: 1">
+          {{ item.message }}
+        </div>
+
+        <form name="userInfomationsTab" role="form" [formGroup]="form" class="m-form m-form--state m-form--fit m-form--label-align-right" novalidate>
+
+          <input type="hidden" name="id" formControlName="id" />
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group m-form__group row" ngxErrorsContent [class.has-danger]="nameErrors.invalid">
+                <label>
+                  Name *
+                </label>
+                <input class="form-control m-input" type="text" name="Name" required maxlength="20" formControlName="name">
+                <div ngxErrors="name" #nameErrors></div>
+              </div>
+
+              <div class="form-group m-form__group row" [class.has-danger]="surnameError.invalid" ngxErrorsContent>
+                <label>
+                  Surname *
+                </label>
+                <input type="text" name="Surname" class="form-control m-input" required maxlength="20" formControlName="surname">
+                <div ngxErrors="surname" #surnameError></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group m-form__group row" [class.has-danger]="emailAddressError.invalid" ngxErrorsContent>
+            <label>
+              Email address *
+            </label>
+            <input type="email" name="emailAddress" class="form-control m-input" required maxlength="50" formControlName="emailAddress" autocomplete="off">
+            <div ngxErrors="emailAddress" #emailAddressError></div>
+          </div>
+
+          <div class="form-group m-form__group row" [class.has-danger]="usernameErrors.invalid" ngxErrorsContent>
+            <label>
+              User name *
+            </label>
+            <input type="text" name="username" class="form-control m-input" required maxlength="50" formControlName="username" autocomplete="off">
+            <div ngxErrors="username" #usernameErrors></div>
+          </div>
+
+          <div class="form-group m-form__group row">
+            <div class="m-checkbox-list">
+              <label class="m-checkbox">
+                <input class="md-check" type="checkbox" name="SetRandomPassword" value="!userForCreateOrEdit.isEditMode" [checked]="userForCreateOrEdit.isEditMode ? 'checked' : ''"
+                  [(ngModel)]="setRandomPassword" [ngModelOptions]="{standalone: true}" />
+                Set random password.
+                <span></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group m-form__group row" [style.display]="!setRandomPassword ? 'block' : 'none'"
+            [class.has-danger]="passwordErrors.invalid" ngxErrorsContent>
+            <label>
+              Password <span *ngIf="!userForCreateOrEdit.isEditMode">*</span>
+            </label>
+            <input type="password" name="Password" class="form-control m-input" maxlength="50" minlength="6" formControlName="password">
+            <div ngxErrors="password" #passwordErrors></div>
+          </div>
+
+          <div class="form-group m-form__group row" [style.display]="!setRandomPassword ? 'block' : 'none'"
+            [class.has-danger]="passwordRepeat.invalid" ngxErrorsContent>
+            <label>
+              Password Repeat <span *ngIf="!userForCreateOrEdit.isEditMode">*</span>
+            </label>
+            <input type="password" name="PasswordRepeat" class="form-control m-input" maxlength="50" minlength="6" formControlName="passwordRepeat">
+            <div ngxErrors="passwordRepeat" #passwordRepeat></div>
+          </div>
+
+          <div class="form-group m-form__group row">
+            <div class="m-checkbox-list">
+              <label class="m-checkbox">
+                <input class="md-check" type="checkbox" name="shouldChangePasswordOnNextLogin"
+                [checked]="userForCreateOrEdit.user.shouldChangePasswordOnNextLogin ? 'checked' : ''" formControlName="shouldChangePasswordOnNextLogin">
+                Should change password on next login.
+              <span></span>
+              </label>
+              <!-- <label class="m-checkbox">
+                  <input class="md-check" type="checkbox" name="SendActivationEmail" value="true" [checked]="!isEdit">
+                  Send activation email.
+              <span></span>
+              </label> -->
+              <label class="m-checkbox">
+                  <input class="md-check" type="checkbox" name="IsActive" value="true" [checked]="userForCreateOrEdit.user.isActive ? 'checked' : ''"
+                  formControlName="isActive"> Active
+              <span></span>
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="tab-pane" id="rolesTab">
+        <div class="m-checkbox-list">
+            <label class="m-checkbox" *ngFor="let role of userForCreateOrEdit.roles">
+              <input class="md-check" type="checkbox" [name]="role.roleName" [value]="role.roleName" [checked]="role.isAssigned ? 'checked' : ''" (change)="roleSelectedChange($event)">
+              {{ role.roleDisplayName }}
+            <span></span>
+            </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="activeModal.close()">Cancel</button>
+  <button type="button" class="btn btn-success" (click)="save()">
+    <i class="fa fa-save"></i>
+    <span>Save</span>
+  </button>
+</div>

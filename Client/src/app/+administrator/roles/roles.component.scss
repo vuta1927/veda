@@ -1,0 +1,20 @@
+@import '~devextreme/dist/css/dx.common.css';
+@import '~devextreme/dist/css/dx.light.css';
+.dx-menu-item-popout {
+    display: none !important;
+}
+
+.dx-datagrid .dx-menu .dx-menu-item .dx-menu-item-content {
+    padding: 6px 10px 7px;
+}
+
+span {
+    cursor: pointer;
+}
+
+.role-edit:hover{
+    color: #716aca;
+}
+.role-delete:hover{
+    color: #716aca;
+}
