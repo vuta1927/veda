@@ -10,6 +10,13 @@ using ApiServer.Model.views;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
 using System.Security.Claims;
+using System.Globalization;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using VDS.Security;
+using System.Net.Http.Headers;
+using System.IO.Compression;
+
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -18,15 +25,15 @@ namespace ApiServer.Controllers
     public class ProjectsController : Controller
     {
         private readonly VdsContext _context;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public ProjectsController(VdsContext context)
+        public ProjectsController(VdsContext context, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
+            _hostingEnvironment = hostingEnvironment;
         }
-
-        public VDS.Security.User GetCurrentUser()
+        public User GetCurrentUser()
         {
-            var project = new List<ProjectModel.ProjectForView>();
             var identity = (ClaimsIdentity)User.Identity;
             IEnumerable<Claim> claims = identity.Claims;
             foreach (var claim in claims)
@@ -41,11 +48,128 @@ namespace ApiServer.Controllers
             return null;
         }
 
-        public async Task<VDS.Security.Role> GetCurrentRole(long UserId)
+        public async Task<Role> GetCurrentRole(long UserId)
         {
             var userRole = await _context.UserRoles.SingleOrDefaultAsync(x => x.UserId == UserId);
             return await _context.Roles.SingleOrDefaultAsync(x => x.Id == userRole.RoleId);
         }
+
+        [HttpPost("{id}"), DisableRequestSizeLimit]
+        [ActionName("UploadImage")]
+        public async Task<IActionResult> UploadImage([FromRoute] Guid id)
+        {
+            string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip"};
+            try
+            {
+                var currentUser = GetCurrentUser();
+
+                var project = await _context.ProjectUsers
+                    .Include(x => x.Project)
+                    .Include(u => u.User)
+                    .Where(a => a.User.Id == currentUser.Id && a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
+                if (project == null)
+                {
+                    return Content("You have no permission to upload images in this project!");
+                }
+
+                var files = Request.Form.Files;
+                foreach(var file in files)
+                {
+                    if (file.Length <= 0)
+                    {
+                        return Content("There are no files to upload !");
+                    }
+
+                    string folderName = DateTime.UtcNow.ToString("dd-MM-yyy", CultureInfo.InvariantCulture);
+                    string tempFolderName = "temp";
+                    string webRootPath = _hostingEnvironment.WebRootPath;
+                    string projectFolder = project.Name + "\\" + folderName;
+                    string newPath = Path.Combine(webRootPath, projectFolder);
+
+                    string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
+
+                    if (!AllowedFileExtensions.Contains(fileExtension.ToLower()))
+                    {
+                        return Content("File not allowed !");
+                    }
+
+                    if (!Directory.Exists(newPath))
+                    {
+                        Directory.CreateDirectory(newPath);
+                    }
+                    string name = Guid.NewGuid().ToString();
+                    string fileName = Guid.NewGuid().ToString() + "." + fileExtension;
+
+                    if (fileExtension.ToLower().Equals("zip"))
+                    {
+                        if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                        {
+                            Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                        }
+
+                        string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileName);
+
+                        using (var stream = new FileStream(tempPath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        using (ZipArchive archive = ZipFile.OpenRead(tempPath))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                string[] filename = entry.FullName.Split('.');
+                                if (AllowedFileExtensions.Contains(filename.Last().ToLower()))
+                                {
+                                    entry.ExtractToFile(Path.Combine(newPath, name + '.' + filename.Last()));
+
+                                    await StoreImage(name, newPath + "\\" + name + '.' + filename.Last(), project);
+                                }
+                            }
+                        }
+                        System.IO.File.Delete(tempPath);
+                    }
+                    else
+                    {
+                        string fullPath = Path.Combine(newPath, fileName);
+
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                            await StoreImage(name, fullPath, project);
+                        }
+                    }
+                }
+
+                return Ok("OK");
+            }
+            catch (Exception err)
+            {
+                return Content("error@" + err);
+            }
+        }
+
+        public async Task StoreImage(string filename, string filepath, Project proj)
+        {
+            var newImg = new Image
+            {
+                Id = Guid.Parse(filename),
+                Ignored = false,
+                Path = filepath,
+                Project = proj
+            };
+
+            try
+            {
+                _context.Images.Add(newImg);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
         // GET: api/Projects
         [HttpGet]
         public async Task<IActionResult> GetProjects()
@@ -227,6 +351,7 @@ namespace ApiServer.Controllers
 
         // POST: api/Projects
         [HttpPost]
+        [ActionName("create")]
         public async Task<IActionResult> Create([FromBody] ProjectModel.ProjectForCreate project)
         {
             if (!ModelState.IsValid)
@@ -250,12 +375,11 @@ namespace ApiServer.Controllers
                 _context.Projects.Add(newProject);
 
                 await _context.SaveChangesAsync();
-
-                _context.ProjectUsers.Add(new ProjectUser()
-                {
-                    User = GetCurrentUser(),
-                    Project = newProject
-                });
+                    _context.ProjectUsers.Add(new ProjectUser()
+                    {
+                        User = GetCurrentUser(),
+                        Project = newProject
+                    });
 
                 await _context.SaveChangesAsync();
 
@@ -278,6 +402,7 @@ namespace ApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var currentUserLogin = GetCurrentUser();
 
             var currentRole = await GetCurrentRole(currentUserLogin.Id);

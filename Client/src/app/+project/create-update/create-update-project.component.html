@@ -24,7 +24,7 @@
       <label for="name" class="form-control-label">
         Name:
       </label>
-      <input type="text" class="form-control" name="name" formControlName="name" id="name" required>
+      <input type="text" class="form-control" name="name" formControlName="name" required>
       <div ngxErrors="name" #nameErrors></div>
     </div>
     <div class="form-group">
@@ -42,10 +42,10 @@
   </form>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="activeModal.close()">
-    Close
-  </button>
   <button type="button" class="btn btn-success" (click)="save()" [disabled]="btnSaveDisable">
     Save
+  </button>
+  <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="activeModal.close()">
+    Close
   </button>
 </div>

@@ -40,4 +40,9 @@ export class ProjectService {
         let url = this.configurationService.serverSettings.apiUrl + '/api/projects/DeleteProject/' + id;
         return this.http.delete<IAppCoreResponse<any>>(url);
     }
+
+    public UploadImg(id:string,data: any):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/UploadImage/' + id;
+        return this.http.post<IAppCoreResponse<any>>(url, data);
+    }
 }

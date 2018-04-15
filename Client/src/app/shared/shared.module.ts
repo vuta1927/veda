@@ -40,6 +40,7 @@ import { TranslateHttpClientLoader } from './i18n/http-client-loader';
 import { TranslateExtService } from './services/translate-ext.service';
 import { RolesService } from '../+administrator/roles/roles.service';
 import { ProjectService } from '../+project/project.service';
+import { ImageService } from '../+project/services/image.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -94,7 +95,8 @@ export class SharedModule {
                 ScriptLoaderService,
                 TranslateExtService,
                 RolesService,
-                ProjectService
+                ProjectService,
+                ImageService
             ]
         }
     }

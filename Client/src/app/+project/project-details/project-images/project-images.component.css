@@ -9,27 +9,25 @@
 }
 
 .span-cellname {
-    color: #716aca;
     cursor: pointer;
 }
 
-.span-cellname:hover{
-    color: #4baeff;
-}
-
-a{
-    cursor: pointer;
-}
-
-a.disabled {
-    color: rgb(71, 71, 71);
-    cursor: not-allowed;
-}
-
-i.i-plus{
+.span-cellname:hover {
     color: #716aca;
 }
 
-i.i-trash{
-    color: rgb(173, 30, 30);
+.span-cellname:hover {
+    color: #716aca;
 }
+
+#hide input[type=file] {
+    display: none;
+    margin: 10px;
+}
+
+#upload_button {
+    display: inline-block;
+  }
+  #upload_button input[type=file] {
+    display:none;
+  }

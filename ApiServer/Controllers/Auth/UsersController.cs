@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using VDS.Security;
 using ApiServer.Core.Authorization;
 using ApiServer.Model;
+using System.Security.Claims;
 
 namespace ApiServer.Controllers.Auth
 {
@@ -24,7 +25,27 @@ namespace ApiServer.Controllers.Auth
         {
             _context = context;
         }
+        public User GetCurrentUser()
+        {
+            var identity = (ClaimsIdentity)User.Identity;
+            IEnumerable<Claim> claims = identity.Claims;
+            foreach (var claim in claims)
+            {
+                if (claim.Type == "id" && !string.IsNullOrEmpty(claim.Value))
+                {
+                    var userId = long.Parse(claim.Value);
+                    return _context.Users.SingleOrDefault(x => x.Id == userId);
+                }
+            }
 
+            return null;
+        }
+
+        public async Task<Role> GetCurrentRole(long UserId)
+        {
+            var userRole = await _context.UserRoles.SingleOrDefaultAsync(x => x.UserId == UserId);
+            return await _context.Roles.SingleOrDefaultAsync(x => x.Id == userRole.RoleId);
+        }
         // GET: api/Users
         [HttpGet]
         public IEnumerable<User> GetUser(int skip, int take)

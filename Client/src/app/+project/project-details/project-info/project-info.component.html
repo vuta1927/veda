@@ -3,8 +3,13 @@
 </div>
 <form class="m-form m-form--fit m-form--label-align-right" role="form" [formGroup]="form" novalidate>
     <div class="m-portlet__body">
+        <input type="hidden" name="id" formControlName="id" />
         <div class="form-group m-form__group row" ngxErrorsContent [class.has-danger]="nameErrors.invalid">
-            <input type="hidden" name="id" formControlName="id" />
+            <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <strong>{{messageHeader}}</strong>
+                {{message}}
+            </div>
             <label for="name" class="col-1 col-form-label">
                 Project:
             </label>

@@ -9,8 +9,6 @@ namespace ApiServer.Model
 {
     public class Image
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string Path { get; set; }
         public bool Ignored { get; set; }

@@ -104,6 +104,7 @@ export class CreateUpdateProjectComponent implements OnInit {
                 });
         } else {
             let project = <ProjectForAdd>this.form.value;
+            project.id = "0";
             this.projectService.AddProject(project).toPromise().then(Response => {
                 Helpers.setLoading(false);
                 if (Response.result) {

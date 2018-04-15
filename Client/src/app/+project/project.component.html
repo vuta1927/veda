@@ -41,22 +41,22 @@
     <div class="m-portlet__body">
       <div class="row">
         <div class="col-lg-12">
-          <button class="btn btn-primary btn-sm m-btn m-btn--icon" (click)="addProject()">
-            <span>
-              <i class="fa fa-plus"></i>
-              <span>
-                Add Project
-              </span>
-            </span>
-          </button>
-          <button class="btn btn-danger btn-sm m-btn m-btn--icon" data-toggle="modal" data-target="#modalDeleteProject" [disabled]="!selectedProjects.length">
-            <span>
-              <i class="fa fa-trash"></i>
-              <span>
-                Delete Selected Project
-              </span>
-            </span>
-          </button>
+          <div class="dropdown">
+            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false">
+              Actions
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+              <a class="dropdown-item" (click)="addProject()">
+                <i class="la la-plus i-plus"></i>
+                Add new project
+              </a>
+              <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
+                <i class="la la-trash i-trash"></i> Delete selected projects</a>
+              <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
+                <i class="la la-trash i-trash"></i> Delete selected projects</a>
+            </div>
+          </div>
         </div>
         <div class="col-lg-12" style="padding-top: 10px">
           <dx-data-grid id="gridProjectContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [noDataText]="noDataText"
@@ -74,13 +74,15 @@
             <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
             <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
             <div *dxTemplate="let data of 'cellName'">
-              <span class="span-cellname" [routerLink]="['/project-details']" [queryParams]="{ id: data.data.id }"><b>{{(data.data.name)}}</b></span>
+              <span class="span-cellname" [routerLink]="['/project-details']" [queryParams]="{ id: data.data.id }">
+                <b>{{(data.data.name)}}</b>
+              </span>
             </div>
             <div *dxTemplate="let data of 'statusCellTemplate'">
-                <span class="m-badge m-badge--metal m-badge--wide" *ngIf="data.data.isDisabled; else disabled_span_template">{{data.data.isDisabled? 'disabled':'Enabled' }}</span>
-                <ng-template #disabled_span_template>
-                  <span class="m-badge m-badge--success m-badge--wide">{{data.data.isDisabled? 'disabled':'Enabled' }}</span>
-                </ng-template>
+              <span class="m-badge m-badge--metal m-badge--wide" *ngIf="data.data.isDisabled; else disabled_span_template">{{data.data.isDisabled? 'disabled':'Enabled' }}</span>
+              <ng-template #disabled_span_template>
+                <span class="m-badge m-badge--success m-badge--wide">{{data.data.isDisabled? 'disabled':'Enabled' }}</span>
+              </ng-template>
             </div>
             <dxo-remote-operations [sorting]="true" [paging]="true">
             </dxo-remote-operations>

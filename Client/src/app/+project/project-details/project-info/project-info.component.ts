@@ -22,6 +22,8 @@ export class ProjectInfoComponent implements OnInit {
   currentProject: ProjectForView = new ProjectForView();
   btnSaveDisable: boolean = true;
   form: FormGroup;
+  messageHeader: string;
+  message: string;
   constructor(
     private formBuilder: FormBuilder,
     private toastr: ToastsManager,
@@ -76,7 +78,7 @@ export class ProjectInfoComponent implements OnInit {
     return result;
   }
 
-  onValueChange(value: string){
+  onValueChange(value: string) {
     this.btnSaveDisable = false;
   }
 
@@ -89,11 +91,25 @@ export class ProjectInfoComponent implements OnInit {
     if (this.form.invalid) {
       this.formService.validateAllFormFields(this.form);
       return;
-  }
-    console.log(this.currentProject);
+    }
+    // console.log(this.currentProject);
     let proj = <ProjectForUpdate>this.form.value;
-    console.log(proj);
-    this.showSuccess("test");
+    Helpers.setLoading(true);
+
+    let project = <ProjectForUpdate>this.form.value;
+    this.projectService.UpdateProject(project).toPromise()
+      .then(Response => {
+        Helpers.setLoading(false);
+        if (Response.result) {
+          this.showSuccess("Project updated !");
+          this.btnSaveDisable = true;
+        } else {
+          this.messageHeader = "Error";
+          this.message = "Cant Update Project!";
+          $('#errorMessage').css("display", "block");
+        }
+      });
+
   }
 
   showSuccess(message: string) {
