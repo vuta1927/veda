@@ -8,15 +8,15 @@
     padding: 6px 10px 7px;
 }
 
-.span-cellname {
+span {
     cursor: pointer;
 }
 
-.span-cellname:hover {
+.span-tagdetall:hover {
     color: #716aca;
 }
 
-.span-cellname:hover {
+.span-tagdetall:hover {
     color: #716aca;
 }
 

@@ -23,7 +23,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Iimage } from '../../../shared/models/image.model';
 
-import {DomSanitizer} from '@angular/platform-browser';
 @Component({
     selector: 'app-project-images',
     templateUrl: './project-images.component.html',
@@ -43,8 +42,7 @@ export class ProjectImagesComponent implements OnInit {
     message: string;
     progress: number;
     uploadfiles: any = [];
-    imageToShow: any;
-    isImageLoading:boolean = false;
+    apiUrl: string = '';
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -56,9 +54,9 @@ export class ProjectImagesComponent implements OnInit {
         public formService: FormService,
         private http: HttpClient,
         private configurationService: ConfigurationService,
-        private sanitizer:DomSanitizer
     ) {
         this.toastr.setRootViewContainerRef(vcr);
+        this.apiUrl = configurationService.serverSettings.apiUrl + '/';
         var mother = this;
         this.dataSource.store = new CustomStore({
             load: function (loadOptions: any) {
@@ -70,10 +68,7 @@ export class ProjectImagesComponent implements OnInit {
                 return imgService.getImages(mother.currentProject.id, params)
                     .toPromise()
                     .then(response => {
-                        this.images.forEach(img => {
-                            var imgTest = this.imgService.getImageBinary(img['id'], mother.currentProject.id);
-                            console.log(imgTest);
-                        });
+                        
                         return {
                             data: response.result,
                             totalCount: response.result.length
@@ -89,28 +84,12 @@ export class ProjectImagesComponent implements OnInit {
         var mother = this;
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
-
             this.imgService.getImages(p.id, '0/12').toPromise().then(Response => {
                 if (Response && Response.result) {
                     this.dataSource = Response.result;
-                    this.images = Response.result;
-                    console.log(this.images);
-                    mother.imgService.getImageBinary(this.images[0]['id'], mother.currentProject.id).subscribe(x => {
-                        // mother.createImageFromBlob(x);
-                        mother.imageToShow = mother.sanitize(window.URL.createObjectURL(x));
-                        mother.isImageLoading = false;
-                    }, error=>{
-                        mother.isImageLoading = false;
-                    });
-                    // this.images.forEach(img => {
-                    //     mother.imgService.getImageBinary(img['id'], mother.currentProject.id).subscribe(response => {
-                    //         console.log(response);
-                    //     });
-                    // });
+                    mother.dataGrid["first"].instance.refresh();
                 }
             });
-
-            // mother.dataGrid["first"].instance.refresh();
         }, error => {
             console.log(error)
         });
@@ -120,17 +99,35 @@ export class ProjectImagesComponent implements OnInit {
     appendUploadFiles(files) {
         this.uploadfiles = files;
     }
-
-    createImageFromBlob(image: Blob) {
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-            this.imageToShow = reader.result;
-        }, false);
-
-        if (image) {
-            reader.readAsDataURL(image);
-        }
+    selectionChanged(data: any){
+        this.selectedImages = data.selectedRowsData;
     }
+
+    deleteSelectedImages() {
+        Helpers.setLoading(true);
+        let ids = '';
+        console.log(this.selectedImages);
+        for (let i = 0; i < this.selectedImages.length; i++) {
+            if (i != (this.selectedImages.length - 1))
+                ids += this.selectedImages[i].id + '_';
+            else
+                ids += this.selectedImages[i].id;
+        }
+
+        // console.log(ids);
+        var mother = this;
+        this.imgService.DeleteImage(ids).toPromise().then(Response => {
+            Helpers.setLoading(false);
+            mother.dataGrid["first"].instance.refresh();
+            if (Response && Response.result) {
+                let error = Response.result.split('#')[1];
+                mother.showError(error);
+            }else{
+                mother.showInfo("Images deleted");
+            }
+        });
+    }
+
 
     upload() {
         if (this.uploadfiles.length === 0)
@@ -187,10 +184,6 @@ export class ProjectImagesComponent implements OnInit {
             $('#errorMessage').css("display", "block");
             this.showError(res['error'].text);
         })
-    }
-
-    sanitize(url:string){
-        return this.sanitizer.bypassSecurityTrustUrl(url);
     }
 
     removeFile(file) {

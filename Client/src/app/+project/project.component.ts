@@ -45,14 +45,12 @@ export class ProjectComponent {
     }
 
     selectionChanged(data: any) {
-        this.showInfo("test");
         this.selectedProjects = data.selectedRowsData;
     }
 
     deleteSelectedProject() {
         Helpers.setLoading(true);
         let ids = '';
-        console.log(this.selectedProjects);
         for (let i = 0; i < this.selectedProjects.length; i++) {
             if (i != (this.selectedProjects.length - 1))
                 ids += this.selectedProjects[i].id + '_';

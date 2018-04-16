@@ -76,6 +76,7 @@ namespace ApiServer.Controllers
                     var imgForView = new ImageForView()
                     {
                         Id = img.Id,
+                        Path = img.Path.Replace('\\', '/'),
                         UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
                         Classes = img.Classes,
                         Ignored = img.Ignored,
@@ -103,6 +104,7 @@ namespace ApiServer.Controllers
                         var imgForView = new ImageForView()
                         {
                             Id = img.Id,
+                            Path = img.Path.Replace('\\', '/'),
                             UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
                             Classes = img.Classes,
                             Ignored = img.Ignored,
@@ -247,23 +249,42 @@ namespace ApiServer.Controllers
 
         // DELETE: api/Images/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteImage([FromRoute] Guid id)
+        public async Task<IActionResult> DeleteImage([FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var image = await _context.Images.SingleOrDefaultAsync(m => m.Id == id);
-            if (image == null)
+            var currentUserLogin = GetCurrentUser();
+
+            var currentRole = await GetCurrentRole(currentUserLogin.Id);
+
+            var ids = id.Split('_');
+            for (var i = 0; i < ids.Length; i++)
             {
-                return NotFound();
+                var img = await _context.Images.SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
+
+                if (img == null)
+                {
+                    return Ok("error#Image not found");
+                }
+                else
+                {
+                    _context.Images.Remove(img);
+                    await _context.SaveChangesAsync();
+                    DeleteFile(img.Path);
+                }
             }
 
-            _context.Images.Remove(image);
-            await _context.SaveChangesAsync();
+            return Ok();
+        }
 
-            return Ok(image);
+        private void DeleteFile(string path)
+        {
+            string webRootPath = _hostingEnvironment.WebRootPath;
+            string finalPath = webRootPath + path;
+            System.IO.File.Delete(finalPath);
         }
 
         private bool ImageExists(Guid id)

@@ -96,37 +96,57 @@
         </div>
     </div>
     <div class="col-lg-12">
-        <img [src]="imageToShow" alt="Place image title" *ngIf="!isImageLoading; else noImageFound">
-        <ng-template #noImageFound>
-            <img alt="Fallbackimage">
-        </ng-template>
         <div class="m-portlet">
             <div class="m-portlet__body">
-                <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [noDataText]="noDataText"
-                    [columnAutoWidth]=true [hoverStateEnabled]="false" (onSelectionChanged)="selectionChanged($event)">
-                    <dxo-sorting mode="multiple"></dxo-sorting>
-                    <dxo-selection mode="multiple"></dxo-selection>
-                    <dxo-scrolling mode="standard"></dxo-scrolling>
-                    <dxi-column caption="Img" cellTemplate="cellImgs" [width]="100" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                    <dxi-column dataField="ignored"></dxi-column>
-                    <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
-                    <dxi-column dataField="classes"></dxi-column>
-                    <dxi-column dataField="tagHasClass" caption="No of Tags have class"></dxi-column>
-                    <dxi-column caption="Using by"></dxi-column>
-                    <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
-                    <dxi-column dataField="totalImgNotTagged" caption="Total image not tagged"></dxi-column>
-                    <dxi-column dataField="totalImgNotClassed" caption="Total image not have class"></dxi-column>
-                    <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
-                    <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
-                    <dxi-column dataField="tagTime" caption="Tagged Total Time"></dxi-column>
-                    <dxo-remote-operations [sorting]="true" [paging]="true">
-                    </dxo-remote-operations>
-                    <div *dxTemplate="let data of 'cellImgs'">
-                        <img [title]="data.data.name">
-                    </div>
-                    <dxo-paging [pageSize]="12"></dxo-paging>
-                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-                </dx-data-grid>
+                <div class="col-lg-12">
+                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()">
+                        <span>
+                            <i class="la la-trash"></i>
+                            <span>
+                                Delect selected images
+                            </span>
+                        </span>
+                    </button>
+                </div>
+                <div class="col-lg-12" style="padding-top: 10px">
+                    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" 
+                    [showBorders]="true" 
+                    [wordWrapEnabled]="true" 
+                    [showRowLines]="true"
+                    [columnAutoWidth]=true 
+                    [hoverStateEnabled]="false" 
+                    [allowColumnResizing]="true"
+                    (onSelectionChanged)="selectionChanged($event)">
+                        <dxo-sorting mode="multiple"></dxo-sorting>
+                        <dxo-selection mode="multiple"></dxo-selection>
+                        <dxo-scrolling mode="standard"></dxo-scrolling>
+                        <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                        <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                        <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                        <dxi-column dataField="ignored"></dxi-column>
+                        <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
+                        <dxi-column dataField="classes"></dxi-column>
+                        <dxi-column dataField="tagHasClass" caption="No of Tags have class"></dxi-column>
+                        <dxi-column caption="Using by"></dxi-column>
+                        <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
+                        <dxi-column dataField="totalImgNotTagged" caption="Total image not tagged"></dxi-column>
+                        <dxi-column dataField="totalImgNotClassed" caption="Total image not have class"></dxi-column>
+                        <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
+                        <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
+                        <dxi-column dataField="tagTime" caption="Tagged Total Time"></dxi-column>
+                        <dxo-remote-operations [sorting]="true" [paging]="true">
+                        </dxo-remote-operations>
+                        <div *dxTemplate="let data of 'cellImgs'">
+                            <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
+                        </div>
+                        <div *dxTemplate="let data of 'tagDetail'">
+                            <span class="span-tagdetall" (click)="tagDetailClicked(data.data.id)">Tag details</span>
+                        </div>
+                        <dxo-paging [pageSize]="12"></dxo-paging>
+                        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                    </dx-data-grid>
+                </div>
+
             </div>
         </div>
     </div>

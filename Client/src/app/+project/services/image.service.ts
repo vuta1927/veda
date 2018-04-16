@@ -36,7 +36,7 @@ export class ImageService{
         return this.http.post<IAppCoreResponse<Iimage[]>>(url,image);
     }
 
-    public DeleteProject(id):Observable<IAppCoreResponse<any>>{
+    public DeleteImage(id):Observable<IAppCoreResponse<any>>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/images/DeleteImage/' + id;
         return this.http.delete<IAppCoreResponse<any>>(url);
     }

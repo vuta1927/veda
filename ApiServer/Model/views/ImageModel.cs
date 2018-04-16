@@ -10,6 +10,7 @@ namespace ApiServer.Model.views
         public class ImageForView
         {
             public Guid Id { get; set; }
+            public string Path { get; set; }
             public bool Ignored { get; set; }
             public int TotalClass { get; set; }
             public int TagHasClass { get; set; }

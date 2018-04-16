@@ -85,7 +85,7 @@ namespace ApiServer.Controllers
                     string webRootPath = _hostingEnvironment.WebRootPath;
                     string projectFolder = project.Name + "\\" + folderName;
                     string newPath = Path.Combine(webRootPath, projectFolder);
-
+                    string pathToDatabase = "\\" +projectFolder + "\\";
                     string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
 
                     if (!AllowedFileExtensions.Contains(fileExtension.ToLower()))
@@ -99,7 +99,7 @@ namespace ApiServer.Controllers
                     }
                     string name = Guid.NewGuid().ToString();
                     string fileName = Guid.NewGuid().ToString() + "." + fileExtension;
-
+                    pathToDatabase += fileName;
                     if (fileExtension.ToLower().Equals("zip"))
                     {
                         if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
@@ -118,12 +118,12 @@ namespace ApiServer.Controllers
                         {
                             foreach (ZipArchiveEntry entry in archive.Entries)
                             {
-                                string[] filename = entry.FullName.Split('.');
-                                if (AllowedFileExtensions.Contains(filename.Last().ToLower()))
+                                string[] filenames = entry.FullName.Split('.');
+                                if (AllowedFileExtensions.Contains(filenames.Last().ToLower()))
                                 {
-                                    entry.ExtractToFile(Path.Combine(newPath, name + '.' + filename.Last()));
+                                    entry.ExtractToFile(Path.Combine(newPath, name + '.' + filenames.Last()));
 
-                                    await StoreImage(name, newPath + "\\" + name + '.' + filename.Last(), project);
+                                    await StoreImage(name, pathToDatabase, project);
                                 }
                             }
                         }
@@ -136,7 +136,7 @@ namespace ApiServer.Controllers
                         using (var stream = new FileStream(fullPath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            await StoreImage(name, fullPath, project);
+                            await StoreImage(name, pathToDatabase, project);
                         }
                     }
                 }

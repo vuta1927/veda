@@ -9,7 +9,6 @@ import {
     Route
 } from '@angular/router';
 import { SecurityService } from '../services/security.service';
-import { Constants } from '../../constants';
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 
@@ -43,7 +42,7 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 @Injectable()
 export class ProjectGuard implements CanActivate, CanLoad {
     constructor(private router: Router, private securityService: SecurityService) {}
-
+    viewProject: string = 'ViewProject';
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         // const url: string = state.url;
         return this.checkPermission();
@@ -58,7 +57,7 @@ export class ProjectGuard implements CanActivate, CanLoad {
         var claims = this.securityService.getClaim();
         // console.log(claims);
         if(!claims) return false;
-        if(claims.indexOf(Constants.viewProject) > -1){
+        if(claims.indexOf(this.viewProject) > -1){
             return true;
         }
         return false;
@@ -68,7 +67,7 @@ export class ProjectGuard implements CanActivate, CanLoad {
 @Injectable()
 export class UserGuard implements CanActivate {
     constructor(private router: Router, private securityService: SecurityService) {}
-
+    ViewUser:string = 'ViewUser';
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         // const url: string = state.url;
         return this.checkPermission();
@@ -78,7 +77,7 @@ export class UserGuard implements CanActivate {
         var claims = this.securityService.getClaim();
         // console.log(claims);
         if(!claims) return false;
-        if(claims.indexOf(Constants.ViewUser) > -1){
+        if(claims.indexOf(this.ViewUser) > -1){
             return true;
         }
         return false;
@@ -88,7 +87,7 @@ export class UserGuard implements CanActivate {
 @Injectable()
 export class RoleGuard implements CanActivate {
     constructor(private router: Router, private securityService: SecurityService) {}
-
+    ViewRole:string = 'ViewRole';
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         // const url: string = state.url;
         return this.checkPermission();
@@ -98,7 +97,7 @@ export class RoleGuard implements CanActivate {
         var claims = this.securityService.getClaim();
         // console.log(claims);
         if(!claims) return false;
-        if(claims.indexOf(Constants.ViewRole) > -1){
+        if(claims.indexOf(this.ViewRole) > -1){
             return true;
         }
         return false;
@@ -108,7 +107,7 @@ export class RoleGuard implements CanActivate {
 @Injectable()
 export class AdminGuard implements CanActivate {
     constructor(private router: Router, private securityService: SecurityService) {}
-
+    admin: string = 'Administrator';
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         // const url: string = state.url;
         return this.checkPermission();
@@ -117,7 +116,7 @@ export class AdminGuard implements CanActivate {
     private checkPermission(): boolean {
         var claims = this.securityService.getClaim();
         if(!claims) return false;
-        if(claims.indexOf(Constants.admin) > -1){
+        if(claims.indexOf(this.admin) > -1){
             return true;
         }
         return false;
