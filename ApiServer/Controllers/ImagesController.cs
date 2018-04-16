@@ -16,12 +16,14 @@ using System.IO;
 using VDS.Security;
 using System.Security.Claims;
 using static ApiServer.Model.views.ImageModel;
+using System.Net;
+using System.Net.Http.Headers;
 
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
     [Route("api/Images/[action]")]
-    [AppAuthorize(VdsPermissions.ViewImage)]
+    //[AppAuthorize(VdsPermissions.ViewImage)]
     public class ImagesController : Controller
     {
         private readonly VdsContext _context;
@@ -59,21 +61,21 @@ namespace ApiServer.Controllers
         }
 
         // GET: api/Images
-        [HttpGet("{id}")]
+        [HttpGet("{id}/{start}/{stop}")]
         [ActionName("GetImage")]
-        public async Task<IActionResult> GetImages([FromRoute] Guid id)
+        public async Task<IActionResult> GetImages([FromRoute] Guid id, [FromRoute] int start, [FromRoute] int stop)
         {
             var _currentUser = GetCurrentUser();
             var _currentRole = await GetCurrentRole(_currentUser.Id);
             var results = new List<ImageForView>();
-            if (_currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())){
-                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b=>b.UserQc).Include(c=>c.UserTagged);
-                foreach(var img in imgs)
+            if (_currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+            {
+                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Skip(start).Take(stop);
+                foreach (var img in imgs)
                 {
                     var imgForView = new ImageForView()
                     {
                         Id = img.Id,
-                        Path = img.Path,
                         UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
                         Classes = img.Classes,
                         Ignored = img.Ignored,
@@ -101,7 +103,6 @@ namespace ApiServer.Controllers
                         var imgForView = new ImageForView()
                         {
                             Id = img.Id,
-                            Path = img.Path,
                             UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
                             Classes = img.Classes,
                             Ignored = img.Ignored,
@@ -122,6 +123,58 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{id}/{projId}")]
+        [ActionName("GetImageBinary")]
+        public async Task<HttpResponseMessage> GetImageBinary([FromRoute] Guid id, [FromRoute] Guid projId)
+        {
+            HttpResponseMessage response = null;
+            var _currentUser = GetCurrentUser();
+            var _currentRole = await GetCurrentRole(_currentUser.Id);
+            var results = new List<ImageForView>();
+            string imgPath = string.Empty;
+
+            if (_currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+            {
+
+                imgPath = await _context.Images.Where(x => x.Id == id).Select(a => a.Path).FirstOrDefaultAsync();
+            }
+            else
+            {
+                var userInProject = _context.ProjectUsers.Include(x => x.User).Include(a => a.Project).Any(p => p.Project.Id == id && p.User.Id == _currentUser.Id);
+
+                if (userInProject)
+                {
+                    imgPath = await _context.Images.Include(x => x.Project).Where(a => a.Project.Id == projId && a.Id == id).Select(a => a.Path).FirstOrDefaultAsync();
+                }
+                else
+                {
+                    return new HttpResponseMessage(HttpStatusCode.Gone);
+                }
+            }
+            try
+            {
+                var fStream = new FileStream(imgPath, FileMode.Open, FileAccess.Read);
+                response = new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StreamContent(fStream)
+                };
+                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = Path.GetFileName(fStream.Name)
+                };
+                string mimeType = Path.GetExtension(imgPath).Split('.')[1];
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/" + mimeType);
+            }
+            catch (Exception ex)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Gone);
+            }
+
+
+            return response;
+            //response.Headers.Add("content-type", "application/octet-stream");
+        }
         // GET: api/Images/5
         [HttpGet("{id}")]
         [ActionName("GetImageById")]

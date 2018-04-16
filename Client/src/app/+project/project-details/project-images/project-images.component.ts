@@ -22,6 +22,8 @@ import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Iimage } from '../../../shared/models/image.model';
+
+import {DomSanitizer} from '@angular/platform-browser';
 @Component({
     selector: 'app-project-images',
     templateUrl: './project-images.component.html',
@@ -33,6 +35,7 @@ export class ProjectImagesComponent implements OnInit {
     @ViewChildren(DxDataGridComponent) dataGrid: DxDataGridComponent;
     dataSource: any = {};
     selectedImages: any[] = [];
+    images: any[] = [];
     currentProject: ProjectForView = new ProjectForView("0");
     btnSaveDisable: boolean = true;
     form: FormGroup;
@@ -40,6 +43,8 @@ export class ProjectImagesComponent implements OnInit {
     message: string;
     progress: number;
     uploadfiles: any = [];
+    imageToShow: any;
+    isImageLoading:boolean = false;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -50,15 +55,25 @@ export class ProjectImagesComponent implements OnInit {
         private ngxErrorsService: NgxErrorsService,
         public formService: FormService,
         private http: HttpClient,
-        private configurationService: ConfigurationService
+        private configurationService: ConfigurationService,
+        private sanitizer:DomSanitizer
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         var mother = this;
         this.dataSource.store = new CustomStore({
             load: function (loadOptions: any) {
-                return imgService.getImages(mother.currentProject.id)
+                var params = '';
+
+                params += loadOptions.skip || 0;
+                params += '/' + loadOptions.take || 12;
+
+                return imgService.getImages(mother.currentProject.id, params)
                     .toPromise()
                     .then(response => {
+                        this.images.forEach(img => {
+                            var imgTest = this.imgService.getImageBinary(img['id'], mother.currentProject.id);
+                            console.log(imgTest);
+                        });
                         return {
                             data: response.result,
                             totalCount: response.result.length
@@ -71,14 +86,30 @@ export class ProjectImagesComponent implements OnInit {
 
     ngOnInit() {
         this.uploadfiles = [];
-        var mother =this;
+        var mother = this;
         this.dataService.currentProject.subscribe(p => {
-            mother.currentProject = p;
-            this.imgService.getImages(p.id).toPromise().then(Response=>{
-                if(Response && Response.result){
+            this.currentProject = p;
+
+            this.imgService.getImages(p.id, '0/12').toPromise().then(Response => {
+                if (Response && Response.result) {
                     this.dataSource = Response.result;
+                    this.images = Response.result;
+                    console.log(this.images);
+                    mother.imgService.getImageBinary(this.images[0]['id'], mother.currentProject.id).subscribe(x => {
+                        // mother.createImageFromBlob(x);
+                        mother.imageToShow = mother.sanitize(window.URL.createObjectURL(x));
+                        mother.isImageLoading = false;
+                    }, error=>{
+                        mother.isImageLoading = false;
+                    });
+                    // this.images.forEach(img => {
+                    //     mother.imgService.getImageBinary(img['id'], mother.currentProject.id).subscribe(response => {
+                    //         console.log(response);
+                    //     });
+                    // });
                 }
             });
+
             // mother.dataGrid["first"].instance.refresh();
         }, error => {
             console.log(error)
@@ -88,6 +119,17 @@ export class ProjectImagesComponent implements OnInit {
 
     appendUploadFiles(files) {
         this.uploadfiles = files;
+    }
+
+    createImageFromBlob(image: Blob) {
+        let reader = new FileReader();
+        reader.addEventListener("load", () => {
+            this.imageToShow = reader.result;
+        }, false);
+
+        if (image) {
+            reader.readAsDataURL(image);
+        }
     }
 
     upload() {
@@ -145,6 +187,10 @@ export class ProjectImagesComponent implements OnInit {
             $('#errorMessage').css("display", "block");
             this.showError(res['error'].text);
         })
+    }
+
+    sanitize(url:string){
+        return this.sanitizer.bypassSecurityTrustUrl(url);
     }
 
     removeFile(file) {

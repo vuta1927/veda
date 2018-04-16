@@ -8,10 +8,15 @@ import { Iimage } from "../../shared/models/image.model";
 export class ImageService{
     constructor(private http: HttpClient, private configurationService: ConfigurationService){}
 
-    public getImages(id: string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImage/' + id;
+    public getImages(id: string, param:string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImage/' + id + '/'+param;
         let result = this.http.get<IAppCoreResponse<Iimage[]>>(url)
         return result;
+    }
+
+    public getImageBinary(imgId: string, projId:string):Observable<Blob>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageBinary/' + imgId + '/'+ projId;
+        return this.http.get(url, { responseType: 'blob'});
     }
 
     public getImageById(id?:string){

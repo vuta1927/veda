@@ -27,7 +27,7 @@ namespace ApiServer.Controllers
         [HttpGet]
         public IEnumerable<Tag> GetTag()
         {
-            return _context.Tag;
+            return _context.Tags;
         }
 
         // GET: api/Tags/5
@@ -39,7 +39,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tag.SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.SingleOrDefaultAsync(m => m.Id == id);
 
             if (tag == null)
             {
@@ -93,7 +93,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.Tag.Add(tag);
+            _context.Tags.Add(tag);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
@@ -108,13 +108,13 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tag.SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
                 return NotFound();
             }
 
-            _context.Tag.Remove(tag);
+            _context.Tags.Remove(tag);
             await _context.SaveChangesAsync();
 
             return Ok(tag);
@@ -122,7 +122,7 @@ namespace ApiServer.Controllers
 
         private bool TagExists(int id)
         {
-            return _context.Tag.Any(e => e.Id == id);
+            return _context.Tags.Any(e => e.Id == id);
         }
     }
 }

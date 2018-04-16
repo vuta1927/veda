@@ -1,6 +1,5 @@
 export interface Iimage{
     id: string;
-    path: string;
     ignored: boolean;  
     totalClass: number;
     tagHasClass: number;  

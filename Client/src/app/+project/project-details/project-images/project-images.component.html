@@ -48,7 +48,7 @@
                             <b> All file uploaded !</b>
                         </span>
                     </div>
-                    <div class="col-lg-6 col-md-6" style="padding-top: 10px" *ngIf="uploadfiles.length">
+                    <div class="col-lg-5 col-md-5" style="padding-top: 10px" *ngIf="uploadfiles.length">
                         <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
                             <table class="m-datatable__table">
                                 <thead class="m-datatable__head">
@@ -67,7 +67,9 @@
                                 <tbody class="m-datatable__body">
                                     <tr class="m-datatable__row" *ngFor="let file of uploadfiles">
                                         <td class="m-datatable__cell" data-field="name">
-                                            <span style="width: 400px;">{{ file.name }}</span>
+                                            <span style="width: 400px; color: #5867DD">
+                                                <b>{{ file.name }}</b>
+                                            </span>
                                         </td>
                                         <td class="m-datatable__cell" data-field="size">
                                             <span style="width: 100px;">{{ file.size }}</span>
@@ -94,12 +96,17 @@
         </div>
     </div>
     <div class="col-lg-12">
+        <img [src]="imageToShow" alt="Place image title" *ngIf="!isImageLoading; else noImageFound">
+        <ng-template #noImageFound>
+            <img alt="Fallbackimage">
+        </ng-template>
         <div class="m-portlet">
             <div class="m-portlet__body">
                 <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [noDataText]="noDataText"
                     [columnAutoWidth]=true [hoverStateEnabled]="false" (onSelectionChanged)="selectionChanged($event)">
                     <dxo-sorting mode="multiple"></dxo-sorting>
                     <dxo-selection mode="multiple"></dxo-selection>
+                    <dxo-scrolling mode="standard"></dxo-scrolling>
                     <dxi-column caption="Img" cellTemplate="cellImgs" [width]="100" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                     <dxi-column dataField="ignored"></dxi-column>
                     <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
@@ -115,10 +122,10 @@
                     <dxo-remote-operations [sorting]="true" [paging]="true">
                     </dxo-remote-operations>
                     <div *dxTemplate="let data of 'cellImgs'">
-                        <img [title]="data.data.name" [src]="data.data.path">
+                        <img [title]="data.data.name">
                     </div>
-                    <!-- <dxo-paging [pageSize]="12"></dxo-paging> -->
-                    <dxo-pager [showPageSizeSelector]="true"></dxo-pager>
+                    <dxo-paging [pageSize]="12"></dxo-paging>
+                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
                 </dx-data-grid>
             </div>
         </div>

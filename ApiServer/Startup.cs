@@ -16,6 +16,8 @@ using IdentityServer4.Services;
 using ApiServer.Core.Authorization;
 using ApiServer.Controllers;
 using ApiServer.Controllers.Auth;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace ApiServer
 {
@@ -103,6 +105,15 @@ namespace ApiServer
             app.UseCors(_defaultCorsPolicyName);
 
             app.UseAuthentication();
+
+            app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+                RequestPath = "/static"
+            });
 
             app.UseMvc();
         }

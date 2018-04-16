@@ -29,5 +29,6 @@ namespace DAL
         public DbSet<Image> Images { get; set; }
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
         public DbSet<QuantityCheckType> QuantityCheckTypes { get; set; }
+        public DbSet<Tag> Tags { get; set; }
     }
 }
