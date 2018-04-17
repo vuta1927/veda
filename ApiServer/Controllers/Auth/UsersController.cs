@@ -6,10 +6,10 @@ using VDS.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using VDS.Security;
 using ApiServer.Core.Authorization;
 using ApiServer.Model;
 using System.Security.Claims;
+using VDS.Security;
 
 namespace ApiServer.Controllers.Auth
 {
@@ -41,18 +41,29 @@ namespace ApiServer.Controllers.Auth
             return null;
         }
 
-        public async Task<Role> GetCurrentRole(long UserId)
+        public async Task<List<Role>> GetCurrentRole(long UserId)
         {
-            var userRole = await _context.UserRoles.SingleOrDefaultAsync(x => x.UserId == UserId);
-            return await _context.Roles.SingleOrDefaultAsync(x => x.Id == userRole.RoleId);
+            var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
+            var result = new List<Role>();
+            foreach (var r in userRoles)
+            {
+                result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
+            }
+            return result;
         }
         // GET: api/Users
         [HttpGet]
+        [ActionName("GetUser")]
         public IEnumerable<User> GetUser(int skip, int take)
         {
             return _context.Users.Skip(skip).Take(take);
         }
-        
+        [HttpGet]
+        [ActionName("GetUserList")]
+        public IEnumerable<User> GetUserList()
+        {
+            return _context.Users.Where(x=>x.UserName != "admin");
+        }
         [HttpGet("{email}")]
         public IActionResult WithEmail([FromRoute] string email)
         {
@@ -133,7 +144,7 @@ namespace ApiServer.Controllers.Auth
 
         // POST: api/Users
         [HttpPost]
-        public async Task<IActionResult> PostUser([FromBody] User user)
+        public async Task<IActionResult> PostUser([FromBody] VDS.Security.User user)
         {
             if (!ModelState.IsValid)
             {

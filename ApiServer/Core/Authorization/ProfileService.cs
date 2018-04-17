@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VDS.Security;
 using IdentityServer4.AspNetIdentity;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
@@ -12,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using ApiServer.Model;
+using VDS.Security;
+
 namespace ApiServer.Core.Authorization
 {
     public class ProfileService: ProfileService<User>
@@ -21,7 +22,7 @@ namespace ApiServer.Core.Authorization
         private readonly VdsContext _context;
 
         public ProfileService(
-            UserManager<User> userManager,
+            UserManager<VDS.Security.User> userManager,
             IUserClaimsPrincipalFactory<User> claimsFactory,
             RoleManager<Role> roleManager, VdsContext context)
             : base(userManager, claimsFactory)

@@ -1,0 +1,45 @@
+<div class="modal-header">
+    <h5 class="modal-title">
+        {{ title }}
+    </h5>
+    <button type="button" class="close" data-dismiss="modal" (click)="activeModal.close()" aria-label="Close">
+        <span aria-hidden="true">
+            ×
+        </span>
+    </button>
+</div>
+<div class="modal-body">
+    
+    <form name="projectInfo" role="form" class="m-form m-form--state m-form--fit m-form--label-align-right" novalidate>
+        <input type="hidden" name="id" />
+        <div class="form-group">
+            <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" style="display: none;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <strong>{{messageHeader}}</strong>
+                {{message}}
+            </div>
+            <label for="userName" class="form-control-label">
+                user:
+            </label>
+            <select class="form-control m-input" required>
+                <option *ngFor="let user of users" [value]="user.id">{{user.userName}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="roleName" class="form-control-label">
+                Role:
+            </label>
+            <select class="form-control m-input" required>
+                <option *ngFor="let role of roles" [value]="role.id">{{role.roleName}}</option>
+            </select>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" (click)="save()" >
+        Save
+    </button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="activeModal.close()">
+        Close
+    </button>
+</div>

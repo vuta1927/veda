@@ -13,11 +13,11 @@ using System.Net.Http;
 using ApiServer.Controllers.Auth;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
-using VDS.Security;
 using System.Security.Claims;
 using static ApiServer.Model.views.ImageModel;
 using System.Net;
 using System.Net.Http.Headers;
+using VDS.Security;
 
 namespace ApiServer.Controllers
 {
@@ -54,10 +54,15 @@ namespace ApiServer.Controllers
             return null;
         }
 
-        public async Task<Role> GetCurrentRole(long UserId)
+        public async Task<List<Role>> GetCurrentRole(long UserId)
         {
-            var userRole = await _context.UserRoles.SingleOrDefaultAsync(x => x.UserId == UserId);
-            return await _context.Roles.SingleOrDefaultAsync(x => x.Id == userRole.RoleId);
+            var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
+            var result = new List<Role>();
+            foreach (var r in userRoles)
+            {
+                result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
+            }
+            return result;
         }
 
         // GET: api/Images
@@ -66,9 +71,9 @@ namespace ApiServer.Controllers
         public async Task<IActionResult> GetImages([FromRoute] Guid id, [FromRoute] int start, [FromRoute] int stop)
         {
             var _currentUser = GetCurrentUser();
-            var _currentRole = await GetCurrentRole(_currentUser.Id);
+            var _currentRoles = await GetCurrentRole(_currentUser.Id);
             var results = new List<ImageForView>();
-            if (_currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+            if (_currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
                 var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Skip(start).Take(stop);
                 foreach (var img in imgs)
@@ -131,11 +136,11 @@ namespace ApiServer.Controllers
         {
             HttpResponseMessage response = null;
             var _currentUser = GetCurrentUser();
-            var _currentRole = await GetCurrentRole(_currentUser.Id);
+            var _currentRoles = await GetCurrentRole(_currentUser.Id);
             var results = new List<ImageForView>();
             string imgPath = string.Empty;
 
-            if (_currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+            if (_currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
 
                 imgPath = await _context.Images.Where(x => x.Id == id).Select(a => a.Path).FirstOrDefaultAsync();

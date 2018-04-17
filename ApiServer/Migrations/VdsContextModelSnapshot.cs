@@ -136,11 +136,15 @@ namespace ApiServer.Migrations
 
                     b.Property<Guid?>("ProjectId");
 
+                    b.Property<int?>("RoleId");
+
                     b.Property<long?>("UserId");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("UserId");
 
@@ -206,7 +210,7 @@ namespace ApiServer.Migrations
                         .IsUnique()
                         .HasFilter("[QuantityChecksId] IS NOT NULL");
 
-                    b.ToTable("Tag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("VDS.BackgroundJobs.BackgroundJobInfo", b =>
@@ -425,6 +429,8 @@ namespace ApiServer.Migrations
 
                     b.Property<string>("NormalizedRoleName");
 
+                    b.Property<bool>("ProjectRole");
+
                     b.Property<string>("RoleName");
 
                     b.HasKey("Id");
@@ -603,6 +609,10 @@ namespace ApiServer.Migrations
                     b.HasOne("ApiServer.Model.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId");
+
+                    b.HasOne("VDS.Security.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()

@@ -6,12 +6,13 @@ using VDS.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using VDS.Security;
 using VDS.Security.Permissions;
 using Microsoft.Azure.KeyVault.Models;
 using ApiServer.Core.Authorization;
 using ApiServer.Model;
 using ApiServer.Model.views;
+using VDS.Security;
+
 namespace ApiServer.Controllers.Auth
 {
 
@@ -21,7 +22,7 @@ namespace ApiServer.Controllers.Auth
     }
     [AppAuthorize(VdsPermissions.ViewRole)]
     [Produces("application/json")]
-    [Route("api/Roles")]
+    [Route("api/Roles/[action]")]
     public class RolesController : Controller
     {
         private readonly VdsContext _context;
@@ -49,6 +50,21 @@ namespace ApiServer.Controllers.Auth
             return Ok(roles);
         }
         
+        public IActionResult GetProjectRoles()
+        {
+            var roles = new List<RoleModel.RoleBase>();
+            foreach (var r in _context.Roles.Where(x=>x.ProjectRole))
+            {
+                var role = new RoleModel.RoleBase()
+                {
+                    Id = r.Id,
+                    RoleName = r.RoleName,
+                    Descriptions = r.RoleName
+                };
+                roles.Add(role);
+            }
+            return Ok(roles);
+        }
         // GET: api/Roles/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRole([FromRoute] int id)
@@ -112,7 +128,7 @@ namespace ApiServer.Controllers.Auth
 
         // PUT: api/Roles/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRole([FromRoute] int id, [FromBody] RoleModel.RoleForUpdate role)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] RoleModel.RoleForUpdate role)
         {
             if (!ModelState.IsValid)
             {
@@ -157,7 +173,7 @@ namespace ApiServer.Controllers.Auth
 
         // POST: api/Roles
         [HttpPost]
-        public async Task<IActionResult> PostRole([FromBody] RoleModel.RoleForCreate role)
+        public async Task<IActionResult> Add([FromBody] RoleModel.RoleForCreate role)
         {
             if (!ModelState.IsValid)
             {

@@ -8,6 +8,7 @@ namespace VDS.Security
     {
         public string RoleName { get; set; }
         public string NormalizedRoleName { get; set; }
+        public bool ProjectRole { get; set; }
 
         [ForeignKey("RoleId")]
         public ICollection<RoleClaim> RoleClaims { get; set; }

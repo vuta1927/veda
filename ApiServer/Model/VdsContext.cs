@@ -17,7 +17,6 @@ namespace ApiServer.Model
         {
         }
         public DbSet<PersistedGrantEntity> PersistedGrants { get; set; }
-        public new DbSet<Role> Roles { get; set; }
         public new DbSet<User> Users { get; set; }
         public DbSet<PermissionRole> PermissionRoles { get; set; }
         public new DbSet<Permission> Permissions { get; set; }

@@ -48,10 +48,15 @@ namespace ApiServer.Controllers
             return null;
         }
 
-        public async Task<Role> GetCurrentRole(long UserId)
+        public async Task<List<Role>> GetCurrentRole(long UserId)
         {
-            var userRole = await _context.UserRoles.SingleOrDefaultAsync(x => x.UserId == UserId);
-            return await _context.Roles.SingleOrDefaultAsync(x => x.Id == userRole.RoleId);
+            var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
+            var result = new List<Role>();
+            foreach(var r in userRoles)
+            {
+                result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
+            }
+            return result;
         }
 
         [HttpPost("{id}"), DisableRequestSizeLimit]
@@ -172,17 +177,18 @@ namespace ApiServer.Controllers
 
         // GET: api/Projects
         [HttpGet]
+        [ActionName("GetProjects")]
         public async Task<IActionResult> GetProjects()
         {
             var results = new List<ProjectModel.ProjectForView>();
 
             var currentUserLogin = GetCurrentUser();
 
-            var currentRole = await GetCurrentRole(currentUserLogin.Id);
+            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
 
             var projs = new List<Project>();
-
-            if (currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+            
+            if (currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
                 projs = _context.ProjectUsers
                 .Include(p => p.User)
@@ -201,7 +207,7 @@ namespace ApiServer.Controllers
             
             if (projs.Count() <= 0)
             {
-                return Ok();
+                return Ok(projs);
             }
             else
             {
@@ -244,6 +250,7 @@ namespace ApiServer.Controllers
         }
 
         [HttpGet("{name}")]
+        [ActionName("GetProjectByName")]
         public async Task<IActionResult> GetProjectByName([FromRoute] string name)
         {
             if (!ModelState.IsValid)
@@ -263,6 +270,7 @@ namespace ApiServer.Controllers
 
         // GET: api/Projects/5
         [HttpGet("{id}")]
+        [ActionName("GetProject")]
         public async Task<IActionResult> GetProject([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -312,6 +320,7 @@ namespace ApiServer.Controllers
 
         // PUT: api/Projects/5
         [HttpPut]
+        [ActionName("Update")]
         public async Task<IActionResult> Update([FromBody] ProjectModel.ProjectForUpdate project)
         {
             if (!ModelState.IsValid)
@@ -351,7 +360,7 @@ namespace ApiServer.Controllers
 
         // POST: api/Projects
         [HttpPost]
-        [ActionName("create")]
+        [ActionName("Create")]
         public async Task<IActionResult> Create([FromBody] ProjectModel.ProjectForCreate project)
         {
             if (!ModelState.IsValid)
@@ -360,6 +369,10 @@ namespace ApiServer.Controllers
             }
             try
             {
+                var currentUserLogin = GetCurrentUser();
+
+                var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+
                 var newProject = new Project
                 {
                     Name = project.Name,
@@ -375,11 +388,21 @@ namespace ApiServer.Controllers
                 _context.Projects.Add(newProject);
 
                 await _context.SaveChangesAsync();
+                if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+                {
                     _context.ProjectUsers.Add(new ProjectUser()
                     {
                         User = GetCurrentUser(),
-                        Project = newProject
+                        Project = newProject,
+                        Role = currentRoles.SingleOrDefault(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
                     });
+                }
+                _context.ProjectUsers.Add(new ProjectUser()
+                {
+                    User = GetCurrentUser(),
+                    Project = newProject,
+                    Role = currentRoles.SingleOrDefault(x => x.ProjectRole)
+                });
 
                 await _context.SaveChangesAsync();
 
@@ -396,6 +419,7 @@ namespace ApiServer.Controllers
 
         // DELETE: api/Projects/5
         [HttpDelete("{id}")]
+        [ActionName("DeleteProject")]
         public async Task<IActionResult> DeleteProject([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -405,7 +429,7 @@ namespace ApiServer.Controllers
 
             var currentUserLogin = GetCurrentUser();
 
-            var currentRole = await GetCurrentRole(currentUserLogin.Id);
+            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
 
             var ids = id.Split('_');
             var projectUsers = new List<ProjectUser>();
@@ -430,7 +454,7 @@ namespace ApiServer.Controllers
 
             try
             {
-                if (!currentRole.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+                if (!currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
                 {
                     _context.ProjectUsers.RemoveRange(projectUsers);
                 }

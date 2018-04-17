@@ -11,28 +11,28 @@ export class ProjectService {
     public getProject(name?: string){
         let url = this.configurationService.serverSettings.apiUrl;
         if(name){
-            url += '/api/projects/getprojectbyname/' + name;
+            url += '/api/projects/GetProjectByName/' + name;
         }else{
-            url += '/api/projects/getprojects';
+            url += '/api/projects/GetProjects';
         }
         let result = this.http.get<IAppCoreResponse<ProjectForView[]>>(url)
         return result;
     }
 
     public getProjectById(id?:string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/getproject/'+id;
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/GetProject/'+id;
 
         return this.http.get<IAppCoreResponse<ProjectForView[]>>(url);
     }
 
     public UpdateProject(projectForUpdate):Observable<IAppCoreResponse<ProjectForUpdate[]>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/update';
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/Update';
 
         return this.http.put<IAppCoreResponse<ProjectForUpdate[]>>(url,projectForUpdate);
     }
 
     public AddProject(projectForCreate):Observable<IAppCoreResponse<ProjectForAdd[]>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/create';
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/Create';
         return this.http.post<IAppCoreResponse<ProjectForAdd[]>>(url,projectForCreate);
     }
 

@@ -22,24 +22,30 @@ export class RolesService {
     }
 
     public getRawRoles(): Observable<IAppCoreResponse<RoleForView[]>> {
-        let url = this.configurationService.serverSettings.apiUrl + '/api/roles';
+        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/GetRole';
+
+        return this.http.get<IAppCoreResponse<RoleForView[]>>(url);
+    }
+
+    public getProjectRoles(): Observable<IAppCoreResponse<RoleForView[]>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/GetProjectRoles';
 
         return this.http.get<IAppCoreResponse<RoleForView[]>>(url);
     }
 
     public UpdateRole(roleForUpdate):Observable<IAppCoreResponse<RoleForView[]>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/' + roleForUpdate.id;
+        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/Update/' + roleForUpdate.id;
 
         return this.http.put<IAppCoreResponse<RoleForView[]>>(url,roleForUpdate);
     }
 
     public AddRole(roleForCreate):Observable<IAppCoreResponse<RoleForView[]>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/roles';
+        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/Add';
         return this.http.post<IAppCoreResponse<RoleForView[]>>(url,roleForCreate);
     }
 
     public Deleterole(id):Observable<IAppCoreResponse<any>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/' + id;
+        let url = this.configurationService.serverSettings.apiUrl + '/api/roles/DeleteRole/' + id;
         return this.http.delete<IAppCoreResponse<any>>(url);
     }
 }

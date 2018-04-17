@@ -32,7 +32,7 @@ namespace ApiServer.Model
                 using (_ctx)
                 {
                     await AddUser(_ctx);
-                    
+
                     await AddQcType(_ctx);
                 }
             });
@@ -41,6 +41,47 @@ namespace ApiServer.Model
         private async Task AddUser(VdsContext _ctx)
         {
             _ctx.Database.Migrate();
+
+            var projectManagerRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "ProjectManager");
+            if (projectManagerRole == null)
+            {
+                projectManagerRole = new Role
+                {
+                    RoleName = "ProjectManager",
+                    NormalizedRoleName = "PROJECTMANAGER",
+                    ProjectRole = true
+                };
+                _ctx.Roles.Add(projectManagerRole);
+                await _ctx.SaveChangesAsync();
+            }
+
+            var TeacherRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "Teacher");
+            if (TeacherRole == null)
+            {
+                TeacherRole = new Role
+                {
+                    RoleName = "Teacher",
+                    NormalizedRoleName = "TEACHER",
+                    ProjectRole = true
+                };
+                _ctx.Roles.Add(TeacherRole);
+                await _ctx.SaveChangesAsync();
+            }
+
+            var QcRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "QuantityCheck");
+            if (QcRole == null)
+            {
+                QcRole = new Role
+                {
+                    RoleName = "QuantityCheck",
+                    NormalizedRoleName = "QUANTITYCHECK",
+                    ProjectRole = true
+                };
+                _ctx.Roles.Add(QcRole);
+                await _ctx.SaveChangesAsync();
+            }
+
+
             if (!_ctx.Users.Any(x => x.Email == "admin@demo.com"))
             {
                 // Add 'administrator' role
@@ -55,6 +96,7 @@ namespace ApiServer.Model
                     _ctx.Roles.Add(adminRole);
                     await _ctx.SaveChangesAsync();
                 }
+
                 // Create admin user
                 var adminUser = _ctx.Users.FirstOrDefault(u => u.UserName == "admin");
                 if (adminUser == null)
@@ -76,37 +118,28 @@ namespace ApiServer.Model
 
                     _ctx.SaveChanges();
 
-                    _ctx.UserRoles.Add(new UserRole(adminUser.Id, adminRole.Id));
+                    _ctx.UserRoles.AddRange(
+                        new UserRole(adminUser.Id, adminRole.Id),
+                        new UserRole(adminUser.Id, projectManagerRole.Id)
+                        );
 
                     _ctx.SaveChanges();
                 }
             }
 
-            if(!_ctx.Users.Any(x=>x.Email == "test@demo.com"))
+            if (!_ctx.Users.Any(x => x.Email == "teacher@demo.com"))
             {
-                var projectRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "Project");
-                if (projectRole == null)
-                {
-                    projectRole = new Role
-                    {
-                        RoleName = "Project",
-                        NormalizedRoleName = "PROJECT"
-                    };
-                    _ctx.Roles.Add(projectRole);
-                    await _ctx.SaveChangesAsync();
-                }
-
-                var testUser = _ctx.Users.FirstOrDefault(u => u.UserName == "test");
+                var testUser = _ctx.Users.FirstOrDefault(u => u.UserName == "teacher");
                 if (testUser == null)
                 {
                     testUser = new User
                     {
-                        UserName = "test",
-                        NormalizedUserName = "TEST",
-                        Name = "test",
-                        Surname = "test",
-                        Email = "test@demo.com",
-                        NormalizedEmail = "TEST@DEMO.COM",
+                        UserName = "teacher",
+                        NormalizedUserName = "TEACHER",
+                        Name = "teacher",
+                        Surname = "teacher",
+                        Email = "teacher@demo.com",
+                        NormalizedEmail = "TEACHER@DEMO.COM",
                         IsActive = true,
                         EmailConfirmed = true,
                         PasswordHash = "AM4OLBpptxBYmM79lGOX9egzZk3vIQU3d/gFCJzaBjAPXzYIK3tQ2N7X4fcrHtElTw==" //123qwe
@@ -116,7 +149,35 @@ namespace ApiServer.Model
 
                     _ctx.SaveChanges();
 
-                    _ctx.UserRoles.Add(new UserRole(testUser.Id, projectRole.Id));
+                    _ctx.UserRoles.Add(new UserRole(testUser.Id, TeacherRole.Id));
+
+                    _ctx.SaveChanges();
+                }
+            }
+
+            if (!_ctx.Users.Any(x => x.Email == "qc@demo.com"))
+            {
+                var qcUser = _ctx.Users.FirstOrDefault(u => u.UserName == "qc");
+                if (qcUser == null)
+                {
+                    qcUser = new User
+                    {
+                        UserName = "qc",
+                        NormalizedUserName = "qc",
+                        Name = "qc",
+                        Surname = "qc",
+                        Email = "qc@demo.com",
+                        NormalizedEmail = "QC@DEMO.COM",
+                        IsActive = true,
+                        EmailConfirmed = true,
+                        PasswordHash = "AM4OLBpptxBYmM79lGOX9egzZk3vIQU3d/gFCJzaBjAPXzYIK3tQ2N7X4fcrHtElTw==" //123qwe
+                    };
+
+                    _ctx.Users.Add(qcUser);
+
+                    _ctx.SaveChanges();
+
+                    _ctx.UserRoles.Add(new UserRole(qcUser.Id, QcRole.Id));
 
                     _ctx.SaveChanges();
                 }
@@ -157,13 +218,13 @@ namespace ApiServer.Model
             }
 
             var projectRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "Project");
-            if(projectRole != null)
+            if (projectRole != null)
             {
                 var mangementPermissions = new VdsPermissionProvider();
                 var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if(permission.Category == VdsPermissions.ProjectCategory)
+                    if (permission.Category == VdsPermissions.ProjectCategory)
                     {
                         var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
                         if (permissionInDatabase != null)
