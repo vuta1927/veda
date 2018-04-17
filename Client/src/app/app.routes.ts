@@ -32,6 +32,11 @@ export const ROUTES: Routes = [
         data: {pageTitle: 'Project Details'}
       },
       {
+        path: 'project-tag',
+        loadChildren: 'app/+project/project-tag/project-tag.module#ProjectTagModule',
+        data: {pageTitle: 'Project Tag'}
+      },
+      {
         path: '404',
         loadChildren: 'app/shared/components/pages/default/not-found/not-found.module#NotFoundModule'
       }

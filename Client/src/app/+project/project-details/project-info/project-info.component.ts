@@ -57,7 +57,6 @@ export class ProjectInfoComponent implements OnInit {
   }
 
   validateProjectNameNotTaken(control: AbstractControl) {
-    console.log("a");
     if (control.value === this.currentProject.name) {
       return Observable.empty();
     }

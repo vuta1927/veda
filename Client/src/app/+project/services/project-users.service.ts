@@ -26,9 +26,9 @@ export class ProjectUserService{
         return this.http.put<IAppCoreResponse<IProjectUser[]>>(url,ProjectUser);
     }
 
-    public AddProjectUser(ProjectUser):Observable<IAppCoreResponse<IProjectUserForAdd[]>>{
+    public AddProjectUser(ProjectUser):Observable<IAppCoreResponse<any>>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/ProjectUsers/AddProjectUser';
-        return this.http.post<IAppCoreResponse<IProjectUserForAdd[]>>(url,ProjectUser);
+        return this.http.post<IAppCoreResponse<any>>(url,ProjectUser);
     }
 
     public DeleteProjectUser(id):Observable<IAppCoreResponse<any>>{

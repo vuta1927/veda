@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, ViewContainerRef } from "@angular/core";
 import { FormGroup, FormBuilder, Validators, ValidationErrors, AbstractControl, FormControl } from "@angular/forms";
 import { FormService } from "../../../../shared/services/form.service";
 import { matchOtherValidator } from "../../../../shared/validators/validators";
@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 import { SecurityService } from '../../../../shared/services/security.service';
 import { ProjectUserService } from '../../../services/project-users.service';
 import { Helpers } from '../../../../helpers';
+import { DataService } from '../../data.service';
 @Component({
     selector: 'create-update-project-user',
     templateUrl: './create-update-project-user.component.html',
@@ -19,53 +20,54 @@ import { Helpers } from '../../../../helpers';
 export class CreateUpdateProjectUserComponent implements OnInit {
     form: FormGroup;
     projectUser: any = null;
+    currentProject: any = {};
     users: any[] = [];
     roles: any[] = [];
     title: string;
     messageHeader: string;
     message: string;
-    btnSaveDisable: boolean = true;
-
+    selectedUser: string;
+    selectedRole: string;
+    isError: boolean = false;
     constructor(
         public activeModal: NgbActiveModal,
         private formBuilder: FormBuilder,
         public formService: FormService,
         private ngxErrorsService: NgxErrorsService,
         private securityService: SecurityService,
-        private projectUserService: ProjectUserService
+        private projectUserService: ProjectUserService,
+        private dataService: DataService
     ) { }
 
     ngOnInit() {
-        // this.createForm();
         this.title = "Add User to Project";
+        this.dataService.currentProject.subscribe(p => this.currentProject = p);
     }
 
-    createForm() {
-        this.form = this.formBuilder.group({
-            userName: [this.projectUser.userName, [Validators.required]],
-            roleName: [this.projectUser.roleName]
-        });
+    onUserChange(data) {
+        this.selectedUser = data;
+    }
+
+    onRoleChange(data) {
+        this.selectedRole = data;
     }
 
     save() {
-        if (this.form.invalid) {
-            this.formService.validateAllFormFields(this.form);
-            return;
-        }
         Helpers.setLoading(true);
-
-        console.log(this.form.value);
-        let p = <ProjectUserForAdd>this.form.value;
-        p.id = "0";
+        var mother = this;
+        let p = new ProjectUserForAdd(this.currentProject.id, this.selectedUser, this.selectedRole);
         this.projectUserService.AddProjectUser(p).toPromise().then(Response => {
             Helpers.setLoading(false);
             if (Response.result) {
+                console.log(Response.result);
+                this.isError = false;
                 this.activeModal.close();
+
             }
         }).catch(err => {
             this.messageHeader = "Error";
-            this.message = err.result;
-            $('#errorMessage').css("display", "block");
+            this.message = err.error.text;
+            this.isError = true;
         });
     }
 }

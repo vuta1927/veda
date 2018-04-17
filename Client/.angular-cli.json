@@ -20,7 +20,7 @@
       "styles": [
         "styles.scss"
       ],
-      "scripts": [],
+      "scripts": ["./assets/app/js/fabric.js"],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

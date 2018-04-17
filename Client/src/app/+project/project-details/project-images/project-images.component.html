@@ -109,14 +109,8 @@
                     </button>
                 </div>
                 <div class="col-lg-12" style="padding-top: 10px">
-                    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" 
-                    [showBorders]="true" 
-                    [wordWrapEnabled]="true" 
-                    [showRowLines]="true"
-                    [columnAutoWidth]=true 
-                    [hoverStateEnabled]="false" 
-                    [allowColumnResizing]="true"
-                    (onSelectionChanged)="selectionChanged($event)">
+                    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)">
                         <dxo-sorting mode="multiple"></dxo-sorting>
                         <dxo-selection mode="multiple"></dxo-selection>
                         <dxo-scrolling mode="standard"></dxo-scrolling>
@@ -140,7 +134,9 @@
                             <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
                         </div>
                         <div *dxTemplate="let data of 'tagDetail'">
-                            <span class="span-tagdetall" (click)="tagDetailClicked(data.data.id)">Tag details</span>
+                            <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id }">
+                                <b>Tag details</b>
+                            </span>
                         </div>
                         <dxo-paging [pageSize]="12"></dxo-paging>
                         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>

@@ -193,7 +193,7 @@ namespace ApiServer.Controllers
                 projs = _context.ProjectUsers
                 .Include(p => p.User)
                 .Include(a => a.Project)
-                .Select(b => b.Project).ToList();
+                .Select(b => b.Project).Distinct().ToList();
             }
             else
             {
@@ -201,7 +201,7 @@ namespace ApiServer.Controllers
                 .Include(p => p.User)
                 .Where(x => x.User.Id == currentUserLogin.Id)
                 .Include(a => a.Project)
-                .Select(b => b.Project).ToList().
+                .Select(b => b.Project).Distinct().ToList().
                 Where(x => !x.IsDisabled).ToList();
             }
             
@@ -396,7 +396,11 @@ namespace ApiServer.Controllers
                         Project = newProject,
                         Role = currentRoles.SingleOrDefault(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
                     });
+                    await _context.SaveChangesAsync();
+
+                    return CreatedAtAction("GetProject", new { id = newProject.Id }, newProject);
                 }
+
                 _context.ProjectUsers.Add(new ProjectUser()
                 {
                     User = GetCurrentUser(),

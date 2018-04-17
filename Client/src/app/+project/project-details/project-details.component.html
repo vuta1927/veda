@@ -51,16 +51,16 @@
     <div class="m-portlet__body">
       <ul class="nav nav-tabs  m-tabs-line m-tabs-line--2x m-tabs-line--primary" role="tablist">
         <li class="nav-item m-tabs__item">
-          <a class="nav-link m-tabs__link active show" data-toggle="tab" href="#info-tab" role="tab" aria-selected="false">
+          <a class="nav-link m-tabs__link active show" data-toggle="tab" href="#image-tab" role="tab" aria-selected="false">
             <i class="fa 	fa-info" aria-hidden="true"></i>
-            Project Info
+            Images
           </a>
 
         </li>
         <li class="nav-item m-tabs__item">
-          <a class="nav-link m-tabs__link" data-toggle="tab" href="#image-tab" role="tab" aria-selected="true">
+          <a class="nav-link m-tabs__link" data-toggle="tab" href="#info-tab" role="tab" aria-selected="true">
             <i class="fa fa-image" aria-hidden="true"></i>
-            Images
+            Project Info
           </a>
 
         </li>
@@ -72,10 +72,10 @@
         </li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane active" id="info-tab" role="tabpanel">
+        <div class="tab-pane" id="info-tab" role="tabpanel">
           <app-project-info></app-project-info>
         </div>
-        <div class="tab-pane" id="image-tab" role="tabpanel">
+        <div class="tab-pane active" id="image-tab" role="tabpanel">
           <app-project-images></app-project-images>
         </div>
         <div class="tab-pane" id="user-tab" role="tabpanel">

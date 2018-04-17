@@ -13,25 +13,25 @@
     <form name="projectInfo" role="form" class="m-form m-form--state m-form--fit m-form--label-align-right" novalidate>
         <input type="hidden" name="id" />
         <div class="form-group">
-            <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" style="display: none;">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
-                <strong>{{messageHeader}}</strong>
-                {{message}}
-            </div>
             <label for="userName" class="form-control-label">
-                user:
+                User:
             </label>
-            <select class="form-control m-input" required>
-                <option *ngFor="let user of users" [value]="user.id">{{user.userName}}</option>
+            <select class="form-control m-input" (change)="onUserChange($event.target.value)" [(ngModel)]="selectedUser" name="userName">
+                <option *ngFor="let user of users" [value]="user.userName"  >{{user.userName}}</option>
             </select>
         </div>
         <div class="form-group">
             <label for="roleName" class="form-control-label">
                 Role:
             </label>
-            <select class="form-control m-input" required>
-                <option *ngFor="let role of roles" [value]="role.id">{{role.roleName}}</option>
+            <select class="form-control m-input" (change)="onRoleChange($event.target.value)" [(ngModel)]="selectedRole" name="roleName">
+                <option *ngFor="let role of roles" [value]="role.roleName" >{{role.roleName}}</option>
             </select>
+        </div>
+        <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--outline m-alert--air" role="alert" *ngIf="isError">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+            <strong>{{messageHeader}}</strong>
+            {{message}}
         </div>
     </form>
 </div>

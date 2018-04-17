@@ -42,3 +42,6 @@ declare var Layout: {
 declare var QuickSidebar: {
 	init(): void;
 };
+
+
+declare var fabric: any;
