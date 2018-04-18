@@ -52,7 +52,7 @@
             <div class="row">
 
                 <div class="col-lg-12">
-                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="switchTagMode()">
+                    <button class="btn btn-primary btn-sm m-btn m-btn--icon m-btn--wide" (click)="switchTagMode()">
                         <span>
                             <i class="la la-object-ungroup"></i>
                             <span>
@@ -60,32 +60,62 @@
                             </span>
                         </span>
                     </button>
-                    <span style="color: #1ea566" *ngIf="tagMode">
+                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="saveChange()">
+                        <span>
+                            <i class="la la-save"></i>
+                            <span>
+                                Save Change
+                            </span>
+                        </span>
+                    </button>
+                </div>
+                <div class="col-lg-12" style="padding-top: 10px; padding-left: 40px">
+                    <span style="color: #d81f1f" *ngIf="tagMode">
                         <b>Tag mode is on</b>
                     </span>
                 </div>
-                <div class="col-lg-9" id="canvas-wrapper" style="padding-top: 10px">
-                    <canvas id="canvas" class="canvas">
-                    </canvas>
+                <div class="col-lg-9" style="padding-top: 10px">
+                    <div class="m-demo">
+                        <div class="m-demo__preview" id="canvas-wrapper">
+                            <canvas id="canvas" class="canvas">
+                            </canvas>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="col-lg-3" style="padding-top: 10px">
-                    <dx-data-grid id="gridClassContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [noDataText]="noData"
-                        [columnAutoWidth]=true (onSelectionChanged)="selectionChanged($event)">
-                        <dxo-selection mode="multiple"></dxo-selection>
-                        <dxo-scrolling mode="standard"></dxo-scrolling>
-                        <dxi-column dataField="id" [visible]="false"></dxi-column>
-                        <dxi-column dataField="name" caption="Name" [allowSorting]="false" cellTemplate="cellName"></dxi-column>
-                        <div *dxTemplate="let data of 'cellName'">
-                            <span class="span-cellname">
-                                <b>{{(data.data.name)}}</b>
-                            </span>
-                        </div>
+                    <div class="m-demo">
+                        <div class="m-demo__preview">
+                            <div class="m-list-search">
+                                <div class="m-list-search__results">
+                                    <span class="m-list-search__result-message m--hide">
+                                        No Class Found
+                                    </span>
+                                    <span class="m-list-search__result-category m-list-search__result-category--first">
+                                        Classes
+                                        <span *ngIf="selectedClass">( Tag id: {{selectedClass.id}} )</span>
+                                    </span>
 
-                        <dxo-remote-operations [sorting]="false" [paging]="true">
-                        </dxo-remote-operations>
-                        <!-- <dxo-paging [pageSize]="12"></dxo-paging> -->
-                        <dxo-pager [showPageSizeSelector]="true"></dxo-pager>
-                    </dx-data-grid>
+                                    <!-- <div id="classContainer">
+
+                                    </div> -->
+
+
+                                    <a class="m-list-search__result-item" *ngFor="let class of classData" style="padding-left: 10px">
+
+                                        <span class="m-list-search__result-item-icon">
+                                            <label class="m-checkbox m-checkbox--solid m-checkbox--brand">
+                                                <input type="checkbox" [value]="class.id" (change)="classCheckBoxChange($event)" [checked]="class.checked" [disabled]="!selectedClass">
+                                                <strong>{{class.name}}</strong>
+                                                <span></span>
+                                            </label>
+                                        </span>
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

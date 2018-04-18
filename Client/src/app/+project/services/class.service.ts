@@ -8,8 +8,8 @@ import { IClass } from "../../shared/models/class.model";
 export class ClassService{
     constructor(private http: HttpClient, private configurationService: ConfigurationService){}
 
-    public getClasses(projectId: string, param:string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/Classes/GetClasses/' + projectId + '/'+param;
+    public getClasses(projectId: string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Classes/GetClasses/' + projectId ;
         let result = this.http.get<IAppCoreResponse<IClass[]>>(url)
         return result;
     }

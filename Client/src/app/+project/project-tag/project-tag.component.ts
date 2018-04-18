@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChildren , ViewEncapsulation, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, ViewChildren, ViewEncapsulation, ViewContainerRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import CustomStore from 'devextreme/data/custom_store';
 import { DxDataGridComponent } from 'devextreme-angular';
@@ -7,6 +7,7 @@ import { ImageService } from '../services/image.service';
 import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
 import { Tag } from '../../shared/models/tag.model';
+import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 @Component({
     selector: 'app-project-tag',
@@ -17,7 +18,7 @@ import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 export class ProjecTagComponent {
     @ViewChildren(DxDataGridComponent) dataGrid: DxDataGridComponent
     imageId: string = '';
-    dataSource: any = {};
+    classData: ClassList[] = [];
     currentImage: any = {};
     apiUrl: string = '';
     canvas: any;
@@ -25,36 +26,22 @@ export class ProjecTagComponent {
     isDragging: boolean = false;
     selection: boolean = false;
     projectId: string = null;
+    selectedClass: Tag;
     tags: Array<Tag> = new Array<Tag>();
-    rects: any = [];
+    canvasTags: any = [];
+    canvasLabels: any = [];
+    imageWidth: number = 0;
+    imageHeight: number = 0;
     constructor(
         private route: ActivatedRoute,
         private imgService: ImageService,
         private classService: ClassService,
-        public toastr: ToastsManager, 
+        public toastr: ToastsManager,
         private vcr: ViewContainerRef,
         private configurationService: ConfigurationService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         let mother = this;
-        this.dataSource.store = new CustomStore({
-            load: function (loadOptions: any) {
-                var params = '';
-
-                params += loadOptions.skip || 0;
-                params += '/' + loadOptions.take || 12;
-
-                return mother.classService.getClasses(this.projectId, params)
-                    .toPromise()
-                    .then(response => {
-                        return {
-                            data: response.result,
-                            totalCount: response.result.length
-                        }
-                    })
-                    .catch(error => { throw 'Data Loading Error' });
-            }
-        });
     }
 
     ngOnInit() {
@@ -63,12 +50,15 @@ export class ProjecTagComponent {
         this.route.queryParams.subscribe(params => {
             this.imageId = params.id;
             this.projectId = params.project;
-            
-            this.classService.getClasses(this.projectId, '0/12').toPromise().then(Response=>{
-                if(Response && Response.result){
-                    mother.dataSource = Response.result;
+
+            this.classService.getClasses(this.projectId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    Response.result.forEach(tag => {
+                        mother.classData.push(new ClassList(tag.id, tag.name));
+                    });
+                    // mother.generateClassContainer();
                 }
-            }).catch(error=>{
+            }).catch(error => {
                 this.showError(error.error.text);
             });
 
@@ -86,6 +76,55 @@ export class ProjecTagComponent {
         else
             this.tagMode = true;
     }
+
+    classCheckBoxChange(e) {
+        if (this.selectedClass == null) return;
+
+        var value = Number(e.target.value);
+
+        this.tags.forEach(tag => {
+            if (tag.id == this.selectedClass.id) {
+                if (tag.classIds.indexOf(value) != -1) {
+                    if (!e.target.checked) {
+                        tag.classIds.splice(tag.classIds.indexOf(value), 1);
+                    }
+                } else {
+                    if (e.target.checked) {
+                        tag.classIds.push(value);
+                    }
+                }
+
+                let color:string;
+                if(tag.classIds.length > 0){
+                    color = 'red';
+                }else{
+                    color = 'yellow';
+                }
+
+                this.canvasTags.forEach(cvTag => {
+                    cvTag.set('stroke',color);
+                    cvTag.set('originColor', color);
+                });
+
+                this.canvasLabels.forEach(cvLabel => {
+                    cvLabel.set('originColor', color);
+                    cvLabel.set('stroke',color);
+                    cvLabel.set('fill',color);
+                });
+            }
+        });
+
+        this.classData.forEach(c => {
+            if (c.id == value) {
+                if(e.target.checked)
+                    c.checked = true;
+                else
+                    c.checked = false;
+
+            }
+        });
+    }
+
     initCanvas() {
         var mother = this;
         this.canvas = new fabric.Canvas('canvas', { selection: false });
@@ -99,7 +138,13 @@ export class ProjecTagComponent {
             mother.canvas.add(img);
             mother.canvas.sendToBack(img);
         });
-
+        let image = new Image();
+        image.src = this.apiUrl + '/' + this.currentImage.path;
+        image.onload = function(){
+            mother.imageWidth = this['height'];
+            mother.imageWidth = this['width'];
+        }
+        console.log(image.width, image.height);
         this.autoResizeCanvas();
         this.setupZoomFunc();
         this.setUpMouseEvent();
@@ -133,13 +178,14 @@ export class ProjecTagComponent {
 
             rect = new fabric.Rect({
                 id: id,
-                name: 'rect-'+id,
+                name: 'rect-' + id,
                 left: pointer.x,
                 top: pointer.y,
                 width: 0,
                 height: 0,
-                stroke: 'red',
-                strokeWidth: 1,
+                stroke: 'yellow',
+                originColor: 'yellow',
+                strokeWidth: 2,
                 fill: ''
             });
             mother.canvas.add(rect);
@@ -160,6 +206,38 @@ export class ProjecTagComponent {
             rect.set('width', Math.abs(pointer.x - startPosition.x));
             rect.set('height', Math.abs(pointer.y - startPosition.y));
 
+            rect.on('selected', function (event) {
+                mother.tags.forEach(tag => {
+                    if (tag.id == this.id) {
+                        mother.selectedClass = tag;
+
+                        for (let i = 0; i < mother.classData.length; i++) {
+                            if (tag.classIds.indexOf(mother.classData[i].id) != -1) {
+                                mother.classData[i].checked = true;
+                            } else {
+                                mother.classData[i].checked = false;
+                            }
+                        }
+                    }
+                });
+
+                let allObject = mother.canvas.getObjects();
+
+                allObject.forEach(obj => {
+                    obj.set("stroke", obj.originColor);
+                    if(obj.name.split('-')[0] == 'lbl'){
+                        obj.set('fill', obj.originColor);
+                    }
+                    if(obj.id == this.id){
+                        obj.set("stroke", '#ff44f5');
+                        if(obj.name.split('-')[0] == 'lbl'){
+                            obj.set('fill', '#ff44f5');
+                        }
+                    }
+                });
+
+                
+            });
             mother.canvas.renderAll();
 
         });
@@ -172,31 +250,34 @@ export class ProjecTagComponent {
             } else if (!mother.tagMode) return;
 
             mother.canvas.add(rect);
-            mother.rects.push(rect);
+            mother.canvasTags.push(rect);
 
             let id = rect.get('id');
             mother.tags.push(new Tag(id, mother.imageId, [], 0, rect.get("height"), rect.get("width")));
             let label = new fabric.IText(id + '.', {
                 name: 'lbl-' + id,
+                id: id,
                 parentName: rect.get('name'),
                 left: rect.get('left'),
                 top: rect.get('top') - 30,
                 fontFamily: "calibri",
                 fontSize: 25,
-                fill: 'red',
-                stroke: 'red',
+                fill: 'yellow',
+                stroke: 'yellow',
+                originColor: 'yellow',
                 strokeWidth: 0,
                 hasRotatingPoint: false,
                 centerTransform: true,
                 selectable: false
             });
             mother.canvas.add(label);
-            console.log(mother.tags);
+            mother.canvasLabels.push(label);
         });
 
-        this.canvas.on('object:selected', function () {
+        this.canvas.on('object:selected', function (e) {
             // mother.tagMode = false;
         });
+
         this.canvas.on('selection:cleared', function () {
             if (!mother.tagMode) return;
             mother.tagMode = true;
@@ -207,13 +288,13 @@ export class ProjecTagComponent {
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);
             var allObject = mother.canvas.getObjects();
-            if(target.name.split('-')[0] == 'rect'){
+            if (target.name.split('-')[0] == 'rect') {
                 allObject.forEach(obj => {
 
                     var names = obj.get('name');
                     var parent = obj.get('parentName');
 
-                    if(names.split('-')[0] == 'lbl' && parent == target.name){
+                    if (names.split('-')[0] == 'lbl' && parent == target.name) {
                         obj.set('left', target.get('left'));
                         obj.set('top', target.get('top') - 30);
                     }
@@ -226,12 +307,12 @@ export class ProjecTagComponent {
             var angle = target.get('angle');
             var pointer = mother.canvas.getPointer(e.e);
             var allObject = mother.canvas.getObjects();
-            if(target.name.split('-')[0] == 'rect'){
+            if (target.name.split('-')[0] == 'rect') {
                 allObject.forEach(obj => {
                     var names = obj.get('name');
                     var parent = obj.get('parentName');
 
-                    if(names.split('-')[0] == 'lbl' && parent == target.name){
+                    if (names.split('-')[0] == 'lbl' && parent == target.name) {
                         obj.set('angle', angle);
                         obj.set('left', target.get('left'));
                         obj.set('top', target.get('top') - 30);
@@ -318,6 +399,7 @@ export class ProjecTagComponent {
             return false;
         });
     }
+
 
     generateId() {
         let id: number = 0;

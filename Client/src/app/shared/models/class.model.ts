@@ -24,3 +24,7 @@ export class ClassForUpdate{
     name: string;
     description: string;
 }
+
+export class ClassList{
+    constructor(public id:number, public name: string, public checked: boolean = false){}
+}

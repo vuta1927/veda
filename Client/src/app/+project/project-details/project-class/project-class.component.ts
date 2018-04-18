@@ -52,12 +52,7 @@ export class ProjectClassComponent implements OnInit {
         let mother = this;
         this.dataSource.store = new CustomStore({
             load: function (loadOptions: any) {
-                var params = '';
-
-                params += loadOptions.skip || 0;
-                params += '/' + loadOptions.take || 12;
-
-                return this.classService.getClasses(mother.currentProject.id, params)
+                return this.classService.getClasses(mother.currentProject.id)
                     .toPromise()
                     .then(response => {
 
@@ -74,7 +69,7 @@ export class ProjectClassComponent implements OnInit {
     ngOnInit() {
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
-            this.classService.getClasses(p.id, '0/12').toPromise().then(Response => {
+            this.classService.getClasses(p.id).toPromise().then(Response => {
                 if (Response && Response.result) {
                     this.dataSource = Response.result;
                     this.dataGrid["first"].instance.refresh();

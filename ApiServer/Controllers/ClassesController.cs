@@ -24,10 +24,11 @@ namespace ApiServer.Controllers
         }
 
         // GET: api/Classes
-        [HttpGet("{id}/{start}/{stop}")]
-        public IActionResult GetClasses([FromRoute] Guid id, [FromRoute] int start, [FromRoute] int stop)
+        [HttpGet("{id}")]
+        [ActionName("GetClasses")]
+        public IActionResult GetClasses([FromRoute] Guid id)
         {
-            var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include("ClassTags.Tag").Skip(start).Take(stop);
+            var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include("ClassTags.Tag");
             var results = new List<ClassModel.ClassForView>();
             if(classes.Count() > 0)
             {
@@ -86,7 +87,7 @@ namespace ApiServer.Controllers
             }
 
         }
-        [HttpGet("{id}/{name}")]
+        [HttpGet("{id}/{code}")]
         [ActionName("GetCodeOfClass")]
         public async Task<IActionResult> GetCodeOfClass([FromRoute] Guid id, [FromRoute] string code)
         {

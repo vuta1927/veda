@@ -12,6 +12,7 @@ import { SecurityService } from '../../../../shared/services/security.service';
 import { ClassService } from '../../../services/class.service';
 import { Helpers } from '../../../../helpers';
 import { DataService } from '../../data.service';
+import { ProjectForView } from '../../../../shared/models/project.model';
 @Component({
     selector: 'app-create-update-class',
     templateUrl: 'create-update-class.component.html',
@@ -21,7 +22,7 @@ import { DataService } from '../../data.service';
 export class CreateUpdateClassComponent implements OnInit {
     form: FormGroup;
     currentClass: Class = new Class();
-    currentProject: any = {};
+    currentProject: ProjectForView = new ProjectForView("0");
     users: any[] = [];
     roles: any[] = [];
     title: string;
@@ -45,8 +46,10 @@ export class CreateUpdateClassComponent implements OnInit {
 
     ngOnInit() {
         this.createForm();
-        this.dataService.currentProject.subscribe(p => this.currentProject = p);
-        
+        this.dataService.currentProject.subscribe(p => {
+            this.currentProject = p;
+        });
+
         if (this.currentClass.id <= 0) {
             this.title = "Add Class";
             this.isEditMode = false;
@@ -59,9 +62,15 @@ export class CreateUpdateClassComponent implements OnInit {
     createForm() {
         this.form = this.formBuilder.group({
             id: [this.currentClass.id],
-            name: [this.currentClass.name, [Validators.required], this.validateClassNameNotTaken.bind(this)],
+            name: [
+                this.currentClass.name, [Validators.required],
+                this.validateClassNameNotTaken.bind(this)
+            ],
             description: [this.currentClass.description],
-            code:[this.currentClass.code, [Validators.required],, this.validateCodeNotTaken.bind(this)],
+            code: [
+                this.currentClass.code, [Validators.required],
+                this.validateCodeNotTaken.bind(this)
+            ],
         });
         this.ngxErrorsService.setDefaultMessage('nameTaken', { message: 'The class name already taken.' });
         this.ngxErrorsService.setDefaultMessage('codeTaken', { message: 'The  code already taken.' });
@@ -90,7 +99,8 @@ export class CreateUpdateClassComponent implements OnInit {
     }
 
     validateCodeNotTaken(control: AbstractControl) {
-        if (this.isEditMode && control.value === this.currentClass.code) {
+        console.log('code');
+        if (this.isEditMode && control.value == this.currentClass.code) {
             this.btnSaveDisable = false;
             return Observable.empty();
         }
