@@ -41,6 +41,8 @@ import { TranslateExtService } from './services/translate-ext.service';
 import { RolesService } from '../+administrator/roles/roles.service';
 import { ProjectService } from '../+project/project.service';
 import { ImageService } from '../+project/services/image.service';
+import { ClassService } from '../+project/services/class.service';
+import { TagService } from '../+project/services/tag.service';
 import { ProjectUserService } from '../+project/services/project-users.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
@@ -98,6 +100,8 @@ export class SharedModule {
                 RolesService,
                 ProjectService,
                 ImageService,
+                TagService,
+                ClassService,
                 ProjectUserService
             ]
         }

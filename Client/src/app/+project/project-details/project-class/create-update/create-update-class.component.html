@@ -1,0 +1,52 @@
+<div class="modal-header">
+    <h5 class="modal-title">
+        {{ title }}
+    </h5>
+    <button type="button" class="close" data-dismiss="modal" (click)="activeModal.close()" aria-label="Close">
+        <span aria-hidden="true">
+            ×
+        </span>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="form-control-feedback" *ngxErrorTemplate="let item; maxError: 1">
+        {{ item.message }}
+    </div>
+    <form name="classInfo" role="form" [formGroup]="form" class="m-form m-form--state m-form--fit m-form--label-align-right"
+        novalidate>
+        <input type="hidden" name="id" formControlName="id" />
+        <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" *ngIf="isError">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+            <strong>{{messageHeader}}</strong>
+            {{message}}
+        </div>
+        <div class="form-group" ngxErrorsContent [class.has-danger]="nameErrors.invalid">
+            <label for="name" class="form-control-label">
+                Name:
+            </label>
+            <input type="text" class="form-control" name="name" formControlName="name" required>
+            <div ngxErrors="name" #nameErrors></div>
+        </div>
+        <div class="form-group" ngxErrorsContent [class.has-danger]="codeErrors.invalid">
+            <label for="Code" class="form-control-label">
+                Code:
+            </label>
+            <input class="form-control" name="code" formControlName="code" id="code" required>
+            <div ngxErrors="code" #codeErrors></div>
+        </div>
+        <div class="form-group">
+            <label for="description" class="form-control-label">
+                Description:
+            </label>
+            <textarea class="form-control" name="description" formControlName="description" id="description"></textarea>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" (click)="save()" [disabled]="btnSaveDisable">
+        Save
+    </button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="activeModal.close()">
+        Close
+    </button>
+</div>

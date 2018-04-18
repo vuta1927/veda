@@ -14,8 +14,8 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    [Migration("20180415031306_modifiImgKey")]
-    partial class modifiImgKey
+    [Migration("20180418094617_initialData")]
+    partial class initialData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -37,9 +37,28 @@ namespace ApiServer.Migrations
 
                     b.Property<string>("Note");
 
+                    b.Property<Guid?>("ProjectId");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("ProjectId");
+
                     b.ToTable("Classes");
+                });
+
+            modelBuilder.Entity("ApiServer.Model.ClassTag", b =>
+                {
+                    b.Property<int>("ClassId");
+
+                    b.Property<int>("TagId");
+
+                    b.Property<int>("Id");
+
+                    b.HasKey("ClassId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("classTags");
                 });
 
             modelBuilder.Entity("ApiServer.Model.Image", b =>
@@ -137,11 +156,15 @@ namespace ApiServer.Migrations
 
                     b.Property<Guid?>("ProjectId");
 
+                    b.Property<int?>("RoleId");
+
                     b.Property<long?>("UserId");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("UserId");
 
@@ -184,30 +207,25 @@ namespace ApiServer.Migrations
 
             modelBuilder.Entity("ApiServer.Model.Tag", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int?>("ClassId");
+                    b.Property<int>("Id");
 
                     b.Property<Guid?>("ImageId");
 
                     b.Property<double>("Left");
 
-                    b.Property<int?>("QuantityChecksId");
+                    b.Property<int?>("QuantityCheckId");
 
                     b.Property<double>("Top");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClassId");
-
                     b.HasIndex("ImageId");
 
-                    b.HasIndex("QuantityChecksId")
+                    b.HasIndex("QuantityCheckId")
                         .IsUnique()
-                        .HasFilter("[QuantityChecksId] IS NOT NULL");
+                        .HasFilter("[QuantityCheckId] IS NOT NULL");
 
-                    b.ToTable("Tag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("VDS.BackgroundJobs.BackgroundJobInfo", b =>
@@ -356,8 +374,6 @@ namespace ApiServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NotificationName", "EntityTypeName", "EntityId", "UserId");
-
                     b.ToTable("NotificationSubscriptions");
                 });
 
@@ -375,8 +391,6 @@ namespace ApiServer.Migrations
                     b.Property<long>("UserId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId", "State", "CreationTime");
 
                     b.ToTable("UserNotifications");
                 });
@@ -397,8 +411,6 @@ namespace ApiServer.Migrations
                     b.Property<int?>("ParentId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name");
 
                     b.HasIndex("ParentId");
 
@@ -426,6 +438,8 @@ namespace ApiServer.Migrations
 
                     b.Property<string>("NormalizedRoleName");
 
+                    b.Property<bool>("ProjectRole");
+
                     b.Property<string>("RoleName");
 
                     b.HasKey("Id");
@@ -435,8 +449,6 @@ namespace ApiServer.Migrations
                     b.HasIndex("DeleterUserId");
 
                     b.HasIndex("LastModifierUserId");
-
-                    b.HasIndex("NormalizedRoleName");
 
                     b.ToTable("Roles");
                 });
@@ -453,10 +465,6 @@ namespace ApiServer.Migrations
                     b.Property<int>("RoleId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClaimType");
-
-                    b.HasIndex("Id");
 
                     b.HasIndex("RoleId");
 
@@ -501,10 +509,6 @@ namespace ApiServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail");
-
-                    b.HasIndex("NormalizedUserName");
-
                     b.ToTable("Users");
                 });
 
@@ -528,8 +532,6 @@ namespace ApiServer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("LoginProvider", "ProviderKey");
-
                     b.ToTable("UserLogins");
                 });
 
@@ -547,8 +549,6 @@ namespace ApiServer.Migrations
                     b.Property<long>("UserId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.HasIndex("UserId");
 
@@ -569,6 +569,26 @@ namespace ApiServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Settings");
+                });
+
+            modelBuilder.Entity("ApiServer.Model.Class", b =>
+                {
+                    b.HasOne("ApiServer.Model.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId");
+                });
+
+            modelBuilder.Entity("ApiServer.Model.ClassTag", b =>
+                {
+                    b.HasOne("ApiServer.Model.Class", "Class")
+                        .WithMany("ClassTags")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ApiServer.Model.Tag", "Tag")
+                        .WithMany("ClassTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("ApiServer.Model.Image", b =>
@@ -605,6 +625,10 @@ namespace ApiServer.Migrations
                         .WithMany()
                         .HasForeignKey("ProjectId");
 
+                    b.HasOne("VDS.Security.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
+
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
@@ -623,17 +647,13 @@ namespace ApiServer.Migrations
 
             modelBuilder.Entity("ApiServer.Model.Tag", b =>
                 {
-                    b.HasOne("ApiServer.Model.Class", "Class")
-                        .WithMany("Tags")
-                        .HasForeignKey("ClassId");
-
                     b.HasOne("ApiServer.Model.Image", "Image")
                         .WithMany("Tags")
                         .HasForeignKey("ImageId");
 
-                    b.HasOne("ApiServer.Model.QuantityCheck", "QuantityChecks")
+                    b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
                         .WithOne("Tag")
-                        .HasForeignKey("ApiServer.Model.Tag", "QuantityChecksId");
+                        .HasForeignKey("ApiServer.Model.Tag", "QuantityCheckId");
                 });
 
             modelBuilder.Entity("VDS.Security.Permissions.Permission", b =>

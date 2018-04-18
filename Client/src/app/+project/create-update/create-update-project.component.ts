@@ -58,7 +58,6 @@ export class CreateUpdateProjectComponent implements OnInit {
     }
 
     validateProjectNameNotTaken(control: AbstractControl) {
-        console.log("a");
         if (this.isEditMode && control.value === this.project.name) {
             this.btnSaveDisable = false;
             return Observable.empty();
@@ -87,8 +86,6 @@ export class CreateUpdateProjectComponent implements OnInit {
             return;
         }
         Helpers.setLoading(true);
-
-        console.log(this.form.value);
         if (this.isEditMode) {
             let project = <ProjectForUpdate>this.form.value;
             this.projectService.UpdateProject(project).toPromise()
@@ -117,6 +114,5 @@ export class CreateUpdateProjectComponent implements OnInit {
             });
         }
 
-        console.log(this.currentCategory);
     }
 }

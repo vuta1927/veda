@@ -16,6 +16,7 @@ namespace ApiServer.Model
             : base(options, currentUnitOfWorkProvider, eventBus)
         {
         }
+        
         public DbSet<PersistedGrantEntity> PersistedGrants { get; set; }
         public new DbSet<User> Users { get; set; }
         public DbSet<PermissionRole> PermissionRoles { get; set; }
@@ -27,6 +28,21 @@ namespace ApiServer.Model
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
         public DbSet<QuantityCheckType> QuantityCheckTypes { get; set; }
         public DbSet<ApiServer.Model.Tag> Tags { get; set; }
+        public DbSet<ClassTag> classTags { get; set; }
+        
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ClassTag>()
+                .HasKey(t => new { t.ClassId, t.TagId });
+
+            modelBuilder.Entity<ClassTag>()
+                .HasOne(ct => ct.Class)
+                .WithMany("ClassTags");
+
+            modelBuilder.Entity<ClassTag>()
+                .HasOne(ct => ct.Tag)
+                .WithMany("ClassTags");
+        }
     }
 
 }

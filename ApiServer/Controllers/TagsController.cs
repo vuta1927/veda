@@ -8,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using ApiServer.Model;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
+using ApiServer.Model.views;
 
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Tags")]
+    [Route("api/Tags/[action]")]
     [AppAuthorize(VdsPermissions.ViewTag)]
     public class TagsController : Controller
     {
@@ -24,10 +25,25 @@ namespace ApiServer.Controllers
         }
 
         // GET: api/Tags
-        [HttpGet]
-        public IEnumerable<Tag> GetTag()
+        [HttpGet("{id}")]
+        [ActionName("GetTags")]
+        public IActionResult GetTags([FromRoute] Guid id)
         {
-            return _context.Tags;
+            var tags = _context.Tags.Include(t=>t.Image).Where(x=>x.Image.Id == id).Include("ClassTags.Class").Include(q => q.QuantityCheck);
+            var results = new List<TagModel.TagForView>();
+            foreach(var tag in tags)
+            {
+                results.Add(new TagModel.TagForView()
+                {
+                    Id = tag.Id,
+                    Left = tag.Left,
+                    Top = tag.Top,
+                    ClassId = tag.Classes.Select(x=>x.Id),
+                    QuantityCheckId = tag.QuantityCheck.Id,
+                    ImageId = tag.Image.Id
+                });
+            }
+            return Ok(results);
         }
 
         // GET: api/Tags/5
@@ -39,19 +55,27 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include(t => t.Image).Include("ClassTags.Class").Include(q => q.QuantityCheck).SingleOrDefaultAsync(m => m.Id == id);
 
             if (tag == null)
             {
-                return NotFound();
+                return Content("Tag not found !");
             }
 
-            return Ok(tag);
+            return Ok(new TagModel.TagForView()
+            {
+                Id = tag.Id,
+                Left = tag.Left,
+                Top = tag.Top,
+                ClassId = tag.Classes.Select(x => x.Id),
+                QuantityCheckId = tag.QuantityCheck.Id,
+                ImageId = tag.Image.Id
+            });
         }
 
         // PUT: api/Tags/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTag([FromRoute] int id, [FromBody] Tag tag)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] TagModel.TagForAddOrUpdate tag)
         {
             if (!ModelState.IsValid)
             {
@@ -63,40 +87,116 @@ namespace ApiServer.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(tag).State = EntityState.Modified;
+            var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == id);
+            if(originTag == null)
+            {
+                return Content("Tag not found !");
+            }
+
+            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == tag.ImageId);
+            if(image == null)
+            {
+                return Content("Image not found !");
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TagExists(id))
+                foreach (var @class in originTag.Classes)
                 {
-                    return NotFound();
+                    originTag.Classes.Remove(@class);
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                var classes = new List<Class>();
+                if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
+                {
+                    foreach (var classId in tag.ClassIds)
+                    {
+                        var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
+                        classes.Add(@class);
+                    }
+                }
+
+                originTag.Classes = classes;
+                originTag.Id = tag.Id;
+                originTag.Left = tag.Left;
+                originTag.Top = tag.Top;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!TagExists(id))
+                    {
+                        return Content("Tag not Found !");
+                    }
+                    else
+                    {
+                        return Content("Unknow error !");
+                    }
+                }
+
+                return Ok(originTag);
+
+            }
+            catch(Exception ex)
+            {
+                return Content("Cant update classes !");
+            }
         }
 
         // POST: api/Tags
         [HttpPost]
-        public async Task<IActionResult> PostTag([FromBody] Tag tag)
+        public async Task<IActionResult> AddTag([FromBody] TagModel.TagForAddOrUpdate tag)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Tags.Add(tag);
-            await _context.SaveChangesAsync();
+            var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
+            if (originTag != null)
+            {
+                return Content("Tag id "+ tag.Id +" is exsit !");
+            }
 
-            return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
+            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == tag.ImageId);
+            if (image == null)
+            {
+                return Content("Image not found !");
+            }
+
+
+            var classes = new List<Class>();
+            if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
+            {
+                foreach (var classId in tag.ClassIds)
+                {
+                    var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
+                    classes.Add(@class);
+                }
+
+            }
+            try
+            {
+                _context.Tags.Add(new Tag()
+                {
+                    Id = tag.Id,
+                    Classes = classes,
+                    Image = image,
+                    Left = tag.Left,
+                    Top = tag.Top
+                });
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
+            }
+            
         }
 
         // DELETE: api/Tags/5
@@ -111,7 +211,7 @@ namespace ApiServer.Controllers
             var tag = await _context.Tags.SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
-                return NotFound();
+                return Content("Tag not found !");
             }
 
             _context.Tags.Remove(tag);

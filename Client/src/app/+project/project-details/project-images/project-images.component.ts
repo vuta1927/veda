@@ -80,6 +80,7 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     ngOnInit() {
+        Helpers.setLoading(true);
         this.uploadfiles = [];
         var mother = this;
         this.dataService.currentProject.subscribe(p => {
@@ -88,6 +89,7 @@ export class ProjectImagesComponent implements OnInit {
                 if (Response && Response.result) {
                     this.dataSource = Response.result;
                     mother.dataGrid["first"].instance.refresh();
+                    Helpers.setLoading(false);
                 }
             });
         }, error => {

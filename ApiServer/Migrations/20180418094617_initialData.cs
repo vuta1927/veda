@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ApiServer.Migrations
 {
-    public partial class InitData : Migration
+    public partial class initialData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,22 +28,6 @@ namespace ApiServer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BackgroundJobs", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Classes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Code = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(nullable: true),
-                    Note = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Classes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -233,6 +217,29 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Classes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Code = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Note = table.Column<string>(nullable: true),
+                    ProjectId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Classes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Classes_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Images",
                 columns: table => new
                 {
@@ -245,6 +252,7 @@ namespace ApiServer.Migrations
                     QcStatus = table.Column<string>(nullable: true),
                     TagHasClass = table.Column<int>(nullable: false),
                     TagNotHasClass = table.Column<int>(nullable: false),
+                    TagTime = table.Column<double>(nullable: false),
                     TaggedDate = table.Column<DateTime>(nullable: false),
                     TotalClass = table.Column<int>(nullable: false),
                     UserQcId = table.Column<long>(nullable: true),
@@ -268,32 +276,6 @@ namespace ApiServer.Migrations
                     table.ForeignKey(
                         name: "FK_Images_Users_UserTaggedId",
                         column: x => x.UserTaggedId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProjectUsers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    ProjectId = table.Column<Guid>(nullable: true),
-                    UserId = table.Column<long>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProjectUsers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProjectUsers_Projects_ProjectId",
-                        column: x => x.ProjectId,
-                        principalTable: "Projects",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProjectUsers_Users_UserId",
-                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -340,6 +322,7 @@ namespace ApiServer.Migrations
                     LastModificationTime = table.Column<DateTime>(nullable: true),
                     LastModifierUserId = table.Column<long>(nullable: true),
                     NormalizedRoleName = table.Column<string>(nullable: true),
+                    ProjectRole = table.Column<bool>(nullable: false),
                     RoleName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -410,35 +393,27 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tag",
+                name: "Tags",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    ClassId = table.Column<int>(nullable: true),
+                    Id = table.Column<int>(nullable: false),
                     ImageId = table.Column<Guid>(nullable: true),
                     Left = table.Column<double>(nullable: false),
-                    QuantityChecksId = table.Column<int>(nullable: true),
+                    QuantityCheckId = table.Column<int>(nullable: true),
                     Top = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tag", x => x.Id);
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tag_Classes_ClassId",
-                        column: x => x.ClassId,
-                        principalTable: "Classes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Tag_Images_ImageId",
+                        name: "FK_Tags_Images_ImageId",
                         column: x => x.ImageId,
                         principalTable: "Images",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Tag_QuantityChecks_QuantityChecksId",
-                        column: x => x.QuantityChecksId,
+                        name: "FK_Tags_QuantityChecks_QuantityCheckId",
+                        column: x => x.QuantityCheckId,
                         principalTable: "QuantityChecks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -471,6 +446,39 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProjectUsers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ProjectId = table.Column<Guid>(nullable: true),
+                    RoleId = table.Column<int>(nullable: true),
+                    UserId = table.Column<long>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProjectUsers_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectUsers_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectUsers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleClaims",
                 columns: table => new
                 {
@@ -490,6 +498,41 @@ namespace ApiServer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "classTags",
+                columns: table => new
+                {
+                    ClassId = table.Column<int>(nullable: false),
+                    TagId = table.Column<int>(nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_classTags", x => new { x.ClassId, x.TagId });
+                    table.ForeignKey(
+                        name: "FK_classTags_Classes_ClassId",
+                        column: x => x.ClassId,
+                        principalTable: "Classes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_classTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Classes_ProjectId",
+                table: "Classes",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_classTags_TagId",
+                table: "classTags",
+                column: "TagId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ProjectId",
                 table: "Images",
@@ -506,11 +549,6 @@ namespace ApiServer.Migrations
                 column: "UserTaggedId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationSubscriptions_NotificationName_EntityTypeName_EntityId_UserId",
-                table: "NotificationSubscriptions",
-                columns: new[] { "NotificationName", "EntityTypeName", "EntityId", "UserId" });
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PermissionRoles_PermissionId",
                 table: "PermissionRoles",
                 column: "PermissionId");
@@ -521,11 +559,6 @@ namespace ApiServer.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Permissions_Name",
-                table: "Permissions",
-                column: "Name");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Permissions_ParentId",
                 table: "Permissions",
                 column: "ParentId");
@@ -534,6 +567,11 @@ namespace ApiServer.Migrations
                 name: "IX_ProjectUsers_ProjectId",
                 table: "ProjectUsers",
                 column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectUsers_RoleId",
+                table: "ProjectUsers",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectUsers_UserId",
@@ -549,16 +587,6 @@ namespace ApiServer.Migrations
                 name: "IX_QuantityChecks_UserQcId",
                 table: "QuantityChecks",
                 column: "UserQcId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RoleClaims_ClaimType",
-                table: "RoleClaims",
-                column: "ClaimType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RoleClaims_Id",
-                table: "RoleClaims",
-                column: "Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -581,26 +609,16 @@ namespace ApiServer.Migrations
                 column: "LastModifierUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Roles_NormalizedRoleName",
-                table: "Roles",
-                column: "NormalizedRoleName");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tag_ClassId",
-                table: "Tag",
-                column: "ClassId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tag_ImageId",
-                table: "Tag",
+                name: "IX_Tags_ImageId",
+                table: "Tags",
                 column: "ImageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tag_QuantityChecksId",
-                table: "Tag",
-                column: "QuantityChecksId",
+                name: "IX_Tags_QuantityCheckId",
+                table: "Tags",
+                column: "QuantityCheckId",
                 unique: true,
-                filter: "[QuantityChecksId] IS NOT NULL");
+                filter: "[QuantityCheckId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserLogins_UserId",
@@ -608,40 +626,18 @@ namespace ApiServer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserLogins_LoginProvider_ProviderKey",
-                table: "UserLogins",
-                columns: new[] { "LoginProvider", "ProviderKey" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserNotifications_UserId_State_CreationTime",
-                table: "UserNotifications",
-                columns: new[] { "UserId", "State", "CreationTime" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_RoleId",
-                table: "UserRoles",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_UserId",
                 table: "UserRoles",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_NormalizedEmail",
-                table: "Users",
-                column: "NormalizedEmail");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_NormalizedUserName",
-                table: "Users",
-                column: "NormalizedUserName");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "BackgroundJobs");
+
+            migrationBuilder.DropTable(
+                name: "classTags");
 
             migrationBuilder.DropTable(
                 name: "EventLogEntries");
@@ -668,9 +664,6 @@ namespace ApiServer.Migrations
                 name: "Settings");
 
             migrationBuilder.DropTable(
-                name: "Tag");
-
-            migrationBuilder.DropTable(
                 name: "UserLogins");
 
             migrationBuilder.DropTable(
@@ -680,13 +673,16 @@ namespace ApiServer.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
+                name: "Classes");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
+
+            migrationBuilder.DropTable(
                 name: "Permissions");
 
             migrationBuilder.DropTable(
                 name: "Roles");
-
-            migrationBuilder.DropTable(
-                name: "Classes");
 
             migrationBuilder.DropTable(
                 name: "Images");

@@ -134,7 +134,7 @@
                             <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
                         </div>
                         <div *dxTemplate="let data of 'tagDetail'">
-                            <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id }">
+                            <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">
                                 <b>Tag details</b>
                             </span>
                         </div>

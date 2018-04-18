@@ -24,6 +24,7 @@ export class ProjectComponent {
     selectedProjects: any[] = [];
     permissions: PermissionCategory[];
     isAdmin: boolean = false;
+    noData: string = "There are no data to load";
     constructor(private modalService: NgbModal, private securityService: SecurityService, private projectService: ProjectService, public toastr: ToastsManager, private vcr: ViewContainerRef) {
         this.toastr.setRootViewContainerRef(vcr);
         let currentUserData = this.securityService.getUserRoles();

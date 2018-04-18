@@ -59,6 +59,8 @@ namespace ApiServer
             services.AddTransient<ProjectUsersController>();
             services.AddTransient<ImagesController>();
             services.AddTransient<TagsController>();
+            services.AddTransient<ClassesController>();
+            services.AddTransient<QuantityCheckTypesController>();
             services.AddTransient<QuantityChecksController>();
 
             services.AddAuthentication(options =>

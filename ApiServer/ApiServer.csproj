@@ -7,6 +7,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20180412100037_InitData.cs" />
     <Compile Remove="Migrations\20180412100037_InitData.Designer.cs" />
+    <Compile Remove="Migrations\20180418075257_Modify-ClassTag.cs" />
+    <Compile Remove="Migrations\20180418075257_Modify-ClassTag.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
