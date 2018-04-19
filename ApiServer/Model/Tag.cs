@@ -9,18 +9,17 @@ namespace ApiServer.Model
 {
     public class Tag
     {
-        public Tag() => Classes = new JoinCollectionFacade<Class, ClassTag>(ClassTags, ct => ct.Class, t => new ClassTag { Class = t, Tag = this});
-
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public Tag() => Classes = new JoinCollectionFacade<Class, ClassTag>(ClassTags, ct => ct.Class, c => new ClassTag { Class = c, Tag = this });
         public int Id { get; set; }
+        public int Index { get; set; }
+        public double Top { get; set; }
+        public double Left { get; set; }
+        public double Width { get; set; }
+        public double height { get; set; }
         public virtual Image Image { get; set; }
+        public QuantityCheck QuantityCheck { get; set; }
         private ICollection<ClassTag> ClassTags { get; } = new List<ClassTag>();
         [NotMapped]
         public ICollection<Class> Classes { get; set; }
-
-        public QuantityCheck QuantityCheck { get; set; }
-        public double Top { get; set; }
-        public double Left { get; set; }
     }
 }

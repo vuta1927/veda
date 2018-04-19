@@ -36,8 +36,8 @@ namespace VDS.AspNetCore.Mvc.Security
             {
                 foreach (var permissionProvider in _permissionProviders)
                 {
-                    // get and iterate stereotypical groups of permissions
-                    var stereotypes = permissionProvider.GetDefaultStereotypes();
+                    //get and iterate stereotypical groups of permissions
+                   var stereotypes = permissionProvider.GetDefaultStereotypes();
                     foreach (var stereotype in stereotypes)
                     {
                         var role = await _roleManager.FindByNameAsync(stereotype.Name);
@@ -54,7 +54,7 @@ namespace VDS.AspNetCore.Mvc.Security
                             await _unitOfWorkManager.Current.SaveChangesAsync();
                         }
 
-                        // and merge the stereotypical permissions into that role
+                        //and merge the stereotypical permissions into that role
                         var stereotypePermissionNames =
                             (stereotype.Permissions ?? Enumerable.Empty<Permission>()).Select(x => x.Name);
                         var currentPermissionNames = (await _roleManager.GetClaimsAsync(role)).Where(x => x.Type == Permission.ClaimType)
@@ -64,7 +64,7 @@ namespace VDS.AspNetCore.Mvc.Security
                             .Union(stereotypePermissionNames)
                             .Distinct();
 
-                        // update role if set of permissions has increased
+                        //update role if set of permissions has increased
                         var additionalPermissionNames = distinctPermissionNames.Except(currentPermissionNames).ToList();
 
                         if (additionalPermissionNames.Any())

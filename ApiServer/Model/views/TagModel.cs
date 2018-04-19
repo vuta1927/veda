@@ -10,29 +10,38 @@ namespace ApiServer.Model.views
         public class TagForView
         {
             public int Id { get; set; }
+            public int Index { get; set; }
             public Guid ImageId { get; set; }
-            public IEnumerable<int> ClassId { get; set; }
+            public IEnumerable<int> ClassIds { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
+            public double Width { get; set; }
+            public double height { get; set; }
             public int QuantityCheckId { get; set; }
         }
 
         public class TagForAddOrUpdate
         {
             public int Id { get; set; }
+            public int Index { get; set; }
             public Guid ImageId { get; set; }
             public IEnumerable<int> ClassIds { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
+            public double Width { get; set; }
+            public double height { get; set; }
         }
 
         public class TagForUpdate
         {
             public int Id { get; set; }
+            public int Index { get; set; }
             public Guid ImageId { get; set; }
             public IEnumerable<int> ClassIds { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
+            public double Width { get; set; }
+            public double height { get; set; }
         }
     }
 }

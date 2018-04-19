@@ -1,10 +1,13 @@
 export interface ITag{
     id: number;
+    index: number;
     imageId: string;
     classIds: number[];
     quantityCheckId: number;
     top: number;
     left: number;
+    width: number;
+    height: number;
 }
 
 export interface ITagForAdd{
@@ -12,6 +15,8 @@ export interface ITagForAdd{
     classId:number[];
     top: number;
     left: number;
+    width: number;
+    height: number;
 }
 
 export interface ITagForUpdate{
@@ -20,10 +25,21 @@ export interface ITagForUpdate{
     classId:number[];
     top: number;
     left: number;
+    width: number;
+    height: number;
 }
 
 export class Tag implements ITag{
-    constructor(public id: number = -1, public imageId: string, public classIds: number[] = [], public quantityCheckId: number = -1, public top: number, public left: number){
+    constructor(
+        public id: number = -1, 
+        public index: number,
+        public imageId: string, 
+        public classIds: number[] = [], 
+        public quantityCheckId: number = -1, 
+        public top: number, 
+        public left: number,
+        public width: number,
+        public height: number){
 
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ApiServer.Migrations
 {
-    public partial class initialData : Migration
+    public partial class initData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -396,11 +396,15 @@ namespace ApiServer.Migrations
                 name: "Tags",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ImageId = table.Column<Guid>(nullable: true),
+                    Index = table.Column<int>(nullable: false),
                     Left = table.Column<double>(nullable: false),
                     QuantityCheckId = table.Column<int>(nullable: true),
-                    Top = table.Column<double>(nullable: false)
+                    Top = table.Column<double>(nullable: false),
+                    Width = table.Column<double>(nullable: false),
+                    height = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -505,10 +509,12 @@ namespace ApiServer.Migrations
                     ClassId = table.Column<int>(nullable: false),
                     TagId = table.Column<int>(nullable: false),
                     Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_classTags", x => new { x.ClassId, x.TagId });
+                    table.UniqueConstraint("AK_classTags_Id", x => x.Id);
                     table.ForeignKey(
                         name: "FK_classTags_Classes_ClassId",
                         column: x => x.ClassId,

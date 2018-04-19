@@ -33,15 +33,23 @@ namespace ApiServer.Controllers
             var results = new List<TagModel.TagForView>();
             foreach(var tag in tags)
             {
-                results.Add(new TagModel.TagForView()
+                var t = new TagModel.TagForView()
                 {
                     Id = tag.Id,
                     Left = tag.Left,
+                    Index = tag.Index,
                     Top = tag.Top,
-                    ClassId = tag.Classes.Select(x=>x.Id),
-                    QuantityCheckId = tag.QuantityCheck.Id,
+                    Width = tag.Width,
+                    height = tag.height,
                     ImageId = tag.Image.Id
-                });
+                };
+                if(tag.QuantityCheck!= null)
+                {
+                    t.QuantityCheckId = tag.QuantityCheck.Id;
+                }
+                t.ClassIds = tag.Classes.Select(x => x.Id);
+
+                results.Add(t);
             }
             return Ok(results);
         }
@@ -65,85 +73,107 @@ namespace ApiServer.Controllers
             return Ok(new TagModel.TagForView()
             {
                 Id = tag.Id,
+                Index = tag.Index,
                 Left = tag.Left,
                 Top = tag.Top,
-                ClassId = tag.Classes.Select(x => x.Id),
+                Width = tag.Width,
+                height = tag.height,
+                ClassIds = tag.Classes.Select(x => x.Id),
                 QuantityCheckId = tag.QuantityCheck.Id,
                 ImageId = tag.Image.Id
             });
         }
 
-        // PUT: api/Tags/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] TagModel.TagForAddOrUpdate tag)
+        
+        [HttpPost("{id}")]
+        [ActionName("Update")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] IEnumerable<TagModel.TagForAddOrUpdate> tags)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != tag.Id)
-            {
-                return BadRequest();
-            }
-
-            var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == id);
-            if(originTag == null)
-            {
-                return Content("Tag not found !");
-            }
-
-            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == tag.ImageId);
-            if(image == null)
+            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == id);
+            if (image == null)
             {
                 return Content("Image not found !");
             }
+            
 
-            try
+            foreach (var tag in tags)
             {
-                foreach (var @class in originTag.Classes)
+                if(tag.Id > 0)
                 {
-                    originTag.Classes.Remove(@class);
-                }
-
-                var classes = new List<Class>();
-                if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
-                {
-                    foreach (var classId in tag.ClassIds)
+                    var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
+                    if (originTag == null)
                     {
-                        var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
-                        classes.Add(@class);
+                        return Content("Tag:"+tag.Id+" not found !");
                     }
-                }
-
-                originTag.Classes = classes;
-                originTag.Id = tag.Id;
-                originTag.Left = tag.Left;
-                originTag.Top = tag.Top;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TagExists(id))
+                    foreach (var @class in originTag.Classes)
                     {
-                        return Content("Tag not Found !");
+                        originTag.Classes.Remove(@class);
                     }
-                    else
+                    
+                    originTag.Index = tag.Index;
+                    originTag.Left = tag.Left;
+                    originTag.Top = tag.Top;
+                    originTag.Width = tag.Width;
+                    originTag.height = tag.height;
+
+                    if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
+                    {
+                        foreach (var classId in tag.ClassIds)
+                        {
+                            var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
+                            originTag.Classes.Add(@class);
+                            //classes.Add(@class);
+                        }
+                    }
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        return Content("Unknow error !");
+                    }
+
+                }
+                else
+                {
+                    var newTag = new Tag()
+                    {
+                        Index = tag.Index,
+                        Image = image,
+                        Left = tag.Left,
+                        Top = tag.Top,
+                        Width = tag.Width,
+                        height = tag.height
+                    };
+                    
+                    if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
+                    {
+                        foreach (var classId in tag.ClassIds)
+                        {
+                            var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
+                            newTag.Classes.Add(@class);
+                        }
+
+                    }
+                    _context.Tags.Add(newTag);
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
                     {
                         return Content("Unknow error !");
                     }
                 }
-
-                return Ok(originTag);
-
             }
-            catch(Exception ex)
-            {
-                return Content("Cant update classes !");
-            }
+            return Ok();
+
         }
 
         // POST: api/Tags
@@ -183,10 +213,13 @@ namespace ApiServer.Controllers
                 _context.Tags.Add(new Tag()
                 {
                     Id = tag.Id,
+                    Index = tag.Index,
                     Classes = classes,
                     Image = image,
                     Left = tag.Left,
-                    Top = tag.Top
+                    Top = tag.Top,
+                    Width = tag.Width,
+                    height = tag.height
                 });
                 await _context.SaveChangesAsync();
 

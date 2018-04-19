@@ -4,12 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
-using VDS.BackgroundJobs;
-using VDS.Messaging.Events;
-using VDS.Notifications;
 
 namespace ApiServer.Migrations
 {
@@ -51,9 +46,12 @@ namespace ApiServer.Migrations
 
                     b.Property<int>("TagId");
 
-                    b.Property<int>("Id");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
 
                     b.HasKey("ClassId", "TagId");
+
+                    b.HasAlternateKey("Id");
 
                     b.HasIndex("TagId");
 
@@ -206,15 +204,22 @@ namespace ApiServer.Migrations
 
             modelBuilder.Entity("ApiServer.Model.Tag", b =>
                 {
-                    b.Property<int>("Id");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<Guid?>("ImageId");
+
+                    b.Property<int>("Index");
 
                     b.Property<double>("Left");
 
                     b.Property<int?>("QuantityCheckId");
 
                     b.Property<double>("Top");
+
+                    b.Property<double>("Width");
+
+                    b.Property<double>("height");
 
                     b.HasKey("Id");
 

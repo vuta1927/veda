@@ -8,10 +8,9 @@ import { ITag, ITagForAdd, ITagForUpdate } from "../../shared/models/tag.model";
 export class TagService{
     constructor(private http: HttpClient, private configurationService: ConfigurationService){}
 
-    public getTags(imageId: string, param:string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/GetTags/' + imageId + '/'+param;
-        let result = this.http.get<IAppCoreResponse<ITag[]>>(url)
-        return result;
+    public getTags(imageId: string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/GetTags/' + imageId;
+        return this.http.get<IAppCoreResponse<ITag[]>>(url);
     }
 
     public getTagById(id:number):Observable<IAppCoreResponse<ITag>>{
@@ -20,11 +19,16 @@ export class TagService{
         return this.http.get<IAppCoreResponse<ITag>>(url);
     }
 
-    public UpdateTag(id:number, Tag):Observable<IAppCoreResponse<ITag>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/Update/' + id;
-
-        return this.http.put<IAppCoreResponse<ITag>>(url,Tag);
+    public saveTags(imageId:string, tags):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/Update/'+ imageId;
+        return this.http.post<IAppCoreResponse<any>>(url, tags);
     }
+
+    // public UpdateTag(id:number, Tag):Observable<IAppCoreResponse<ITag>>{
+    //     let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/Update/' + id;
+
+    //     return this.http.put<IAppCoreResponse<ITag>>(url,Tag);
+    // }
 
     public AddTag(Tag):Observable<IAppCoreResponse<ITag>>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/AddTag';

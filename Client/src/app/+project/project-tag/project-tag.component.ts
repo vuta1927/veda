@@ -7,6 +7,7 @@ import { ImageService } from '../services/image.service';
 import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
 import { Tag } from '../../shared/models/tag.model';
+import { TagService } from '../services/tag.service';
 import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 @Component({
@@ -32,13 +33,16 @@ export class ProjecTagComponent {
     canvasLabels: any = [];
     imageWidth: number = 0;
     imageHeight: number = 0;
+    imageUrl: string = '';
+
     constructor(
         private route: ActivatedRoute,
         private imgService: ImageService,
         private classService: ClassService,
         public toastr: ToastsManager,
         private vcr: ViewContainerRef,
-        private configurationService: ConfigurationService
+        private configurationService: ConfigurationService,
+        private tagSerivce: TagService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         let mother = this;
@@ -47,6 +51,7 @@ export class ProjecTagComponent {
     ngOnInit() {
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
+
         this.route.queryParams.subscribe(params => {
             this.imageId = params.id;
             this.projectId = params.project;
@@ -62,14 +67,22 @@ export class ProjecTagComponent {
                 this.showError(error.error.text);
             });
 
-            this.imgService.getImageById(this.imageId).toPromise().then(Response => {
+            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
-                    this.currentImage = Response.result;
-                    this.initCanvas();
+                    this.tags = Response.result;
+
+                    this.imgService.getImageById(this.imageId).toPromise().then(Response => {
+                        if (Response && Response.result) {
+                            this.currentImage = Response.result;
+                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
+                            this.initCanvas();
+                        }
+                    });
                 }
             });
         });
     }
+
     switchTagMode() {
         if (this.tagMode)
             this.tagMode = false;
@@ -81,9 +94,8 @@ export class ProjecTagComponent {
         if (this.selectedClass == null) return;
 
         var value = Number(e.target.value);
-
         this.tags.forEach(tag => {
-            if (tag.id == this.selectedClass.id) {
+            if (tag.index == this.selectedClass.index) {
                 if (tag.classIds.indexOf(value) != -1) {
                     if (!e.target.checked) {
                         tag.classIds.splice(tag.classIds.indexOf(value), 1);
@@ -94,29 +106,37 @@ export class ProjecTagComponent {
                     }
                 }
 
-                let color:string;
-                if(tag.classIds.length > 0){
+                let color: string;
+                if (tag.classIds.length > 0) {
                     color = 'red';
-                }else{
+                } else {
                     color = 'yellow';
                 }
 
                 this.canvasTags.forEach(cvTag => {
-                    cvTag.set('stroke',color);
-                    cvTag.set('originColor', color);
+                    if (cvTag.index == tag.index) {
+                        cvTag.set('stroke', color);
+                        cvTag.set('originColor', color);
+
+                    }
                 });
 
                 this.canvasLabels.forEach(cvLabel => {
-                    cvLabel.set('originColor', color);
-                    cvLabel.set('stroke',color);
-                    cvLabel.set('fill',color);
+                    if (cvLabel.index == tag.index) {
+                        cvLabel.set('originColor', color);
+                        cvLabel.set('stroke', color);
+                        cvLabel.set('fill', color);
+
+                    }
                 });
+
+                this.canvas.renderAll();
             }
         });
 
         this.classData.forEach(c => {
             if (c.id == value) {
-                if(e.target.checked)
+                if (e.target.checked)
                     c.checked = true;
                 else
                     c.checked = false;
@@ -125,11 +145,34 @@ export class ProjecTagComponent {
         });
     }
 
+    saveChange() {
+        this.tagSerivce.saveTags(this.imageId, this.tags).toPromise().then(Response => {
+            if (!Response || !Response.result)
+                this.showSuccess("All Tags saved!");
+        }).catch(errorResp => {
+            this.showError(errorResp.error.text);
+        });
+    }
+
+
     initCanvas() {
         var mother = this;
         this.canvas = new fabric.Canvas('canvas', { selection: false });
+
+        var HideControls = {
+            'tl': true,      //top left
+            'tr': false,     //top right
+            'bl': true,      //bottom left
+            'br': true,      //bottom right
+            'ml': true,      //middle left corner
+            'mt': true,      //middle top corner
+            'mr': true,      //middle right corner
+            'mb': true,      //middle bottom corner
+            'mtr': true,
+        };
         fabric.Image.fromURL(this.apiUrl + '/' + this.currentImage.path, function (img) {
             img.selectable = false;
+            img.setControlsVisibility(HideControls);
             img.set({
                 name: 'background',
                 left: 0,
@@ -137,17 +180,75 @@ export class ProjecTagComponent {
             });
             mother.canvas.add(img);
             mother.canvas.sendToBack(img);
+            mother.canvas.renderAll();
+            mother.imageHeight = img.height;
+            mother.imageWidth = img.width;
+            mother.drawTags();
         });
-        let image = new Image();
-        image.src = this.apiUrl + '/' + this.currentImage.path;
-        image.onload = function(){
-            mother.imageWidth = this['height'];
-            mother.imageWidth = this['width'];
-        }
-        console.log(image.width, image.height);
+
         this.autoResizeCanvas();
         this.setupZoomFunc();
         this.setUpMouseEvent();
+    }
+
+    addDeleteBtn(x, y) {
+        $("#deleteBtn").remove();
+        var btnLeft = x+0.5;
+        var btnTop = y;
+        var deleteBtn = '<img src="https://cdn2.iconfinder.com/data/icons/icojoy/shadow/standart/png/24x24/001_05.png" id="deleteBtn" style="position:absolute;top:' + btnTop + 'px;left:' + btnLeft + 'px;cursor:pointer;width:25px;height:25px;"/>';
+        $("#canvas-wrapper").append(deleteBtn);
+    }
+
+    drawTags() {
+        console.log(this.tags);
+        let mother = this;
+        this.tags.forEach(tag => {
+            let x = this.GetValueFromPercent(tag.left, this.imageWidth);
+            let y = this.GetValueFromPercent(tag.top, this.imageHeight);
+            let width = this.GetValueFromPercent(tag.width, this.imageWidth);
+            let height = this.GetValueFromPercent(tag.height, this.imageHeight);
+            console.log('x', x, 'y', y, 'width', width, 'height', height);
+            let color = tag.classIds.length > 0 ? 'red' : 'yellow';
+            let rect = new fabric.Rect({
+                id: tag.id,
+                index: tag.index,
+                name: 'rect-' + tag.index,
+                left: x,
+                top: y,
+                width: width - x,
+                height: height - y,
+                stroke: color,
+                originColor: color,
+                strokeWidth: 2,
+                fill: '',
+                transparentCorners: false
+            });
+            rect.on('selected', function (e) {
+                mother.onTagSelected(this);
+            })
+            this.canvas.add(rect);
+            this.canvasTags.push(rect);
+
+            let label = new fabric.IText(tag.index + '.', {
+                name: 'lbl-' + tag.index,
+                id: tag.id,
+                index: tag.index,
+                parentName: rect.get('name'),
+                left: x,
+                top: y - 30,
+                fontFamily: "calibri",
+                fontSize: 25,
+                fill: color,
+                stroke: color,
+                originColor: color,
+                strokeWidth: 0,
+                hasRotatingPoint: false,
+                centerTransform: true,
+                selectable: false
+            });
+            this.canvas.add(label);
+            this.canvasLabels.push(label);
+        });
     }
 
     setUpMouseEvent() {
@@ -156,8 +257,36 @@ export class ProjecTagComponent {
         let rect: any = {};
         let mother = this;
         let isDragging: boolean = false;
+
+        $('body').on('contextmenu', 'canvas', function (options: any) {
+            //Disabe contextmenu on right mouse, implement right mouse event
+            // let target: any = mother.canvas.findTarget(options, false);
+            // if (target) {
+            //     let type: string = target.type;
+            //     if (type === "group") {
+            //         console.log('right click on group');
+            //     } else {
+            //         // mother.canvas.setActiveObject(target);
+            //         console.log('right click on target, type: ' + type);
+            //     }
+            // } else {
+            //     // mother.canvas.discardActiveObject();
+            //     // mother.canvas.discardActiveGroup();
+            //     // mother.canvas.renderAll();
+            //     console.log('right click on canvas');
+            // }
+            // isDragging = true;
+            options.preventDefault();
+            return false;
+        });
+
         this.canvas.on('mouse:down', function (event) {
+            
+            // $("#deleteBtn").remove();
             // --- set up panning func ---
+            // if (!mother.canvas.getActiveObject()) {
+            //     $("#deleteBtn").remove();
+            // }
             var evt = event.e;
             if (evt.altKey === true) {
                 isDragging = true;
@@ -174,11 +303,12 @@ export class ProjecTagComponent {
             startPosition.x = pointer.x;
             startPosition.y = pointer.y;
 
-            let id = mother.generateId();
+            let index = mother.generateId();
 
             rect = new fabric.Rect({
-                id: id,
-                name: 'rect-' + id,
+                id: -1,
+                index: index,
+                name: 'rect-' + index,
                 left: pointer.x,
                 top: pointer.y,
                 width: 0,
@@ -186,7 +316,8 @@ export class ProjecTagComponent {
                 stroke: 'yellow',
                 originColor: 'yellow',
                 strokeWidth: 2,
-                fill: ''
+                fill: '',
+                transparentCorners: false
             });
             mother.canvas.add(rect);
         });
@@ -196,9 +327,9 @@ export class ProjecTagComponent {
                 var evt = event.e;
                 this.viewportTransform[4] += evt.clientX - this.lastPosX;
                 this.viewportTransform[5] += evt.clientY - this.lastPosY;
-                this.requestRenderAll();
                 this.lastPosX = evt.clientX;
                 this.lastPosY = evt.clientY;
+                this.requestRenderAll();
                 return;
             } else if (!isDown || !mother.tagMode) return;
 
@@ -207,36 +338,7 @@ export class ProjecTagComponent {
             rect.set('height', Math.abs(pointer.y - startPosition.y));
 
             rect.on('selected', function (event) {
-                mother.tags.forEach(tag => {
-                    if (tag.id == this.id) {
-                        mother.selectedClass = tag;
-
-                        for (let i = 0; i < mother.classData.length; i++) {
-                            if (tag.classIds.indexOf(mother.classData[i].id) != -1) {
-                                mother.classData[i].checked = true;
-                            } else {
-                                mother.classData[i].checked = false;
-                            }
-                        }
-                    }
-                });
-
-                let allObject = mother.canvas.getObjects();
-
-                allObject.forEach(obj => {
-                    obj.set("stroke", obj.originColor);
-                    if(obj.name.split('-')[0] == 'lbl'){
-                        obj.set('fill', obj.originColor);
-                    }
-                    if(obj.id == this.id){
-                        obj.set("stroke", '#ff44f5');
-                        if(obj.name.split('-')[0] == 'lbl'){
-                            obj.set('fill', '#ff44f5');
-                        }
-                    }
-                });
-
-                
+                mother.onTagSelected(this);
             });
             mother.canvas.renderAll();
 
@@ -249,14 +351,30 @@ export class ProjecTagComponent {
                 return;
             } else if (!mother.tagMode) return;
 
+            rect.on('selected', function (e) {
+                mother.onTagSelected(this);
+            })
+
             mother.canvas.add(rect);
             mother.canvasTags.push(rect);
 
+            let index = rect.get('index');
             let id = rect.get('id');
-            mother.tags.push(new Tag(id, mother.imageId, [], 0, rect.get("height"), rect.get("width")));
-            let label = new fabric.IText(id + '.', {
-                name: 'lbl-' + id,
+            mother.tags.push(new Tag(
+                -1,
+                index,
+                mother.imageId,
+                [],
+                0,
+                mother.GetPercent(rect.get("top"), mother.imageHeight),
+                mother.GetPercent(rect.get("left"), mother.imageWidth),
+                mother.GetPercent(rect.get("left") + (rect.get('width')), mother.imageWidth),
+                mother.GetPercent(rect.get("top") + (rect.get('height')), mother.imageHeight)
+            ));
+            let label = new fabric.IText(index + '.', {
+                name: 'lbl-' + index,
                 id: id,
+                index: index,
                 parentName: rect.get('name'),
                 left: rect.get('left'),
                 top: rect.get('top') - 30,
@@ -270,12 +388,34 @@ export class ProjecTagComponent {
                 centerTransform: true,
                 selectable: false
             });
+            // console.log(rect.get("top"), rect.get("left"), rect.get("width"), rect.get("height"));
+            // console.log(mother.tags)
             mother.canvas.add(label);
             mother.canvasLabels.push(label);
         });
 
         this.canvas.on('object:selected', function (e) {
-            // mother.tagMode = false;
+            mother.tagMode = false;
+            // $("#deleteBtn").remove();
+            if (e.target.get('name').split('-')[0] == 'rect') {
+                mother.addDeleteBtn(e.target.oCoords.tr.x * e.target.scaleX, e.target.oCoords.tr.y* e.target.scaleY);
+            }
+        });
+
+        this.canvas.on('object:modified', function (e) {
+            mother.addDeleteBtn(e.target.oCoords.tr.x * e.target.scaleX, e.target.oCoords.tr.y* e.target.scaleY);
+        });
+
+        this.canvas.on('object:scaling', function (e) {
+            $("#deleteBtn").remove();
+        });
+
+        this.canvas.on('object:rotating', function (e) {
+            $("#deleteBtn").remove();
+        });
+
+        $(document).on('click', "#deleteBtn", function () {
+            console.log('delete clicked');
         });
 
         this.canvas.on('selection:cleared', function () {
@@ -284,6 +424,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('object:moving', function (e) {
+            $("#deleteBtn").remove();
             var target = e.target;
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);
@@ -303,6 +444,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('object:rotating', function (e) {
+            $("#deleteBtn").remove();
             var target = e.target;
             var angle = target.get('angle');
             var pointer = mother.canvas.getPointer(e.e);
@@ -318,6 +460,22 @@ export class ProjecTagComponent {
                         obj.set('top', target.get('top') - 30);
                     }
                 });
+            }
+        });
+    }
+
+    onTagSelected(target) {
+        this.tags.forEach(tag => {
+            if (tag.index == target.index) {
+                this.selectedClass = tag;
+
+                for (let i = 0; i < this.classData.length; i++) {
+                    if (tag.classIds.indexOf(this.classData[i].id) != -1) {
+                        this.classData[i].checked = true;
+                    } else {
+                        this.classData[i].checked = false;
+                    }
+                }
             }
         });
     }
@@ -384,6 +542,7 @@ export class ProjecTagComponent {
     setupZoomFunc() {
         var mother = this;
         $(this.canvas.wrapperEl).on('mousewheel', function (e) {
+            $("#deleteBtn").remove();
             var delta = e.originalEvent['wheelDelta'] / 500;
             var pointer = mother.canvas.getPointer(e['e']);
             var scaleFactor = 0;
@@ -400,13 +559,12 @@ export class ProjecTagComponent {
         });
     }
 
-
     generateId() {
-        let id: number = 0;
+        let index: number = 0;
         this.tags.forEach(tag => {
-            id += 1;
+            index += 1;
         });
-        return id;
+        return index;
     }
 
     showSuccess(message: string) {
@@ -419,5 +577,13 @@ export class ProjecTagComponent {
 
     showInfo(message: string) {
         this.toastr.info(message, null, { toastLife: 3000, showCloseButton: true });
+    }
+
+    GetPercent(value: number, total: number) {
+        return (value / total);
+    }
+
+    GetValueFromPercent(value: number, total: number) {
+        return (value * total);
     }
 }
