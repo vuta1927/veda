@@ -18,6 +18,7 @@ import { ConfigurationService } from "../../../shared/services/configuration.ser
 
 import { DxDataGridComponent } from 'devextreme-angular';
 import CustomStore from 'devextreme/data/custom_store';
+import DataSource from 'devextreme/data/data_source';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CreateUpdateProjectUserComponent } from './create-update-project-user/create-update-project-user.component';
 import { IProjectUser, ProjectUserForAdd } from '../../../shared/models/project-user.model';
@@ -59,38 +60,41 @@ export class ProjectUsersComponent implements OnInit {
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
-        var mother = this;
-        this.dataSource.store = new CustomStore({
-            load: function (loadOptions: any) {
-                var params = '';
-
-                params += loadOptions.skip || 0;
-                params += '/' + loadOptions.take || 12;
-
-                return projectUserService.getProjectUsers(mother.currentProject.id, params)
-                    .toPromise()
-                    .then(response => {
-
-                        return {
-                            data: response.result,
-                            totalCount: response.result.length
-                        }
-                    })
-                    .catch(error => { throw 'Data Loading Error' });
-            }
-        });
     }
 
     ngOnInit() {
         var mother = this;
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
-            this.projectUserService.getProjectUsers(p.id, '0/12').toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.dataSource = Response.result;
-                    mother.dataGrid["first"].instance.refresh();
-                }
-            });
+            this.dataSource = new DataSource({
+                store: new CustomStore({
+                    key: 'id',
+                    load: function (loadOptions: any) {
+                        let params = '';
+                        params += loadOptions.skip || 0;
+                        params += '/';
+                        params += loadOptions.take || 12;
+
+                        return mother.projectUserService.getProjectUsers(p.id, params)
+                            .toPromise()
+                            .then(response => {
+                                return response.result;
+                            })
+                            .catch(error => { throw 'Data Loading Error' });
+                    },
+                    totalCount:function(){
+                        return mother.projectUserService.getTotal(p.id).toPromise().then(resp => {
+                            return resp.result;
+                        })
+                    }
+                })
+            })
+            // this.projectUserService.getProjectUsers(p.id, '0/12').toPromise().then(Response => {
+            //     if (Response && Response.result) {
+            //         this.dataSource = Response.result;
+            //         mother.dataGrid["first"].instance.refresh();
+            //     }
+            // });
         }, error => {
             console.log(error)
         });
@@ -136,7 +140,7 @@ export class ProjectUsersComponent implements OnInit {
             keyboard: false,
             beforeDismiss: () => false
         }
-        
+
         var mother = this;
         var users = [];
         var roles = [];

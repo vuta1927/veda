@@ -67,7 +67,7 @@ export class CreateUpdateProjectComponent implements OnInit {
             return Observable.empty();
         }
         let result = null;
-        result = this.projectService.getProject(control.value).toPromise().then(Response => {
+        result = this.projectService.getProjectByName(control.value).toPromise().then(Response => {
             if (Response && Response.result) {
                 this.btnSaveDisable = true;
                 return { nameTaken: true }

@@ -13,7 +13,10 @@ export class ProjectUserService{
         let result = this.http.get<IAppCoreResponse<IProjectUser[]>>(url)
         return result;
     }
-
+    public getTotal(id: string):Observable<IAppCoreResponse<number>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/ProjectUsers/GetTotal/' + id;
+        return this.http.get<IAppCoreResponse<number>>(url);
+    }
     public getProjectUserById(id?:string){
         let url = this.configurationService.serverSettings.apiUrl + '/api/ProjectUsers/GetProjectUserById/'+id;
 

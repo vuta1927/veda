@@ -176,9 +176,9 @@ namespace ApiServer.Controllers
         }
 
         // GET: api/Projects
-        [HttpGet]
+        [HttpGet("{start}/{stop}")]
         [ActionName("GetProjects")]
-        public async Task<IActionResult> GetProjects()
+        public async Task<IActionResult> GetProjects([FromRoute] int start, [FromRoute]int stop)
         {
             var results = new List<ProjectModel.ProjectForView>();
 
@@ -187,13 +187,13 @@ namespace ApiServer.Controllers
             var currentRoles = await GetCurrentRole(currentUserLogin.Id);
 
             var projs = new List<Project>();
-            
+
             if (currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
                 projs = _context.ProjectUsers
                 .Include(p => p.User)
                 .Include(a => a.Project)
-                .Select(b => b.Project).Distinct().ToList();
+                .Select(b => b.Project).Distinct().OrderBy(x=>x.Name).Skip(start).Take(stop).ToList();
             }
             else
             {
@@ -202,7 +202,7 @@ namespace ApiServer.Controllers
                 .Where(x => x.User.Id == currentUserLogin.Id)
                 .Include(a => a.Project)
                 .Select(b => b.Project).Distinct().ToList().
-                Where(x => !x.IsDisabled).ToList();
+                Where(x => !x.IsDisabled).Skip(start).Take(stop).ToList();
             }
             
             if (projs.Count() <= 0)
@@ -247,6 +247,34 @@ namespace ApiServer.Controllers
 
                 return Ok(results);
             }
+        }
+
+        [HttpGet]
+        [ActionName("GetTotal")]
+        public async Task<IActionResult> GetTotal()
+        {
+            var currentUserLogin = GetCurrentUser();
+
+            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+
+            var result = 0;
+            if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            {
+                result = _context.ProjectUsers
+                .Include(p => p.User)
+                .Include(a => a.Project)
+                .Select(b => b.Project).Distinct().OrderBy(x => x.Name).Count();
+            }
+            else
+            {
+                result = _context.ProjectUsers
+                .Include(p => p.User)
+                .Where(x => x.User.Id == currentUserLogin.Id)
+                .Include(a => a.Project)
+                .Select(b => b.Project).Distinct().ToList().
+                Where(x => !x.IsDisabled).Count();
+            }
+            return Ok(result);
         }
 
         [HttpGet("{name}")]

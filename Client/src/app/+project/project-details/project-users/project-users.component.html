@@ -7,28 +7,27 @@
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
             <a class="dropdown-item" (click)="addUser()">
                 <i class="la la-plus i-plus"></i>
-                Add new project
+                Add user
             </a>
             <a *ngIf="selectedUsers.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
-                <i class="la la-trash i-trash"></i> Delete selected Images</a>
+                <i class="la la-trash i-trash"></i> Remove selected user</a>
             <a *ngIf="!selectedUsers.length" class="dropdown-item disabled">
-                <i class="la la-trash i-trash"></i> Delete selected Images</a>
+                <i class="la la-trash i-trash"></i> Remove selected user</a>
         </div>
     </div>
 </div>
 
 <div class="col-lg-6" style="padding-top: 10px">
-    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
-        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)">
-        <dxo-sorting mode="multiple"></dxo-sorting>
+    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true"
+        [showRowLines]="true" [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)"
+        class="m_datatable">
         <dxo-selection mode="multiple"></dxo-selection>
-        <dxo-scrolling mode="standard"></dxo-scrolling>
-        <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-        <dxi-column dataField="userName" caption="User Name"></dxi-column>
-        <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
         <dxo-remote-operations [sorting]="true" [paging]="true">
         </dxo-remote-operations>
         <dxo-paging [pageSize]="12"></dxo-paging>
         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+        <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+        <dxi-column dataField="userName" caption="User Name"></dxi-column>
+        <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
     </dx-data-grid>
 </div>

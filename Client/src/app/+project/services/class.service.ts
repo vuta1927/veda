@@ -14,6 +14,11 @@ export class ClassService{
         return result;
     }
 
+    public getTotal(projectId: string):Observable<IAppCoreResponse<number>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Classes/GetTotal/' + projectId ;
+        return this.http.get<IAppCoreResponse<number>>(url)
+    }
+
     public getClassById(id:number):Observable<IAppCoreResponse<IClass>>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/Classes/GetClassById/'+id;
 

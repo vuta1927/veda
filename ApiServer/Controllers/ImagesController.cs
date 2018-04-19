@@ -130,6 +130,29 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{id}")]
+        [ActionName("GetTotal")]
+        public async Task<IActionResult> GetTotal([FromRoute] Guid id)
+        {
+            var _currentUser = GetCurrentUser();
+            var _currentRoles = await GetCurrentRole(_currentUser.Id);
+            var results = 0;
+            if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            {
+                results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Count();
+            }
+            else
+            {
+                var userInProject = _context.ProjectUsers.Include(x => x.User).Include(a => a.Project).Any(p => p.Project.Id == id && p.User.Id == _currentUser.Id);
+
+                if (userInProject)
+                {
+                    results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Count();
+                }
+            }
+            return Ok(results);
+        }
+
         [HttpGet("{id}/{projId}")]
         [ActionName("GetImageBinary")]
         public async Task<HttpResponseMessage> GetImageBinary([FromRoute] Guid id, [FromRoute] Guid projId)

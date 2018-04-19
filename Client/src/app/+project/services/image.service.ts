@@ -14,6 +14,11 @@ export class ImageService{
         return result;
     }
 
+    public getTotal(projectId:string):Observable<IAppCoreResponse<number>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetTotal/' + projectId;
+        return this.http.get<IAppCoreResponse<number>>(url);
+    }
+
     public getImageBinary(imgId: string, projId:string):Observable<Blob>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageBinary/' + imgId + '/'+ projId;
         return this.http.get(url, { responseType: 'blob'});

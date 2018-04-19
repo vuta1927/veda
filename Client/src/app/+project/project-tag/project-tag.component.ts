@@ -193,7 +193,7 @@ export class ProjecTagComponent {
 
     addDeleteBtn(x, y) {
         $("#deleteBtn").remove();
-        var btnLeft = x+0.5;
+        var btnLeft = x+1;
         var btnTop = y;
         var deleteBtn = '<img src="https://cdn2.iconfinder.com/data/icons/icojoy/shadow/standart/png/24x24/001_05.png" id="deleteBtn" style="position:absolute;top:' + btnTop + 'px;left:' + btnLeft + 'px;cursor:pointer;width:25px;height:25px;"/>';
         $("#canvas-wrapper").append(deleteBtn);
@@ -398,12 +398,12 @@ export class ProjecTagComponent {
             mother.tagMode = false;
             // $("#deleteBtn").remove();
             if (e.target.get('name').split('-')[0] == 'rect') {
-                mother.addDeleteBtn(e.target.oCoords.tr.x * e.target.scaleX, e.target.oCoords.tr.y* e.target.scaleY);
+                mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
             }
         });
 
         this.canvas.on('object:modified', function (e) {
-            mother.addDeleteBtn(e.target.oCoords.tr.x * e.target.scaleX, e.target.oCoords.tr.y* e.target.scaleY);
+            mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
@@ -415,7 +415,7 @@ export class ProjecTagComponent {
         });
 
         $(document).on('click', "#deleteBtn", function () {
-            console.log('delete clicked');
+            
         });
 
         this.canvas.on('selection:cleared', function () {

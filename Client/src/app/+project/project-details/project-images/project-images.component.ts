@@ -18,10 +18,12 @@ import { ConfigurationService } from "../../../shared/services/configuration.ser
 
 
 import { DxDataGridComponent } from 'devextreme-angular';
+import DataSource from 'devextreme/data/data_source';
 import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Iimage } from '../../../shared/models/image.model';
+import { resolve, reject } from 'q';
 
 @Component({
     selector: 'app-project-images',
@@ -57,26 +59,6 @@ export class ProjectImagesComponent implements OnInit {
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
-        var mother = this;
-        this.dataSource.store = new CustomStore({
-            load: function (loadOptions: any) {
-                var params = '';
-
-                params += loadOptions.skip || 0;
-                params += '/' + loadOptions.take || 12;
-
-                return imgService.getImages(mother.currentProject.id, params)
-                    .toPromise()
-                    .then(response => {
-                        
-                        return {
-                            data: response.result,
-                            totalCount: response.result.length
-                        }
-                    })
-                    .catch(error => { throw 'Data Loading Error' });
-            }
-        });
     }
 
     ngOnInit() {
@@ -84,12 +66,35 @@ export class ProjectImagesComponent implements OnInit {
         var mother = this;
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
-            this.imgService.getImages(p.id, '0/12').toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.dataSource = Response.result;
-                    mother.dataGrid["first"].instance.refresh();
-                }
-            });
+            this.dataSource = new DataSource({
+                store: new CustomStore({
+                    key: "id",
+                    load: function (loadOptions: any) {
+                        let params = '';
+
+                        params += loadOptions.skip || 0;
+                        params += '/';
+                        params += loadOptions.take || 12;
+
+                        return mother.imgService.getImages(p.id, params)
+                            .toPromise().then(response => {
+                                return mother.imgService.getTotal(p.id).toPromise().then(resp => {
+                                    if (resp.result) {
+                                        return {
+                                            data: response.result,
+                                            totalCount: resp.result,
+                                        }
+                                    }else{
+                                        return{
+                                            data: response.result,
+                                            totalCount: 0
+                                        }
+                                    }
+                                })
+                            }).catch(error => { throw 'Data Loading Error' });
+                    }
+                })
+            })
         }, error => {
             console.log(error)
         });
@@ -99,7 +104,7 @@ export class ProjectImagesComponent implements OnInit {
     appendUploadFiles(files) {
         this.uploadfiles = files;
     }
-    selectionChanged(data: any){
+    selectionChanged(data: any) {
         this.selectedImages = data.selectedRowsData;
     }
 
@@ -118,11 +123,12 @@ export class ProjectImagesComponent implements OnInit {
         var mother = this;
         this.imgService.DeleteImage(ids).toPromise().then(Response => {
             Helpers.setLoading(false);
-            mother.dataGrid["first"].instance.refresh();
+            // mother.dataGrid["first"].instance.refresh();
+            mother.dataSource.reload();
             if (Response && Response.result) {
                 let error = Response.result.split('#')[1];
                 mother.showError(error);
-            }else{
+            } else {
                 mother.showInfo("Images deleted");
             }
         });
@@ -145,7 +151,8 @@ export class ProjectImagesComponent implements OnInit {
                 this.uploadfiles = [];
                 this.showSuccess("Files uploaded !");
                 $('#successMessage').css("display", "block");
-                this.dataGrid["first"].instance.refresh();
+                // this.dataGrid["first"].instance.refresh();
+                this.dataSource.reload();
             }
         }).catch(res => {
             $('#successMessage').css("display", "none");

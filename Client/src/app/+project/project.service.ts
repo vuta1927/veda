@@ -8,15 +8,19 @@ import { ProjectForView, ProjectForAdd, ProjectForUpdate } from "../shared/model
 export class ProjectService {
     constructor(private http: HttpClient, private configurationService: ConfigurationService) {}
 
-    public getProject(name?: string){
-        let url = this.configurationService.serverSettings.apiUrl;
-        if(name){
-            url += '/api/projects/GetProjectByName/' + name;
-        }else{
-            url += '/api/projects/GetProjects';
-        }
-        let result = this.http.get<IAppCoreResponse<ProjectForView[]>>(url)
-        return result;
+    public getProject(params:string):Observable<IAppCoreResponse<ProjectForView[]>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/GetProjects/'+params;
+        return this.http.get<IAppCoreResponse<ProjectForView[]>>(url);
+    }
+
+    public getTotal():Observable<IAppCoreResponse<number>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/GetTotal';
+        return this.http.get<IAppCoreResponse<number>>(url);
+    }
+
+    public getProjectByName(name:string):Observable<IAppCoreResponse<ProjectForView>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/projects/GetProjectByName/' + name;
+        return this.http.get<IAppCoreResponse<ProjectForView>>(url);
     }
 
     public getProjectById(id?:string){

@@ -28,19 +28,34 @@ export class ProjectComponent {
     constructor(private modalService: NgbModal, private securityService: SecurityService, private projectService: ProjectService, public toastr: ToastsManager, private vcr: ViewContainerRef) {
         this.toastr.setRootViewContainerRef(vcr);
         let currentUserData = this.securityService.getUserRoles();
-        if(currentUserData == "Administrator")
+        console.log(currentUserData.indexOf("Administrator"));
+        if (currentUserData.indexOf("Administrator") != -1)
             this.isAdmin = true;
         this.dataSource.store = new CustomStore({
             load: function (loadOptions: any) {
-                return projectService.getProject()
-                    .toPromise()
-                    .then(response => {
-                        return {
-                            data: response.result,
-                            totalCount: response.result.length
-                        }
-                    })
-                    .catch(error => { throw 'Data Loading Error' });
+                var params = '';
+
+                params += loadOptions.skip || 0;
+                params += '/';
+                params += loadOptions.take || 12;
+
+                return projectService.getProject(params)
+                    .toPromise().then(response => {
+                        return projectService.getTotal().toPromise().then(resp => {
+                            if (resp.result) {
+                                return {
+                                    data: response.result,
+                                    totalCount: resp.result,
+                                }
+                            }else{
+                                return{
+                                    data: {},
+                                    totalCount: 0
+                                }
+                            }
+                        })
+
+                    }).catch(error => { throw 'Data Loading Error' });
             }
         });
     }
@@ -67,7 +82,7 @@ export class ProjectComponent {
             if (Response && Response.result) {
                 let error = Response.result.split('#')[1];
                 mother.showError(error);
-            }else{
+            } else {
                 mother.showInfo("Projects deleted");
             }
         });

@@ -69,6 +69,36 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{id}")]
+        [ActionName("GetTotal")]
+        public IActionResult GetTotal([FromRoute] Guid id)
+        {
+            var projUsers = _context.ProjectUsers.Include(c => c.Project).Where(x => x.Project.Id == id).Include(a => a.Role).Include(b => b.User);
+            
+            var results = new List<ProjectUserForView>();
+
+            var total = 0;
+
+            foreach (var p in projUsers)
+            {
+                if (p.Role.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+                {
+                    continue;
+                }
+                else
+                {
+                    results.Add(new ProjectUserForView()
+                    {
+                        Id = p.Id,
+                        UserName = p.User.UserName,
+                        RoleName = p.Role.RoleName,
+                    });
+                }
+            }
+            total = results.Count();
+            return Ok(total);
+        }
+
         // GET: api/ProjectUsers/5
         [HttpGet("{id}")]
         [ActionName("GetProjectUser")]

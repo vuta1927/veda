@@ -17,6 +17,8 @@ import { ConfigurationService } from "../../../shared/services/configuration.ser
 
 import { DxDataGridComponent } from 'devextreme-angular';
 import CustomStore from 'devextreme/data/custom_store';
+import DataSource from 'devextreme/data/data_source';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { CreateUpdateClassComponent } from './create-update/create-update-class.component';
@@ -49,32 +51,39 @@ export class ProjectClassComponent implements OnInit {
         private configurationService: ConfigurationService,
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        let mother = this;
-        this.dataSource.store = new CustomStore({
-            load: function (loadOptions: any) {
-                return this.classService.getClasses(mother.currentProject.id)
-                    .toPromise()
-                    .then(response => {
-
-                        return {
-                            data: response.result,
-                            totalCount: response.result.length
-                        }
-                    })
-                    .catch(error => { throw 'Data Loading Error' });
-            }
-        });
     }
 
     ngOnInit() {
+        let mother = this;
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
-            this.classService.getClasses(p.id).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.dataSource = Response.result;
-                    this.dataGrid["first"].instance.refresh();
-                }
-            });
+            this.dataSource = new DataSource({
+                store: new CustomStore({
+                    key: 'id',
+                    load: function (loadOptions: any) {
+                        let params = '';
+
+                        params += loadOptions.skip || 0;
+                        params += '/';
+                        params += loadOptions.take || 12;
+
+                        return mother.classService.getClasses(p.id)
+                            .toPromise()
+                            .then(response => {
+                                if(response){
+                                    return response.result;
+                                }
+                            })
+                            .catch(error => { throw 'Data Loading Error' });
+                    },
+                    totalCount: function(){
+                        return mother.classService.getTotal(p.id).toPromise().then(x=>{
+                            return x.result
+                        })
+                    }
+                    
+                })
+            })
         }, error => {
             console.log(error)
         });
@@ -99,7 +108,8 @@ export class ProjectClassComponent implements OnInit {
         var mother = this;
         this.classService.DeleteClass(ids).toPromise().then(Response => {
             Helpers.setLoading(false);
-            mother.dataGrid["first"].instance.refresh();
+            // mother.dataGrid["first"].instance.refresh();
+            mother.dataSource.reload();
             if (Response && Response.result) {
                 mother.showInfo("class deleted");
             }
@@ -109,7 +119,7 @@ export class ProjectClassComponent implements OnInit {
         });
     }
 
-    addClass(data){
+    addClass(data) {
         this.openCreateOrUpdateModal();
     }
 
@@ -127,7 +137,8 @@ export class ProjectClassComponent implements OnInit {
             modalRef.componentInstance.currentClass = classSelected;
         var mother = this;
         modalRef.result.then(function () {
-            mother.dataGrid["first"].instance.refresh();
+            // mother.dataGrid["first"].instance.refresh();
+            mother.dataSource.reload();
         })
     }
 

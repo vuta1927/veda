@@ -18,21 +18,21 @@
 </div>
 
 <div class="col-lg-6" style="padding-top: 10px">
-        <dx-data-grid id="gridClassContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [noDataText]="noDataText"
-        [columnAutoWidth]=true [hoverStateEnabled]="false" (onSelectionChanged)="selectionChanged($event)">
-        <dxo-sorting mode="multiple"></dxo-sorting>
+    <dx-data-grid id="gridClassContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)"
+        class="m_datatable">
         <dxo-selection mode="multiple"></dxo-selection>
+        <dxo-remote-operations [sorting]="true" [paging]="true">
+        </dxo-remote-operations>
+        <dxo-paging [pageSize]="12"></dxo-paging>
+        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
         <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
         <dxi-column dataField="description" sortOrder="asc"></dxi-column>
         <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false"></dxi-column>
         <div *dxTemplate="let data of 'cellName'">
-          <span class="span-cellname" (click)="classSelected(data.data)">
-            <b>{{(data.data.name)}}</b>
-          </span>
+            <span class="span-cellname" (click)="classSelected(data.data)">
+                <b>{{(data.data.name)}}</b>
+            </span>
         </div>
-        <dxo-remote-operations [sorting]="true" [paging]="true">
-        </dxo-remote-operations>
-        <!-- <dxo-paging [pageSize]="12"></dxo-paging> -->
-        <dxo-pager [showPageSizeSelector]="true"></dxo-pager>
-      </dx-data-grid>
+    </dx-data-grid>
 </div>

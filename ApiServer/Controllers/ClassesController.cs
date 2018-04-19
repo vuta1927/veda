@@ -37,6 +37,7 @@ namespace ApiServer.Controllers
                     results.Add(new ClassModel.ClassForView()
                     {
                         Id = c.Id,
+                        Color = c.Color,
                         Code = c.Code,
                         Description = c.Description,
                         Name = c.Name,
@@ -48,6 +49,14 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{id}")]
+        [ActionName("GetTotal")]
+        public IActionResult GetTotal([FromRoute] Guid id)
+        {
+            var result = 0;
+            result = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include("ClassTags.Tag").Count();
+            return Ok(result);
+        }
         // GET: api/Classes/5
         [HttpGet("{id}")]
         [ActionName("GetClassById")]
@@ -131,6 +140,7 @@ namespace ApiServer.Controllers
             originClass.Name = @class.Name;
             originClass.Description = @class.Description;
             originClass.Code = @class.Code;
+            originClass.Color = @class.Color;
 
             try
             {
@@ -169,6 +179,7 @@ namespace ApiServer.Controllers
                 Code = @class.Code,
                 Description = @class.Description,
                 Name = @class.Name,
+                Color = @class.Color,
                 Project = project
             };
             _context.Classes.Add(newClass);
