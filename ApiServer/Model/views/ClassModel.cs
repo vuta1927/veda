@@ -11,7 +11,7 @@ namespace ApiServer.Model.views
         {
             public int Id { get; set; }
             public string Code { get; set; }
-            public string Color { get; set; }
+            public string ClassColor { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
             public int TotalTag { get; set; }
@@ -21,7 +21,7 @@ namespace ApiServer.Model.views
         public class ClassForAdd
         {
             public Guid ProjectId { get; set; }
-            public string Color { get; set; }
+            public string ClassColor { get; set; }
             public string Code { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
@@ -30,7 +30,7 @@ namespace ApiServer.Model.views
         public class ClassForUpdate
         {
             public int Id { get; set; }
-            public string Color { get; set; }
+            public string ClassColor { get; set; }
             public string Code { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }

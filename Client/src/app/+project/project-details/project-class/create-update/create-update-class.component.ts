@@ -13,6 +13,7 @@ import { ClassService } from '../../../services/class.service';
 import { Helpers } from '../../../../helpers';
 import { DataService } from '../../data.service';
 import { ProjectForView } from '../../../../shared/models/project.model';
+import { ColorPickerService, Cmyk } from 'ngx-color-picker';
 @Component({
     selector: 'app-create-update-class',
     templateUrl: 'create-update-class.component.html',
@@ -39,7 +40,8 @@ export class CreateUpdateClassComponent implements OnInit {
         public formService: FormService,
         private ngxErrorsService: NgxErrorsService,
         private classService: ClassService,
-        private dataService: DataService
+        private dataService: DataService,
+        private colorService: ColorPickerService
     ) {
 
     }
@@ -71,6 +73,7 @@ export class CreateUpdateClassComponent implements OnInit {
                 this.currentClass.code, [Validators.required],
                 this.validateCodeNotTaken.bind(this)
             ],
+            classColor: [this.currentClass.classColor, [Validators.required]]
         });
         this.ngxErrorsService.setDefaultMessage('nameTaken', { message: 'The class name already taken.' });
         this.ngxErrorsService.setDefaultMessage('codeTaken', { message: 'The  code already taken.' });

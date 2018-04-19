@@ -59,7 +59,7 @@ export class ProjecTagComponent {
             this.classService.getClasses(this.projectId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     Response.result.forEach(tag => {
-                        mother.classData.push(new ClassList(tag.id, tag.name));
+                        mother.classData.push(new ClassList(tag.id, tag.name, ));
                     });
                     // mother.generateClassContainer();
                 }

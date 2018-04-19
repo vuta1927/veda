@@ -20,7 +20,6 @@ import CustomStore from 'devextreme/data/custom_store';
 import DataSource from 'devextreme/data/data_source';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { CreateUpdateClassComponent } from './create-update/create-update-class.component';
 @Component({
     selector: 'app-project-class',

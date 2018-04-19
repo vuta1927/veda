@@ -34,15 +34,16 @@ namespace ApiServer.Controllers
             {
                 foreach (var c in classes)
                 {
-                    results.Add(new ClassModel.ClassForView()
+                    var newClass = new ClassModel.ClassForView()
                     {
                         Id = c.Id,
-                        Color = c.Color,
                         Code = c.Code,
                         Description = c.Description,
                         Name = c.Name,
-                        TotalTag = c.Tags.Count
-                    });
+                        TotalTag = c.Tags.Count,
+                        ClassColor = c.ClassColor
+                };
+                    results.Add(newClass);
                 }
             }
             
@@ -140,7 +141,7 @@ namespace ApiServer.Controllers
             originClass.Name = @class.Name;
             originClass.Description = @class.Description;
             originClass.Code = @class.Code;
-            originClass.Color = @class.Color;
+            originClass.ClassColor = @class.ClassColor;
 
             try
             {
@@ -179,7 +180,7 @@ namespace ApiServer.Controllers
                 Code = @class.Code,
                 Description = @class.Description,
                 Name = @class.Name,
-                Color = @class.Color,
+                ClassColor = @class.ClassColor,
                 Project = project
             };
             _context.Classes.Add(newClass);

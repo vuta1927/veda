@@ -20,6 +20,7 @@ import { TranslateHttpClientLoader } from './shared/i18n/http-client-loader';
 
 import { ToastModule } from 'ng2-toastr/ng2-toastr';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { ColorPickerModule } from 'ngx-color-picker'
 @NgModule({
   declarations: [
     AppComponent
@@ -30,7 +31,8 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     
     ToastModule.forRoot(),
     BrowserAnimationsModule,
-
+    ColorPickerModule,
+    
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

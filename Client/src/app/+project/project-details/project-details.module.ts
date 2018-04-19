@@ -11,8 +11,9 @@ import { ProjectClassComponent } from './project-class/project-class.component';
 import { DataService } from './data.service';
 import { CreateUpdateProjectUserComponent } from './project-users/create-update-project-user/create-update-project-user.component';
 import { CreateUpdateClassComponent } from './project-class/create-update/create-update-class.component';
+import { ColorPickerModule } from 'ngx-color-picker';
 @NgModule({
-    imports: [SharedModule, RouterModule.forChild(routes), DxDataGridModule, DxMenuModule],
+    imports: [SharedModule, RouterModule.forChild(routes), DxDataGridModule, DxMenuModule, ColorPickerModule],
     declarations: [ProjectDetailsComponent, ProjectInfoComponent, ProjectImagesComponent, ProjectUsersComponent, ProjectClassComponent, CreateUpdateProjectUserComponent, CreateUpdateClassComponent],
     entryComponents : [CreateUpdateProjectUserComponent, CreateUpdateClassComponent],
     providers: [DataService]
