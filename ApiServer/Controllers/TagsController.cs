@@ -105,16 +105,23 @@ namespace ApiServer.Controllers
             {
                 if(tag.Id > 0)
                 {
-                    var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
+                    var originTag = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(x => x.Id == tag.Id);
                     if (originTag == null)
                     {
                         return Content("Tag:"+tag.Id+" not found !");
                     }
-                    foreach (var @class in originTag.Classes)
+
+                    originTag.Classes.Clear();
+
+                    try
                     {
-                        originTag.Classes.Remove(@class);
+                        await _context.SaveChangesAsync();
                     }
-                    
+                    catch (Exception ex)
+                    {
+                        return Content("Unknow error !");
+                    }
+
                     originTag.Index = tag.Index;
                     originTag.Left = tag.Left;
                     originTag.Top = tag.Top;
@@ -172,7 +179,7 @@ namespace ApiServer.Controllers
                     }
                 }
             }
-            return Ok();
+            return Ok("OK");
 
         }
 
@@ -241,7 +248,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
                 return Content("Tag not found !");

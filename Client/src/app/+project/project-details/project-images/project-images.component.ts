@@ -45,6 +45,8 @@ export class ProjectImagesComponent implements OnInit {
     progress: number;
     uploadfiles: any = [];
     apiUrl: string = '';
+    uploadProgress: number = 0;
+    uploading: boolean = false;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -84,8 +86,8 @@ export class ProjectImagesComponent implements OnInit {
                                             data: response.result,
                                             totalCount: resp.result,
                                         }
-                                    }else{
-                                        return{
+                                    } else {
+                                        return {
                                             data: response.result,
                                             totalCount: 0
                                         }
@@ -139,28 +141,37 @@ export class ProjectImagesComponent implements OnInit {
         if (this.uploadfiles.length === 0)
             return;
 
-        const formData = new FormData();
-
-        for (let file of this.uploadfiles)
+        this.uploading = true;
+        let totalFile = this.uploadfiles.length;
+        let uploadedFile = 0;
+        console.log(totalFile);
+        for (let file of this.uploadfiles) {
+            const formData = new FormData();
             formData.append(file.name, file);
-
-        this.projectService.UploadImg(this.currentProject.id, formData).toPromise().then(Response => {
-            if (Response && Response.result) {
-                $('#errorMessage').css("display", "none");
-                this.message = '';
-                this.uploadfiles = [];
-                this.showSuccess("Files uploaded !");
-                $('#successMessage').css("display", "block");
-                // this.dataGrid["first"].instance.refresh();
-                this.dataSource.reload();
-            }
-        }).catch(res => {
-            $('#successMessage').css("display", "none");
-            this.messageHeader = 'Upload Error';
-            this.message = res['error'].text;
-            $('#errorMessage').css("display", "block");
-            this.showError(res['error'].text);
-        })
+            this.projectService.UploadImg(this.currentProject.id, formData).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    this.message = '';
+                    this.uploadfiles = [];
+                    $('#errorMessage').css("display", "none");
+                    // this.showSuccess("Files uploaded !");
+                    uploadedFile += 1;
+                    this.uploadProgress = Math.round((uploadedFile / totalFile) * 100);
+                    console.log(this.uploadProgress, (uploadedFile / totalFile));
+                    if (this.uploadProgress == 100) {
+                        this.uploading = false;
+                        this.uploadProgress = 0;
+                        $('#successMessage').css("display", "block");
+                        this.dataSource.reload();
+                    }
+                }
+            }).catch(res => {
+                $('#successMessage').css("display", "none");
+                this.messageHeader = 'Upload Error';
+                this.message = res['error'].text;
+                $('#errorMessage').css("display", "block");
+                this.showError(res['error'].text);
+            })
+        }
     }
 
     clear() {

@@ -6,7 +6,7 @@ import { Helpers } from '../../helpers';
 import { ImageService } from '../services/image.service';
 import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
-import { Tag } from '../../shared/models/tag.model';
+import { Tag, ExcluseArea, Coodirnate } from '../../shared/models/tag.model';
 import { TagService } from '../services/tag.service';
 import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
@@ -34,7 +34,12 @@ export class ProjecTagComponent {
     imageWidth: number = 0;
     imageHeight: number = 0;
     imageUrl: string = '';
-
+    btnSaveEnabled: boolean = true;
+    ExcluseMode: boolean = false;
+    polygonPoints: any = [];
+    startPoint: any;
+    lines: any = [];
+    ExcluseAreas: ExcluseArea[] = [];
     constructor(
         private route: ActivatedRoute,
         private imgService: ImageService,
@@ -45,13 +50,11 @@ export class ProjecTagComponent {
         private tagSerivce: TagService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        let mother = this;
     }
 
     ngOnInit() {
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
-
         this.route.queryParams.subscribe(params => {
             this.imageId = params.id;
             this.projectId = params.project;
@@ -59,12 +62,12 @@ export class ProjecTagComponent {
             this.classService.getClasses(this.projectId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     Response.result.forEach(tag => {
-                        mother.classData.push(new ClassList(tag.id, tag.name, ));
+                        mother.classData.push(new ClassList(tag.id, tag.name, false, tag.classColor));
                     });
                     // mother.generateClassContainer();
                 }
             }).catch(error => {
-                this.showError(error.error.text);
+                mother.showError(error.error.text);
             });
 
             this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
@@ -86,31 +89,39 @@ export class ProjecTagComponent {
     switchTagMode() {
         if (this.tagMode)
             this.tagMode = false;
-        else
+        else {
             this.tagMode = true;
+            this.ExcluseMode = false;
+        }
     }
 
-    classCheckBoxChange(e) {
+    classRadioChange(e) {
         if (this.selectedClass == null) return;
 
         var value = Number(e.target.value);
+
+        if (e.target.checked) {
+            this.classData.forEach(c => {
+                if ($(`#${c.id}`).val() != value && $(`#${c.id}`).is(':checked') === true) {
+                    $(`#${c.id}`).prop('checked', false);
+                };
+            });
+        }
+
         this.tags.forEach(tag => {
             if (tag.index == this.selectedClass.index) {
-                if (tag.classIds.indexOf(value) != -1) {
-                    if (!e.target.checked) {
-                        tag.classIds.splice(tag.classIds.indexOf(value), 1);
-                    }
-                } else {
-                    if (e.target.checked) {
-                        tag.classIds.push(value);
-                    }
+                tag.classIds = [];
+
+                if (e.target.checked) {
+                    tag.classIds.push(value);
                 }
+
 
                 let color: string;
                 if (tag.classIds.length > 0) {
-                    color = 'red';
+                    color = e.target.labels[0].childNodes[3].attributes[0].value.split(':')[1].split(';')[0].trim();
                 } else {
-                    color = 'yellow';
+                    color = '#ccc';
                 }
 
                 this.canvasTags.forEach(cvTag => {
@@ -146,19 +157,38 @@ export class ProjecTagComponent {
     }
 
     saveChange() {
+        var mother = this;
+        this.btnSaveEnabled = false;
         this.tagSerivce.saveTags(this.imageId, this.tags).toPromise().then(Response => {
-            if (!Response || !Response.result)
-                this.showSuccess("All Tags saved!");
+            mother.showSuccess("All Tags saved!");
+            mother.btnSaveEnabled = true;
         }).catch(errorResp => {
-            this.showError(errorResp.error.text);
+            mother.showError(errorResp.error.text);
+            mother.btnSaveEnabled = true;
         });
     }
 
+    getColorByClass(classId) {
+        let element = document.getElementById(classId);
+        var color = element['labels'][0].childNodes[3].attributes[0].value.split(':')[1].split(';')[0].trim();
+        return color;
+    }
+
+    ExcluseAreaClick() {
+        if (this.ExcluseMode) {
+            this.ExcluseMode = false;
+        }
+        else {
+            this.ExcluseMode = true;
+            this.tagMode = false;
+        }
+    }
 
     initCanvas() {
         var mother = this;
         this.canvas = new fabric.Canvas('canvas', { selection: false });
-
+        fabric.Circle.prototype.originX = fabric.Circle.prototype.originY = 'center';
+        fabric.Line.prototype.originX = fabric.Line.prototype.originY = 'center';
         var HideControls = {
             'tl': true,      //top left
             'tr': false,     //top right
@@ -193,22 +223,20 @@ export class ProjecTagComponent {
 
     addDeleteBtn(x, y) {
         $("#deleteBtn").remove();
-        var btnLeft = x+1;
+        var btnLeft = x + 1;
         var btnTop = y;
         var deleteBtn = '<img src="https://cdn2.iconfinder.com/data/icons/icojoy/shadow/standart/png/24x24/001_05.png" id="deleteBtn" style="position:absolute;top:' + btnTop + 'px;left:' + btnLeft + 'px;cursor:pointer;width:25px;height:25px;"/>';
         $("#canvas-wrapper").append(deleteBtn);
     }
 
     drawTags() {
-        console.log(this.tags);
         let mother = this;
         this.tags.forEach(tag => {
             let x = this.GetValueFromPercent(tag.left, this.imageWidth);
             let y = this.GetValueFromPercent(tag.top, this.imageHeight);
             let width = this.GetValueFromPercent(tag.width, this.imageWidth);
             let height = this.GetValueFromPercent(tag.height, this.imageHeight);
-            console.log('x', x, 'y', y, 'width', width, 'height', height);
-            let color = tag.classIds.length > 0 ? 'red' : 'yellow';
+            let color = tag.classIds.length > 0 ? mother.getColorByClass(tag.classIds[0]) : '#878787';
             let rect = new fabric.Rect({
                 id: tag.id,
                 index: tag.index,
@@ -223,9 +251,7 @@ export class ProjecTagComponent {
                 fill: '',
                 transparentCorners: false
             });
-            rect.on('selected', function (e) {
-                mother.onTagSelected(this);
-            })
+            this.bindingEvent(rect);
             this.canvas.add(rect);
             this.canvasTags.push(rect);
 
@@ -257,7 +283,6 @@ export class ProjecTagComponent {
         let rect: any = {};
         let mother = this;
         let isDragging: boolean = false;
-
         $('body').on('contextmenu', 'canvas', function (options: any) {
             //Disabe contextmenu on right mouse, implement right mouse event
             // let target: any = mother.canvas.findTarget(options, false);
@@ -279,14 +304,27 @@ export class ProjecTagComponent {
             options.preventDefault();
             return false;
         });
+        fabric.util.addListener(window, "dblclick", function () {
+            if (mother.ExcluseMode) {
+                mother.finalize();
+            }
+        });
+
+        //
+        fabric.util.addListener(window, "keyup", function (evt) {
+            if (evt.which === 13 && mother.ExcluseMode) {
+                mother.finalize();
+            }
+        });
 
         this.canvas.on('mouse:down', function (event) {
-            
+
             // $("#deleteBtn").remove();
-            // --- set up panning func ---
             // if (!mother.canvas.getActiveObject()) {
             //     $("#deleteBtn").remove();
             // }
+
+            // --- set up panning func ---
             var evt = event.e;
             if (evt.altKey === true) {
                 isDragging = true;
@@ -296,10 +334,52 @@ export class ProjecTagComponent {
             }
             //--- end pan func ---
 
+
+            if (mother.ExcluseMode) {
+                var _mouse = this.getPointer(event.e);
+                var _x = _mouse.x;
+                var _y = _mouse.y;
+                if (mother.startPoint == null) {
+                    var startPoint = new fabric.Circle({
+                        left: _x,
+                        top: _y,
+                        fill: "#ff26fb",
+                        radius: 4,
+                        strokeWidth: 1,
+                        stroke: "black",
+                        hoverCursor: "pointer",
+                        selectable: false
+                    });
+                    mother.startPoint = startPoint;
+                    startPoint.on('click',function(){
+                        console.log('start point clicked');
+                    });
+                    this.add(startPoint);
+                }else{
+                    if(event.target == mother.startPoint){
+                        mother.finalize();
+                        return;
+                    }
+                }
+
+                var line = new fabric.Line([_x, _y, _x, _y], {
+                    strokeWidth: 2,
+                    selectable: false,
+                    stroke: '#ff26fb',
+                    strokeDashArray: [5, 5],
+                });
+                mother.ExcluseAreas.push(new ExcluseArea())
+                mother.polygonPoints.push(new fabric.Point(_x, _y));
+                mother.lines.push(line);
+
+                this.add(line);
+            }
+
+
             //--- set up tag func ---
             if (!mother.tagMode || isDragging) return;
             isDown = true;
-            var pointer = mother.canvas.getPointer(evt);
+            var pointer = this.getPointer(evt);
             startPosition.x = pointer.x;
             startPosition.y = pointer.y;
 
@@ -313,16 +393,24 @@ export class ProjecTagComponent {
                 top: pointer.y,
                 width: 0,
                 height: 0,
-                stroke: 'yellow',
-                originColor: 'yellow',
+                stroke: '#878787',
+                originColor: '#878787',
                 strokeWidth: 2,
                 fill: '',
                 transparentCorners: false
             });
-            mother.canvas.add(rect);
+            this.add(rect);
         });
 
         this.canvas.on('mouse:move', function (event) {
+            if (mother.lines.length && mother.ExcluseMode) {
+                var _mouse = this.getPointer(event.e);
+                mother.lines[mother.lines.length - 1].set({
+                    x2: _mouse.x,
+                    y2: _mouse.y
+                }).setCoords();
+                this.renderAll();
+            }
             if (isDragging) {
                 var evt = event.e;
                 this.viewportTransform[4] += evt.clientX - this.lastPosX;
@@ -337,9 +425,7 @@ export class ProjecTagComponent {
             rect.set('width', Math.abs(pointer.x - startPosition.x));
             rect.set('height', Math.abs(pointer.y - startPosition.y));
 
-            rect.on('selected', function (event) {
-                mother.onTagSelected(this);
-            });
+            mother.bindingEvent(rect);
             mother.canvas.renderAll();
 
         });
@@ -351,10 +437,7 @@ export class ProjecTagComponent {
                 return;
             } else if (!mother.tagMode) return;
 
-            rect.on('selected', function (e) {
-                mother.onTagSelected(this);
-            })
-
+            mother.bindingEvent(rect);
             mother.canvas.add(rect);
             mother.canvasTags.push(rect);
 
@@ -380,9 +463,9 @@ export class ProjecTagComponent {
                 top: rect.get('top') - 30,
                 fontFamily: "calibri",
                 fontSize: 25,
-                fill: 'yellow',
-                stroke: 'yellow',
-                originColor: 'yellow',
+                fill: '#878787',
+                stroke: '#878787',
+                originColor: '#878787',
                 strokeWidth: 0,
                 hasRotatingPoint: false,
                 centerTransform: true,
@@ -415,7 +498,7 @@ export class ProjecTagComponent {
         });
 
         $(document).on('click', "#deleteBtn", function () {
-            
+
         });
 
         this.canvas.on('selection:cleared', function () {
@@ -464,7 +547,78 @@ export class ProjecTagComponent {
         });
     }
 
-    onTagSelected(target) {
+    finalize() {
+        this.ExcluseMode = false;
+        let mother = this;
+        this.lines.forEach(function (line) {
+            mother.canvas.remove(line);
+        });
+        this.canvas.remove(this.startPoint);
+        this.startPoint = null;
+        this.canvas.add(mother.makePolygon()).renderAll();
+        this.lines.length = 0;
+        this.polygonPoints.length = 0;
+    }
+
+    makePolygon() {
+
+        var left = fabric.util.array.min(this.polygonPoints, "x");
+        var top = fabric.util.array.min(this.polygonPoints, "y");
+        let mother = this;
+        this.polygonPoints.push(new fabric.Point(this.polygonPoints[0].x, this.polygonPoints[0].y));
+
+        return new fabric.Polygon(this.polygonPoints.slice(), {
+            left: left,
+            top: top,
+            fill: '#000000',
+            stroke: 'black',
+            name: 'ex-' + mother.generateId(),
+            id: -1,
+            transparentCorners: false
+        });
+    }
+
+    bindingEvent(rect: any) {
+        var mother = this;
+
+        rect.on({
+            'selected': function (event) {
+                mother.onTagSelectedEvent(this);
+            },
+            'moving': function (event) {
+                mother.getNewCoodirnate(this);
+            },
+            'rotating': function (event) {
+                mother.getNewCoodirnate(this);
+            },
+            'scaling': function (event) {
+                mother.getNewCoodirnate(this);
+            }
+        });
+    }
+
+    getNewCoodirnate(target) {
+        var activeObject = this.canvas.getActiveObject();
+        if (activeObject.get('name') != target.name) {
+            return;
+        }
+
+        let top = activeObject.get('top');
+        let left = activeObject.get('left');
+        let width = activeObject.get('width') * activeObject.scaleX;
+        let height = activeObject.get('height') * activeObject.scaleY;
+
+        this.tags.forEach(tag => {
+            if (tag.index == target.index) {
+                tag.top = this.GetPercent(top, this.imageHeight);
+                tag.left = this.GetPercent(left, this.imageWidth);
+                tag.width = this.GetPercent((left + width), this.imageWidth);
+                tag.height = this.GetPercent((top + height), this.imageHeight);
+            };
+        });
+    }
+
+    onTagSelectedEvent(target) {
         this.tags.forEach(tag => {
             if (tag.index == target.index) {
                 this.selectedClass = tag;
@@ -560,7 +714,7 @@ export class ProjecTagComponent {
     }
 
     generateId() {
-        let index: number = 0;
+        let index: number = 1;
         this.tags.forEach(tag => {
             index += 1;
         });

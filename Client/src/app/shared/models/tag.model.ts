@@ -43,3 +43,14 @@ export class Tag implements ITag{
 
     }
 }
+
+export class ExcluseArea {
+    constructor(
+        public path: Coodirnate[] = []
+    ){}
+}
+
+export class Coodirnate{
+    x: number;
+    y: number;
+}

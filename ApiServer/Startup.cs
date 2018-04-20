@@ -23,7 +23,7 @@ namespace ApiServer
 {
     public class Startup
     {
-        private static string _defaultCorsPolicyName = "http://localhost:4500";
+        private static string _defaultCorsPolicyName = "http://localhost:4200";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;

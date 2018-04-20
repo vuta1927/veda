@@ -19,7 +19,7 @@
                             {{message}}
                         </div>
                     </div>
-                    <div class="col-lg-12" style="padding-top: 10px">
+                    <div class="col-lg-3" style="padding-top: 10px">
                         <div id="upload_button">
                             <label>
                                 <input #file type="file" (change)="appendUploadFiles(file.files)" multiple>
@@ -44,10 +44,23 @@
                                 </span>
                             </span>
                         </button>
+                        <!-- <p>{{uploadProgress}}</p> -->
+                    </div>
+                    <!-- <div class="col-lg-9"  style="padding-top: 17px">
+                        <div class="progress" *ngIf="uploading">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated  bg-success" role="progressbar" 
+                            [attr.aria-valuenow]="uploadProgress" 
+                            [attr.aria-valuetext]="uploadProgress + '%'"
+                            [style.width]="uploadProgress" 
+                            aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-12" style="padding-top: 10px">
                         <span id="successMessage" style="display:none; color: #00896b">
                             <b> All file uploaded !</b>
                         </span>
                     </div>
+
                     <div class="col-lg-6 col-md-6" style="padding-top: 10px" *ngIf="uploadfiles.length">
                         <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
                             <table class="m-datatable__table">
@@ -109,11 +122,9 @@
                     </button>
                 </div>
                 <div class="col-lg-12" style="padding-top: 10px">
-                    <dx-data-grid id="gridImageContainer" 
-                        [dataSource]="dataSource" 
-                        [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
-                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" 
-                        (onSelectionChanged)="selectionChanged($event)" class="m_datatable">
+                    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)"
+                        class="m_datatable">
                         <dxo-selection mode="multiple"></dxo-selection>
                         <dxo-remote-operations [sorting]="true" [paging]="true">
                         </dxo-remote-operations>

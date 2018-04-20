@@ -136,10 +136,8 @@ export class CreateUpdateClassComponent implements OnInit {
             this.classService.UpdateClass(this.currentClass.id, updateClass).toPromise()
                 .then(Response => {
                     Helpers.setLoading(false);
-                    if (!Response && !Response.result) {
-                        this.activeModal.close();
-                        this.isError = false
-                    }
+                    this.activeModal.close();
+                    this.isError = false;
                 }).catch(resp => {
                     this.messageHeader = "Error";
                     this.message = resp.result;

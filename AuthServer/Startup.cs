@@ -19,7 +19,7 @@ namespace AuthServer
 {
     public class Startup
     {
-        private static string _defaultCorsPolicyName = "http://localhost:4500";
+        private static string _defaultCorsPolicyName = "http://localhost:4200";
         public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {

@@ -8,7 +8,13 @@ export interface IClass{
 }
 
 export class Class implements IClass {
-    constructor(public id:number = 0, public code: string = null, public name: string = null, public description: string = null, public totalTag: number =0, public classColor:string='#000000'){
+    constructor(
+        public id:number = 0, 
+        public code: string = null, 
+        public name: string = null, 
+        public description: string = null, 
+        public totalTag: number =0, 
+        public classColor:string='#000000'){
 
     }
 }
@@ -29,5 +35,9 @@ export class ClassForUpdate{
 }
 
 export class ClassList{
-    constructor(public id:number, public name: string, public checked: boolean = false, public classColor:string = '#000000'){}
+    constructor(
+        public id:number, 
+        public name: string, 
+        public checked: boolean = false, 
+        public classColor:string = '#000000'){}
 }

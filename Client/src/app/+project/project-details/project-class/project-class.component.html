@@ -27,11 +27,17 @@
         <dxo-paging [pageSize]="12"></dxo-paging>
         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
         <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
-        <dxi-column dataField="description" sortOrder="asc"></dxi-column>
-        <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false"></dxi-column>
+        <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
+        <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
+        <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
         <div *dxTemplate="let data of 'cellName'">
             <span class="span-cellname" (click)="classSelected(data.data)">
                 <b>{{(data.data.name)}}</b>
+            </span>
+        </div>
+        <div *dxTemplate="let data of 'cellClassColor'">
+            <span style="width: 132px;">
+                <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
             </span>
         </div>
     </dx-data-grid>

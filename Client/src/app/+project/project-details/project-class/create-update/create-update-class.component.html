@@ -41,10 +41,11 @@
 
             <div class="input-group m-input-group">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1"  [style.background]="color" [cpPosition]="'bottom'" [cpPositionOffset]="'50%'" [cpPositionRelativeToArrow]="true" [(colorPicker)]="color" >
+                    <span class="input-group-text" id="basic-addon1"  [style.background]="currentClass.classColor" [cpPosition]="'bottom'" [cpPositionOffset]="'50%'" [cpPositionRelativeToArrow]="true" [(colorPicker)]="currentClass.classColor" >
+                            <span class="m-badge" [style.background]="currentClass.classColor"></span>
                     </span>
                 </div>
-                <input class="form-control m-input" name="classColor" formControlName="classColor" id="classColor" aria-describedby="basic-addon1">
+                <input class="form-control m-input" name="classColor" formControlName="classColor" id="classColor" aria-describedby="basic-addon1" [(ngModel)]="currentClass.classColor">
                 <div ngxErrors="classColor" #classColorErrors></div>
             </div>
 

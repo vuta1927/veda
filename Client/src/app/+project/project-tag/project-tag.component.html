@@ -60,7 +60,15 @@
                             </span>
                         </span>
                     </button>
-                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="saveChange()">
+                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide" (click)="ExcluseAreaClick()">
+                        <span>
+                            <i class="la la-scissors"></i>
+                            <span>
+                                Excluse Area
+                            </span>
+                        </span>
+                    </button>
+                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="saveChange()" [disabled]="!btnSaveEnabled">
                         <span>
                             <i class="la la-save"></i>
                             <span>
@@ -77,8 +85,8 @@
                         <canvas id="canvas" class="canvas">
                         </canvas>
                     </div>
-
                 </div>
+                
                 <div class="col-lg-3" style="padding-top: 10px">
                     <div class="m-demo">
                         <div class="m-demo__preview">
@@ -92,33 +100,14 @@
                                         <span *ngIf="selectedClass">( Tag: {{selectedClass.index}} )</span>
                                     </span>
 
-                                    <!-- <div id="classContainer">
+                                    <div class="m-radio-list" style="padding-left: 10px">
 
-                                    </div> -->
-
-                                    <div class="m-radio-list">
-                                        
-                                        <label class="m-radio m-radio--solid m-radio--success">
-                                            <input type="radio" name="example_5" value="5">
-                                            Success state
-                                            <span></span>
-                                        </label>
-                                        <label class="m-radio m-radio--solid m-radio--brand">
-                                            <input type="radio" name="example_5" value="6">
-                                            Brand state
+                                        <label class="m-radio m-radio--solid m-radio--brand" *ngFor="let class of classData">
+                                            <input type="radio" [value]="class.id" [id]="class.id" (change)="classRadioChange($event)" [checked]="class.checked" [disabled]="!selectedClass">
+                                            <strong [style.color]="class.classColor">{{class.name}}</strong>
                                             <span></span>
                                         </label>
                                     </div>
-                                    <a class="m-list-search__result-item" *ngFor="let class of classData" style="padding-left: 10px">
-
-                                        <span class="m-list-search__result-item-icon">
-                                            <label class="m-checkbox m-checkbox--solid m-checkbox--brand">
-                                                <input type="checkbox" [value]="class.id" (change)="classCheckBoxChange($event)" [checked]="class.checked" [disabled]="!selectedClass">
-                                                <strong>{{class.name}}</strong>
-                                                <span></span>
-                                            </label>
-                                        </span>
-                                    </a>
 
                                 </div>
                             </div>

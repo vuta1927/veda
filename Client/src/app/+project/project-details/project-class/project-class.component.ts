@@ -38,6 +38,7 @@ export class ProjectClassComponent implements OnInit {
     messageHeader: string;
     message: string;
     apiUrl: string = '';
+    color: string;
     constructor(
         private modalService: NgbModal,
         private formBuilder: FormBuilder,
