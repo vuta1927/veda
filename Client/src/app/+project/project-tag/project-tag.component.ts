@@ -35,11 +35,13 @@ export class ProjecTagComponent {
     imageHeight: number = 0;
     imageUrl: string = '';
     btnSaveEnabled: boolean = true;
-    ExcluseMode: boolean = false;
+    excluseMode: boolean = false;
     polygonPoints: any = [];
     startPoint: any;
     lines: any = [];
     ExcluseAreas: ExcluseArea[] = [];
+    tagBtnClass: string = 'btn btn-outline-primary btn-sm m-btn m-btn--icon m-btn--wide';
+    excluseBtnClass: string = 'btn btn-outline-danger btn-sm m-btn m-btn--icon m-btn--wide';
     constructor(
         private route: ActivatedRoute,
         private imgService: ImageService,
@@ -87,11 +89,15 @@ export class ProjecTagComponent {
     }
 
     switchTagMode() {
-        if (this.tagMode)
+        let origin = 'btn btn-outline-primary btn-sm m-btn m-btn--icon m-btn--wide';
+        if (this.tagMode) {
+            this.tagBtnClass = origin;
             this.tagMode = false;
+        }
         else {
+            this.tagBtnClass += ' active'
             this.tagMode = true;
-            this.ExcluseMode = false;
+            this.excluseMode = false;
         }
     }
 
@@ -175,11 +181,11 @@ export class ProjecTagComponent {
     }
 
     ExcluseAreaClick() {
-        if (this.ExcluseMode) {
-            this.ExcluseMode = false;
+        if (this.excluseMode) {
+            this.excluseMode = false;
         }
         else {
-            this.ExcluseMode = true;
+            this.excluseMode = true;
             this.tagMode = false;
         }
     }
@@ -305,14 +311,14 @@ export class ProjecTagComponent {
             return false;
         });
         fabric.util.addListener(window, "dblclick", function () {
-            if (mother.ExcluseMode) {
+            if (mother.excluseMode) {
                 mother.finalize();
             }
         });
 
         //
         fabric.util.addListener(window, "keyup", function (evt) {
-            if (evt.which === 13 && mother.ExcluseMode) {
+            if (evt.which === 13 && mother.excluseMode) {
                 mother.finalize();
             }
         });
@@ -335,7 +341,7 @@ export class ProjecTagComponent {
             //--- end pan func ---
 
 
-            if (mother.ExcluseMode) {
+            if (mother.excluseMode) {
                 var _mouse = this.getPointer(event.e);
                 var _x = _mouse.x;
                 var _y = _mouse.y;
@@ -344,19 +350,19 @@ export class ProjecTagComponent {
                         left: _x,
                         top: _y,
                         fill: "#ff26fb",
-                        radius: 4,
+                        radius: 7,
                         strokeWidth: 1,
                         stroke: "black",
                         hoverCursor: "pointer",
                         selectable: false
                     });
                     mother.startPoint = startPoint;
-                    startPoint.on('click',function(){
+                    startPoint.on('click', function () {
                         console.log('start point clicked');
                     });
                     this.add(startPoint);
-                }else{
-                    if(event.target == mother.startPoint){
+                } else {
+                    if (event.target == mother.startPoint) {
                         mother.finalize();
                         return;
                     }
@@ -403,7 +409,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('mouse:move', function (event) {
-            if (mother.lines.length && mother.ExcluseMode) {
+            if (mother.lines.length && mother.excluseMode) {
                 var _mouse = this.getPointer(event.e);
                 mother.lines[mother.lines.length - 1].set({
                     x2: _mouse.x,
@@ -548,7 +554,7 @@ export class ProjecTagComponent {
     }
 
     finalize() {
-        this.ExcluseMode = false;
+        this.excluseMode = false;
         let mother = this;
         this.lines.forEach(function (line) {
             mother.canvas.remove(line);

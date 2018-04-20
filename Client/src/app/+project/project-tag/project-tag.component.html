@@ -51,8 +51,9 @@
         <div class="m-portlet__body">
             <div class="row">
 
-                <div class="col-lg-12">
-                    <button class="btn btn-primary btn-sm m-btn m-btn--icon m-btn--wide" (click)="switchTagMode()">
+
+                <!-- <div class="col-lg-12">
+                    <button [className]="tagBtnClass" (click)="switchTagMode()">
                         <span>
                             <i class="la la-object-ungroup"></i>
                             <span>
@@ -60,7 +61,7 @@
                             </span>
                         </span>
                     </button>
-                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide" (click)="ExcluseAreaClick()">
+                    <button class="excluseBtnClass" (click)="ExcluseAreaClick()">
                         <span>
                             <i class="la la-scissors"></i>
                             <span>
@@ -68,7 +69,7 @@
                             </span>
                         </span>
                     </button>
-                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="saveChange()" [disabled]="!btnSaveEnabled">
+                    <button class="btn btn-outline-success btn-sm m-btn m-btn--icon m-btn--wide" (click)="saveChange()" [disabled]="!btnSaveEnabled">
                         <span>
                             <i class="la la-save"></i>
                             <span>
@@ -79,14 +80,14 @@
                     <span style="color: #d81f1f" *ngIf="tagMode">
                         <b>Tag mode is on</b>
                     </span>
-                </div>
-                <div class="col-lg-9" style="padding-top: 10px">
+                </div> -->
+                <div class="col-lg-9" style="padding-top: 10px" >
                     <div id="canvas-wrapper" style="background-color: #ccc">
                         <canvas id="canvas" class="canvas">
                         </canvas>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3" style="padding-top: 10px">
                     <div class="m-demo">
                         <div class="m-demo__preview">
@@ -95,24 +96,75 @@
                                     <span class="m-list-search__result-message m--hide">
                                         No Class Found
                                     </span>
+
+                                    <span class="m-list-search__result-category m-list-search__result-category--first" *ngIf="selectedClass">
+                                        Tag: {{selectedClass.index}}
+                                    </span>
                                     <span class="m-list-search__result-category m-list-search__result-category--first">
-                                        Classes
-                                        <span *ngIf="selectedClass">( Tag: {{selectedClass.index}} )</span>
+                                        Modes
                                     </span>
 
                                     <div class="m-radio-list" style="padding-left: 10px">
+                                        <div class="col-lg-12" style="padding: 20px; margin: 10px 0px 30px; border: 1px solid rgb(239, 239, 239);">
+                                            <div class="m-form__group form-group row">
+                                                <div class="col-3">
+                                                    <span class="m-switch m-switch--outline m-switch--brand">
+                                                        <label>
+                                                            <input type="checkbox" [checked]="tagMode" (change)="switchTagMode()" name="">
+                                                            <span></span>
+                                                        </label>
+                                                    </span>
+                                                </div>
+                                                <label class="col-6 col-form-label">
+                                                    <strong> Tag mode</strong>
+                                                </label>
 
-                                        <label class="m-radio m-radio--solid m-radio--brand" *ngFor="let class of classData">
-                                            <input type="radio" [value]="class.id" [id]="class.id" (change)="classRadioChange($event)" [checked]="class.checked" [disabled]="!selectedClass">
-                                            <strong [style.color]="class.classColor">{{class.name}}</strong>
-                                            <span></span>
-                                        </label>
+                                            </div>
+                                            <div class="m-form__group form-group row">
+                                                <div class="col-3">
+                                                    <span class="m-switch m-switch--outline m-switch--danger">
+                                                        <label>
+                                                            <input type="checkbox" [checked]="excluseMode" (change)="ExcluseAreaClick()" name="">
+                                                            <span></span>
+                                                        </label>
+                                                    </span>
+                                                </div>
+                                                <label class="col-6 col-form-label">
+                                                    <strong> Excluse mode</strong>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <span class="m-list-search__result-category m-list-search__result-category--first">
+                                        Classes
+                                    </span>
+
+                                    <div class="m-radio-list" style="padding-left: 10px;overflow: visible;" data-scrollable="true">
+                                        <div style="padding: 20px; margin: 10px 0px 30px; border: 1px solid rgb(239, 239, 239);">
+                                            <label class="m-radio m-radio--solid m-radio--brand" *ngFor="let class of classData">
+                                                <input type="radio" [value]="class.id" [id]="class.id" (change)="classRadioChange($event)" [checked]="class.checked" [disabled]="!selectedClass">
+                                                <strong [style.color]="class.classColor">{{class.name}}</strong>
+                                                <span></span>
+                                            </label>
+                                        </div>
                                     </div>
 
                                 </div>
                             </div>
+                            <div class="row" style="margin: 10px 0px 30px;padding: 10px; padding-left: 10px">
+                                <button class="btn btn-sm btn-success btn-block" (click)="saveChange()" [disabled]="!btnSaveEnabled">
+                                    <span>
+                                        <i class="la la-save"></i>
+                                        <span>
+                                            Save Change
+                                        </span>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
