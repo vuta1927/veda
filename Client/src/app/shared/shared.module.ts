@@ -44,6 +44,7 @@ import { ImageService } from '../+project/services/image.service';
 import { ClassService } from '../+project/services/class.service';
 import { TagService } from '../+project/services/tag.service';
 import { ProjectUserService } from '../+project/services/project-users.service';
+import { TimeService } from '../+project/services/timer.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -102,7 +103,8 @@ export class SharedModule {
                 ImageService,
                 TagService,
                 ClassService,
-                ProjectUserService
+                ProjectUserService,
+                TimeService
             ]
         }
     }

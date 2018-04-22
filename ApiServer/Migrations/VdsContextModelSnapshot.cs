@@ -4,7 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
+using VDS.BackgroundJobs;
+using VDS.Messaging.Events;
+using VDS.Notifications;
 
 namespace ApiServer.Migrations
 {
@@ -22,6 +27,8 @@ namespace ApiServer.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ClassColor");
 
                     b.Property<string>("Code");
 
@@ -173,6 +180,8 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("Comment");
+
                     b.Property<DateTime>("QCDate");
 
                     b.Property<int?>("QuantityCheckTypeId");
@@ -195,8 +204,6 @@ namespace ApiServer.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<int>("Value");
-
                     b.HasKey("Id");
 
                     b.ToTable("QuantityCheckTypes");
@@ -217,6 +224,8 @@ namespace ApiServer.Migrations
 
                     b.Property<double>("Top");
 
+                    b.Property<long?>("UserTaggedId");
+
                     b.Property<double>("Width");
 
                     b.Property<double>("height");
@@ -228,6 +237,8 @@ namespace ApiServer.Migrations
                     b.HasIndex("QuantityCheckId")
                         .IsUnique()
                         .HasFilter("[QuantityCheckId] IS NOT NULL");
+
+                    b.HasIndex("UserTaggedId");
 
                     b.ToTable("Tags");
                 });
@@ -658,6 +669,10 @@ namespace ApiServer.Migrations
                     b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
                         .WithOne("Tag")
                         .HasForeignKey("ApiServer.Model.Tag", "QuantityCheckId");
+
+                    b.HasOne("VDS.Security.User", "UserTagged")
+                        .WithMany()
+                        .HasForeignKey("UserTaggedId");
                 });
 
             modelBuilder.Entity("VDS.Security.Permissions.Permission", b =>

@@ -43,5 +43,22 @@ namespace ApiServer.Model.views
             public double Width { get; set; }
             public double height { get; set; }
         }
+
+        public class DataUpdate{
+            public long UserId { get; set; }
+            public IEnumerable<TagForUpdate> Tags { get; set; }
+            public IEnumerable<ExcluseArea> ExcluseAreas { get; set; }
+        }
+
+        public class ExcluseArea
+        {
+            public Coordinate[] Paths { get; set; }
+        }
+
+        public class Coordinate
+        {
+            public float X { get; set; }
+            public float Y { get; set; }
+        }
     }
 }

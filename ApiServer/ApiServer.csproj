@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Authorization\ProfileService.cs" />
     <Compile Remove="Migrations\20180412100037_InitData.cs" />
     <Compile Remove="Migrations\20180412100037_InitData.Designer.cs" />
     <Compile Remove="Migrations\20180418075257_Modify-ClassTag.cs" />
@@ -22,6 +23,11 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.2" />
     <PackageReference Include="Polly" Version="5.9.0" />
     <PackageReference Include="runtime.native.System.Net.Http" Version="4.3.0" />
+    <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0002" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0001" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
+    <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0001" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
   </ItemGroup>
 

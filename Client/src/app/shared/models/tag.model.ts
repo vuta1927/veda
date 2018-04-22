@@ -44,13 +44,20 @@ export class Tag implements ITag{
     }
 }
 
-export class ExcluseArea {
+export class DataUpdate{
     constructor(
-        public path: Coodirnate[] = []
+        public userId: number, 
+        public tags:Tag[], 
+        public excluseAreas:ExcluseArea[]
     ){}
 }
 
-export class Coodirnate{
-    x: number;
-    y: number;
+export class ExcluseArea {
+    constructor(
+        public paths: Coordinate[] = []
+    ){}
+}
+
+export class Coordinate{
+    constructor(public x:number,public y:number){}
 }

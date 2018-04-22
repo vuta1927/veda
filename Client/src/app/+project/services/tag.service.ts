@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { ConfigurationService } from "../../shared/services/configuration.service";
 import { Observable } from "rxjs/Observable";
 import { IAppCoreResponse } from "../../shared/models/appcore-response.model";
-import { ITag, ITagForAdd, ITagForUpdate } from "../../shared/models/tag.model";
+import { ITag, ITagForAdd, ITagForUpdate, DataUpdate } from "../../shared/models/tag.model";
 @Injectable()
 export class TagService{
     constructor(private http: HttpClient, private configurationService: ConfigurationService){}
@@ -19,9 +19,9 @@ export class TagService{
         return this.http.get<IAppCoreResponse<ITag>>(url);
     }
 
-    public saveTags(imageId:string, tags):Observable<IAppCoreResponse<any>>{
-        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/Update/'+ imageId;
-        return this.http.post<IAppCoreResponse<any>>(url, tags);
+    public saveTags(projectId:string, imageId:string, data: DataUpdate):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Tags/Update/'+ projectId +'/'+ imageId;
+        return this.http.post<IAppCoreResponse<any>>(url, data);
     }
 
     // public UpdateTag(id:number, Tag):Observable<IAppCoreResponse<ITag>>{

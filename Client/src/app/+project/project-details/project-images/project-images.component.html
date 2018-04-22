@@ -23,12 +23,12 @@
                         <div id="upload_button">
                             <label>
                                 <input #file type="file" (change)="appendUploadFiles(file.files)" multiple>
-                                <span class="btn btn-sm btn-primary">
+                                <span class="btn btn-sm btn-primary m-btn--air">
                                     <i class="la la-folder-open"></i> Choose files</span>
                             </label>
                         </div>
 
-                        <button class="btn btn-success btn-sm m-btn m-btn--icon" (click)="upload()" [disabled]="!uploadfiles.length">
+                        <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--air" (click)="upload()" [disabled]="!uploadfiles.length">
                             <span>
                                 <i class="la la-cloud-upload"></i>
                                 <span>
@@ -36,7 +36,7 @@
                                 </span>
                             </span>
                         </button>
-                        <button class="btn btn-metal btn-sm m-btn m-btn--icon" (click)="clear()" [disabled]="!uploadfiles.length">
+                        <button class="btn btn-metal btn-sm m-btn m-btn--icon m-btn--air" (click)="clear()" [disabled]="!uploadfiles.length">
                             <span>
                                 <i class="la la-refresh"></i>
                                 <span>
@@ -112,7 +112,7 @@
         <div class="m-portlet">
             <div class="m-portlet__body">
                 <div class="col-lg-12">
-                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()">
+                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()">
                         <span>
                             <i class="la la-trash"></i>
                             <span>
@@ -131,21 +131,27 @@
                         <dxo-paging [pageSize]="12"></dxo-paging>
                         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
                         <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                        <dxi-column cellTemplate="tagDetail" alignment="center" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                         <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column dataField="ignored"></dxi-column>
-                        <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
-                        <dxi-column dataField="classes"></dxi-column>
-                        <dxi-column dataField="tagHasClass" caption="No of Tags have class"></dxi-column>
-                        <dxi-column caption="Using by"></dxi-column>
-                        <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
-                        <dxi-column dataField="totalImgNotTagged" caption="Total image not tagged"></dxi-column>
-                        <dxi-column dataField="totalImgNotClassed" caption="Total image not have class"></dxi-column>
-                        <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
-                        <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
-                        <dxi-column dataField="tagTime" caption="Tagged Total Time"></dxi-column>
+                        <dxi-column dataField="ignored" alignment="center"></dxi-column>
+                        <dxi-column dataField="totalClass" alignment="center" caption="No of Classes"></dxi-column>
+                        <dxi-column dataField="classes" alignment="center"></dxi-column>
+                        <dxi-column caption="Using by" alignment="center"></dxi-column>
+                        <dxi-column dataField="userTagged" caption="Tagged By" alignment="center"></dxi-column>
+                        <dxi-column dataField="tagHasClass" alignment="center" caption="Tags have calss"></dxi-column>
+                        <dxi-column dataField="tagNotHasClass" alignment="center" caption="Tags not have class"></dxi-column>
+                        <dxi-column dataField="taggedDate" alignment="center" dataType="date" format="MM/dd/yyyy" caption="Tagged Time" cellTempalte="taggedDateCell"></dxi-column>
+                        <dxi-column dataField="tagTime" alignment="center" caption="Tagged Time"></dxi-column>
+                        <dxi-column dataField="userQc" alignment="center" dataType="date" format="MM/dd/yyyy" caption="Qc by"></dxi-column>
+                        <dxi-column dataField="qcDate" alignment="center" cellTemplate="QcDateCell" caption="Qc Date"></dxi-column>
                         <div *dxTemplate="let data of 'cellImgs'">
                             <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
+                        </div>
+                        <div *dxTemplate="let data of 'taggedDateCell'">
+                            {{ data.data.taggedDate=='0001-01-01T00:00:00'? '':data.data.taggedDate }}
+                        </div>
+                        <div *dxTemplate="let data of 'QcDateCell'">
+                            {{ data.data.qcDate=='0001-01-01T00:00:00'? '':data.data.qcDate }}
                         </div>
                         <div *dxTemplate="let data of 'tagDetail'">
                             <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">

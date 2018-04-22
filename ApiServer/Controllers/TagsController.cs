@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiServer.Model;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
 using ApiServer.Model.views;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using System.Numerics;
 
 namespace ApiServer.Controllers
 {
@@ -18,10 +22,12 @@ namespace ApiServer.Controllers
     public class TagsController : Controller
     {
         private readonly VdsContext _context;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public TagsController(VdsContext context)
+        public TagsController(VdsContext context, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         // GET: api/Tags
@@ -29,9 +35,9 @@ namespace ApiServer.Controllers
         [ActionName("GetTags")]
         public IActionResult GetTags([FromRoute] Guid id)
         {
-            var tags = _context.Tags.Include(t=>t.Image).Where(x=>x.Image.Id == id).Include("ClassTags.Class").Include(q => q.QuantityCheck);
+            var tags = _context.Tags.Include(t => t.Image).Where(x => x.Image.Id == id).Include("ClassTags.Class").Include(q => q.QuantityCheck);
             var results = new List<TagModel.TagForView>();
-            foreach(var tag in tags)
+            foreach (var tag in tags)
             {
                 var t = new TagModel.TagForView()
                 {
@@ -43,7 +49,7 @@ namespace ApiServer.Controllers
                     height = tag.height,
                     ImageId = tag.Image.Id
                 };
-                if(tag.QuantityCheck!= null)
+                if (tag.QuantityCheck != null)
                 {
                     t.QuantityCheckId = tag.QuantityCheck.Id;
                 }
@@ -84,31 +90,69 @@ namespace ApiServer.Controllers
             });
         }
 
-        
-        [HttpPost("{id}")]
+
+        [HttpPost("{projId}/{id}")]
         [ActionName("Update")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] IEnumerable<TagModel.TagForAddOrUpdate> tags)
+        public async Task<IActionResult> Update([FromRoute] Guid projId, [FromRoute] Guid id, [FromBody] TagModel.DataUpdate data)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == id);
+            var image = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(x => x.Id == id);
             if (image == null)
             {
                 return Content("Image not found !");
             }
-            
 
-            foreach (var tag in tags)
+            var currentUser =  await _context.Users.SingleAsync(x=>x.Id == data.UserId);
+            if(currentUser == null)
             {
-                if(tag.Id > 0)
+                return Content("User not found !");
+            }
+
+
+
+            string webRootPath = _hostingEnvironment.WebRootPath;
+            var imgPath = webRootPath + image.Path;
+            if (data.ExcluseAreas.Count() > 0)
+            {
+                foreach (var area in data.ExcluseAreas)
+                {
+                    var points = new SixLabors.Primitives.PointF[100];
+                    var t = area.Paths.Count();
+                    for (var i = 0; i < area.Paths.Count(); i++)
+                    {
+                        points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
+                    }
+
+                    using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
+                    {
+                        var extension = image.Path.Split('.').Last();
+                        var imgName = image.Id + "." + extension;
+                        img.Mutate(ctx => ctx.FillPolygon(Rgba32.Black, points));
+                        string tempFolderName = "temp";
+                        string tempFileFullPath = webRootPath + "\\" + tempFolderName + '\\' + imgName;
+                        if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                        {
+                            Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                        }
+                        System.IO.File.Delete(imgPath);
+                        img.Save(imgPath);
+                    };
+                }
+
+            }
+
+            foreach (var tag in data.Tags)
+            {
+                if (tag.Id > 0)
                 {
                     var originTag = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(x => x.Id == tag.Id);
                     if (originTag == null)
                     {
-                        return Content("Tag:"+tag.Id+" not found !");
+                        return Content("Tag:" + tag.Id + " not found !");
                     }
 
                     originTag.Classes.Clear();
@@ -127,6 +171,7 @@ namespace ApiServer.Controllers
                     originTag.Top = tag.Top;
                     originTag.Width = tag.Width;
                     originTag.height = tag.height;
+                    originTag.UserTagged = currentUser;
 
                     if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
                     {
@@ -140,6 +185,8 @@ namespace ApiServer.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
+                        await caculateClass(id, currentUser);
+                        await updateProject(projId);
                     }
                     catch (Exception ex)
                     {
@@ -156,9 +203,10 @@ namespace ApiServer.Controllers
                         Left = tag.Left,
                         Top = tag.Top,
                         Width = tag.Width,
-                        height = tag.height
+                        height = tag.height,
+                        UserTagged = currentUser
                     };
-                    
+
                     if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
                     {
                         foreach (var classId in tag.ClassIds)
@@ -172,6 +220,8 @@ namespace ApiServer.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
+                        await caculateClass(id, currentUser);
+                        await updateProject(projId);
                     }
                     catch (Exception ex)
                     {
@@ -183,6 +233,82 @@ namespace ApiServer.Controllers
 
         }
 
+        private async Task caculateClass(Guid imageId, VDS.Security.User user)
+        {
+            var image = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(x => x.Id == imageId);
+
+            if (image == null) return;
+
+            
+
+            var tagCount = image.Tags.Count();
+            if(tagCount <= 0)
+            {
+                return;
+            }
+            var tagHaveClass = 0;
+            foreach (var t in image.Tags)
+            {
+                var classes = _context.Tags.Include("ClassTags.Class").Single(x => x.Id == t.Id).Classes;
+                if(classes.Count() > 0)
+                {
+                    tagHaveClass += 1;
+                }
+            }
+            image.TagHasClass = tagHaveClass;
+            image.TagNotHasClass = tagCount - tagHaveClass;
+            image.TaggedDate = DateTime.Now;
+            image.UserTagged = user;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        private async Task updateProject(Guid projectId)
+        {
+            var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == projectId);
+
+            if (project == null) return;
+
+            var images = _context.Images.Where(x => x.Project == project);
+
+            var imgsNotClassed = project.TotalImg;
+            var imgsNotTagged = project.TotalImg;
+            var imgsNotQc = project.TotalImg;
+            var imgsQc = 0;
+            
+            foreach(var img in images)
+            {
+                if(img.TagHasClass > 0)
+                {
+                    imgsNotClassed -= 1;
+                }
+                if (img.TagHasClass != 0 || img.TagNotHasClass != 0)
+                {
+                    imgsNotTagged -= 1;
+                }
+            }
+
+            project.TotalImgNotClassed = imgsNotClassed;
+            project.TotalImgNotTagged = imgsNotTagged;
+            project.TotalImgNotQC = imgsNotQc;
+            project.TotalImgQC = imgsQc;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
         // POST: api/Tags
         [HttpPost]
         public async Task<IActionResult> AddTag([FromBody] TagModel.TagForAddOrUpdate tag)
@@ -195,7 +321,7 @@ namespace ApiServer.Controllers
             var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
             if (originTag != null)
             {
-                return Content("Tag id "+ tag.Id +" is exsit !");
+                return Content("Tag id " + tag.Id + " is exsit !");
             }
 
             var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == tag.ImageId);
@@ -236,7 +362,7 @@ namespace ApiServer.Controllers
             {
                 return Content(ex.Message);
             }
-            
+
         }
 
         // DELETE: api/Tags/5

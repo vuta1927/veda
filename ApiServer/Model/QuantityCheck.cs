@@ -12,5 +12,6 @@ namespace ApiServer.Model
         public virtual QuantityCheckType QuantityCheckType { get; set; }
         public virtual Tag Tag { get; set; }
         public virtual User UserQc { get; set; }
+        public string Comment { get; set; }
     }
 }

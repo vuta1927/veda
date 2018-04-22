@@ -51,7 +51,6 @@ namespace ApiServer
                 });
             });
 
-            services.AddTransient<IProfileService, ProfileService>();
             services.AddTransient<PermissionsController>();
             services.AddTransient<RolesController>();
             services.AddTransient<UsersController>();

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using VDS.Security;
 
 namespace ApiServer.Model
 {
@@ -18,6 +19,7 @@ namespace ApiServer.Model
         public double height { get; set; }
         public virtual Image Image { get; set; }
         public QuantityCheck QuantityCheck { get; set; }
+        public virtual User UserTagged { get; set; }
         private ICollection<ClassTag> ClassTags { get; } = new List<ClassTag>();
         [NotMapped]
         public ICollection<Class> Classes { get; set; }

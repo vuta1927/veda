@@ -49,7 +49,7 @@ export class ProjectComponent {
                                 }
                             }else{
                                 return{
-                                    data: {},
+                                    data: response.result,
                                     totalCount: 0
                                 }
                             }

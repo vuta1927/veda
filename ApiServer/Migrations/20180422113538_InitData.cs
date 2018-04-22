@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ApiServer.Migrations
 {
-    public partial class initData : Migration
+    public partial class InitData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -154,8 +154,7 @@ namespace ApiServer.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: true),
-                    Value = table.Column<int>(nullable: false)
+                    Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -222,6 +221,7 @@ namespace ApiServer.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ClassColor = table.Column<string>(nullable: true),
                     Code = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
@@ -287,6 +287,7 @@ namespace ApiServer.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Comment = table.Column<string>(nullable: true),
                     QCDate = table.Column<DateTime>(nullable: false),
                     QuantityCheckTypeId = table.Column<int>(nullable: true),
                     UserQcId = table.Column<long>(nullable: true)
@@ -403,6 +404,7 @@ namespace ApiServer.Migrations
                     Left = table.Column<double>(nullable: false),
                     QuantityCheckId = table.Column<int>(nullable: true),
                     Top = table.Column<double>(nullable: false),
+                    UserTaggedId = table.Column<long>(nullable: true),
                     Width = table.Column<double>(nullable: false),
                     height = table.Column<double>(nullable: false)
                 },
@@ -419,6 +421,12 @@ namespace ApiServer.Migrations
                         name: "FK_Tags_QuantityChecks_QuantityCheckId",
                         column: x => x.QuantityCheckId,
                         principalTable: "QuantityChecks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Tags_Users_UserTaggedId",
+                        column: x => x.UserTaggedId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -625,6 +633,11 @@ namespace ApiServer.Migrations
                 column: "QuantityCheckId",
                 unique: true,
                 filter: "[QuantityCheckId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_UserTaggedId",
+                table: "Tags",
+                column: "UserTaggedId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserLogins_UserId",

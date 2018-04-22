@@ -6,10 +6,13 @@ import { Helpers } from '../../helpers';
 import { ImageService } from '../services/image.service';
 import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
-import { Tag, ExcluseArea, Coodirnate } from '../../shared/models/tag.model';
+import { Tag, ExcluseArea, Coordinate, DataUpdate } from '../../shared/models/tag.model';
 import { TagService } from '../services/tag.service';
 import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
+import { SecurityService } from '../../shared/services/security.service';
+import { TimeService } from '../services/timer.service';
+
 @Component({
     selector: 'app-project-tag',
     templateUrl: 'project-tag.component.html',
@@ -40,8 +43,15 @@ export class ProjecTagComponent {
     startPoint: any;
     lines: any = [];
     ExcluseAreas: ExcluseArea[] = [];
+    excluseArea: ExcluseArea = new ExcluseArea();
     tagBtnClass: string = 'btn btn-outline-primary btn-sm m-btn m-btn--icon m-btn--wide';
     excluseBtnClass: string = 'btn btn-outline-danger btn-sm m-btn m-btn--icon m-btn--wide';
+    dataToUpdate: DataUpdate;
+    currentUserId: number;
+    imgIds: string[] = [];
+
+
+
     constructor(
         private route: ActivatedRoute,
         private imgService: ImageService,
@@ -49,43 +59,106 @@ export class ProjecTagComponent {
         public toastr: ToastsManager,
         private vcr: ViewContainerRef,
         private configurationService: ConfigurationService,
-        private tagSerivce: TagService
+        private tagSerivce: TagService,
+        private authSevice: SecurityService,
+        private timerSerive: TimeService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
     }
 
     ngOnInit() {
+        this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
         this.route.queryParams.subscribe(params => {
             this.imageId = params.id;
             this.projectId = params.project;
 
-            this.classService.getClasses(this.projectId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    Response.result.forEach(tag => {
-                        mother.classData.push(new ClassList(tag.id, tag.name, false, tag.classColor));
-                    });
-                    // mother.generateClassContainer();
-                }
-            }).catch(error => {
-                mother.showError(error.error.text);
-            });
-
-            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.tags = Response.result;
-
-                    this.imgService.getImageById(this.imageId).toPromise().then(Response => {
-                        if (Response && Response.result) {
-                            this.currentImage = Response.result;
-                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
-                            this.initCanvas();
-                        }
-                    });
+            this.imgService.getImageListId(this.projectId).toPromise().then(Response=>{
+                if(Response && Response.result){
+                    mother.imgIds = Response.result;
                 }
             });
+
+            this.getImageData();
         });
+    }
+    
+
+    getImageData(){
+        let mother = this;
+        this.classService.getClasses(this.projectId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                Response.result.forEach(tag => {
+                    mother.classData.push(new ClassList(tag.id, tag.name, false, tag.classColor));
+                });
+                // mother.generateClassContainer();
+            }
+        }).catch(error => {
+            mother.showError(error.error.text);
+        });
+
+        this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                this.tags = Response.result;
+
+                this.imgService.getImageById(this.imageId).toPromise().then(Response => {
+                    if (Response && Response.result) {
+                        
+                        Helpers.setLoading(false);
+
+                        this.currentImage = Response.result;
+                        this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
+                        this.timerSerive.startTimer(this.currentImage.tagTime);
+                        this.initCanvas();
+                    }
+                });
+            }
+        });
+    }
+
+
+
+    GetNextImage(){
+        this.imgIds.splice(this.imgIds.indexOf(this.imageId), 1);
+        if(this.imgIds.length > 0)
+            this.imageId = this.imgIds[0];
+        else
+            {
+                this.imgService.getImageListId(this.projectId).toPromise().then(Response=>{
+                    if(Response && Response.result){
+                        this.imgIds = Response.result;
+                    }
+                });
+                Helpers.setLoading(false);
+                this.btnSaveEnabled = true;
+                return;
+            }
+        
+        this.canvas.clear();
+        this.canvas = null;
+        this.currentImage = {};
+        this.classData = [];
+        // this.tagMode = false;
+        // this.isDragging = false;
+        this.selection = false;
+        this.selectedClass = null;
+        this.tags = new Array<Tag>();
+        this.canvasTags = [];
+        this.canvasLabels = [];
+        this.imageWidth = 0;
+        this.imageHeight = 0;
+        this.imageUrl = '';
+        this.btnSaveEnabled = true;
+        this.excluseMode = false;
+        this.polygonPoints = [];
+        this.startPoint = null;
+        this.lines = [];
+        this.ExcluseAreas = [];
+        this.excluseArea = new ExcluseArea();
+        this.dataToUpdate = null;
+
+        this.getImageData();
     }
 
     switchTagMode() {
@@ -162,13 +235,24 @@ export class ProjecTagComponent {
         });
     }
 
+    nextImage(){
+        Helpers.setLoading(true);
+        this.btnSaveEnabled = false;
+        this.GetNextImage();
+    }
+
     saveChange() {
+        Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
-        this.tagSerivce.saveTags(this.imageId, this.tags).toPromise().then(Response => {
-            mother.showSuccess("All Tags saved!");
-            mother.btnSaveEnabled = true;
+        this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
+
+        this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
+            console.log(this.projectId, this.imageId);
+            Helpers.setLoading(false);
+            mother.GetNextImage();
         }).catch(errorResp => {
+            Helpers.setLoading(false);
             mother.showError(errorResp.error.text);
             mother.btnSaveEnabled = true;
         });
@@ -374,7 +458,7 @@ export class ProjecTagComponent {
                     stroke: '#ff26fb',
                     strokeDashArray: [5, 5],
                 });
-                mother.ExcluseAreas.push(new ExcluseArea())
+                mother.excluseArea.paths.push(new Coordinate(_x,_y));
                 mother.polygonPoints.push(new fabric.Point(_x, _y));
                 mother.lines.push(line);
 
@@ -572,7 +656,9 @@ export class ProjecTagComponent {
         var top = fabric.util.array.min(this.polygonPoints, "y");
         let mother = this;
         this.polygonPoints.push(new fabric.Point(this.polygonPoints[0].x, this.polygonPoints[0].y));
-
+        this.excluseArea.paths.push(new Coordinate(this.polygonPoints[0].x, this.polygonPoints[0].y));
+        this.ExcluseAreas.push(this.excluseArea);
+        this.excluseArea = new ExcluseArea();
         return new fabric.Polygon(this.polygonPoints.slice(), {
             left: left,
             top: top,

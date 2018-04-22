@@ -19,6 +19,11 @@ export class ImageService{
         return this.http.get<IAppCoreResponse<number>>(url);
     }
 
+    public getImageListId(projectId: string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageListId/' + projectId;
+        return this.http.get<IAppCoreResponse<any>>(url);
+    }
+
     public getImageBinary(imgId: string, projId:string):Observable<Blob>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageBinary/' + imgId + '/'+ projId;
         return this.http.get(url, { responseType: 'blob'});

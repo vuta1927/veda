@@ -82,7 +82,6 @@ namespace ApiServer.Controllers
                     {
                         Id = img.Id,
                         Path = img.Path.Replace('\\', '/'),
-                        UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
                         Classes = img.Classes,
                         Ignored = img.Ignored,
                         QcStatus = img.QcStatus,
@@ -92,8 +91,10 @@ namespace ApiServer.Controllers
                         TotalClass = img.TotalClass,
                         UserQc = img.UserQc != null ? img.UserQc.UserName : null,
                         QcDate = img.QcDate,
-                        TaggedDate = img.TaggedDate
+                        TaggedDate = img.TaggedDate,
+                        
                     };
+                    imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
                     results.Add(imgForView);
                 }
             }
@@ -130,6 +131,20 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{id}")]
+        [ActionName("GetImageListId")]
+        public async Task<IActionResult> GetImageListId([FromRoute] Guid id)
+        {
+            var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == id);
+            if(project == null) { return Content("Project not found !"); }
+
+            var imgList = _context.Images.Where(x => x.Project == project).Select(x => x.Id);
+            if(imgList.Count() <= 0)
+            {
+                return Content("Unknow Error !");
+            }
+            return Ok(imgList);
+        }
         [HttpGet("{id}")]
         [ActionName("GetTotal")]
         public async Task<IActionResult> GetTotal([FromRoute] Guid id)
@@ -291,17 +306,30 @@ namespace ApiServer.Controllers
             var ids = id.Split('_');
             for (var i = 0; i < ids.Length; i++)
             {
-                var img = await _context.Images.SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
-
+                var img = await _context.Images.Include(x=>x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
                 if (img == null)
                 {
                     return Ok("error#Image not found");
                 }
                 else
                 {
-                    _context.Images.Remove(img);
-                    await _context.SaveChangesAsync();
-                    DeleteFile(img.Path);
+                    try
+                    {
+                        foreach (var tag in img.Tags)
+                        {
+                            var t = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(x => x.Id == tag.Id);
+                            t.Classes.Clear();
+                            await _context.SaveChangesAsync();
+                        }
+                        _context.Tags.RemoveRange(img.Tags);
+                        _context.Images.Remove(img);
+                        await _context.SaveChangesAsync();
+                        DeleteFile(img.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Content("Cant delete image !");
+                    }
                 }
             }
 

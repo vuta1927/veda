@@ -53,9 +53,11 @@ namespace DAL
                 };
                 foreach (var permission in permissions)
                     roleClaims.Add(new Claim("Permission", permission));
-                roleClaims.Add(new Claim("id", user.Id.ToString()));
+
+                var test = role.RoleClaims.Select(x => x.ClaimValue);
                 context.IssuedClaims.AddRange(roleClaims);
             }
+            context.IssuedClaims.AddRange(new List<Claim>() { new Claim("id", user.Id.ToString()), new Claim("email", user.Email) });
         }
     }
 }

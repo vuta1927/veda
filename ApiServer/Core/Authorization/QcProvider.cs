@@ -6,8 +6,8 @@ namespace ApiServer.Core.Authorization
 {
     class QcProvider
     {
-        public static readonly QuantityCheckType Checked = new QuantityCheckType { Name = "Passed", Value = 100 };
-        public static readonly QuantityCheckType UnCheck = new QuantityCheckType { Name = "False", Value = 0 };
+        public static readonly QuantityCheckType Checked = new QuantityCheckType { Name = "Passed" };
+        public static readonly QuantityCheckType UnCheck = new QuantityCheckType { Name = "False" };
 
         public IEnumerable<QuantityCheckType> GetQcs() {
             return new List<QuantityCheckType>

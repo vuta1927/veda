@@ -47,6 +47,8 @@ export class ProjectImagesComponent implements OnInit {
     apiUrl: string = '';
     uploadProgress: number = 0;
     uploading: boolean = false;
+    uploadedFile: number = 0;
+    totalFile: number = 0;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -138,31 +140,33 @@ export class ProjectImagesComponent implements OnInit {
 
 
     upload() {
-        if (this.uploadfiles.length === 0)
-            return;
+        // if (this.uploadfiles.length === 0)
+        //     return;
 
         this.uploading = true;
-        let totalFile = this.uploadfiles.length;
-        let uploadedFile = 0;
-        console.log(totalFile);
-        for (let file of this.uploadfiles) {
+        if(!this.totalFile)
+            this.totalFile = this.uploadfiles.length;
+        // let totalFile = this.uploadfiles.length;
+
+        if (this.uploadfiles.length > 0 && this.uploadedFile <= (this.totalFile - 1)) {
+            let file = this.uploadfiles[this.uploadedFile];
             const formData = new FormData();
             formData.append(file.name, file);
             this.projectService.UploadImg(this.currentProject.id, formData).toPromise().then(Response => {
                 if (Response && Response.result) {
                     this.message = '';
-                    this.uploadfiles = [];
                     $('#errorMessage').css("display", "none");
                     // this.showSuccess("Files uploaded !");
-                    uploadedFile += 1;
-                    this.uploadProgress = Math.round((uploadedFile / totalFile) * 100);
-                    console.log(this.uploadProgress, (uploadedFile / totalFile));
-                    if (this.uploadProgress == 100) {
-                        this.uploading = false;
-                        this.uploadProgress = 0;
-                        $('#successMessage').css("display", "block");
-                        this.dataSource.reload();
-                    }
+                    this.uploadedFile += 1;
+                    // this.uploadProgress = Math.round((uploadedFile / totalFile) * 100);
+                    // console.log(this.uploadProgress, (uploadedFile));
+                    // if (this.uploadProgress == 100) {
+
+                    //     this.uploading = false;
+                    //     this.uploadProgress = 0;
+                    //     $('#successMessage').css("display", "block");
+                    // }
+                    this.upload();
                 }
             }).catch(res => {
                 $('#successMessage').css("display", "none");
@@ -171,7 +175,13 @@ export class ProjectImagesComponent implements OnInit {
                 $('#errorMessage').css("display", "block");
                 this.showError(res['error'].text);
             })
+        }else{
+            this.uploadfiles = [];
+            this.totalFile = 0;
+            this.uploadedFile = 0;
+            this.dataSource.reload();
         }
+
     }
 
     clear() {
