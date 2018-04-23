@@ -14,7 +14,7 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    [Migration("20180422113538_InitData")]
+    [Migration("20180423061513_InitData")]
     partial class InitData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,6 +106,22 @@ namespace ApiServer.Migrations
                     b.HasIndex("UserTaggedId");
 
                     b.ToTable("Images");
+                });
+
+            modelBuilder.Entity("ApiServer.Model.ImageQueue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<Guid>("ImageId");
+
+                    b.Property<Guid>("ProjectId");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("imageQueues");
                 });
 
             modelBuilder.Entity("ApiServer.Model.PermissionRole", b =>

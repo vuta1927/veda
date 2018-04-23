@@ -12,7 +12,8 @@ import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../../shared/services/security.service';
 import { TimeService } from '../services/timer.service';
-
+import { HubConnection } from '@aspnet/signalr';
+import { MessageTypes } from '../project-details/messageType';
 @Component({
     selector: 'app-project-tag',
     templateUrl: 'project-tag.component.html',
@@ -49,8 +50,8 @@ export class ProjecTagComponent {
     dataToUpdate: DataUpdate;
     currentUserId: number;
     imgIds: string[] = [];
-
-
+    messageTypes: MessageTypes = new MessageTypes();
+    private _hubConnection: HubConnection;
 
     constructor(
         private route: ActivatedRoute,
@@ -70,12 +71,13 @@ export class ProjecTagComponent {
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
+        this.setupHub();
         this.route.queryParams.subscribe(params => {
             this.imageId = params.id;
             this.projectId = params.project;
 
-            this.imgService.getImageListId(this.projectId).toPromise().then(Response=>{
-                if(Response && Response.result){
+            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
+                if (Response && Response.result) {
                     mother.imgIds = Response.result;
                 }
             });
@@ -83,9 +85,23 @@ export class ProjecTagComponent {
             this.getImageData();
         });
     }
-    
 
-    getImageData(){
+    setupHub() {
+        this._hubConnection = new HubConnection(this.apiUrl + '/project');
+        this._hubConnection
+            .start()
+            .then(() => console.log('connection started!'))
+            .catch(err => console.log('Error while establishing connection !'));
+        this._hubConnection.on("send", data => { console.log(data) });
+        // let msgTypes = this.messageTypes.getAll();
+        // msgTypes.forEach(methodType => {
+        //     this._hubConnection.on(methodType, (type: string, payload: string) => {
+        //         console.log(type, payload);
+        //     });
+        // });
+    }
+
+    getImageData() {
         let mother = this;
         this.classService.getClasses(this.projectId).toPromise().then(Response => {
             if (Response && Response.result) {
@@ -98,45 +114,51 @@ export class ProjecTagComponent {
             mother.showError(error.error.text);
         });
 
-        this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
-            if (Response && Response.result) {
-                this.tags = Response.result;
+        this._hubConnection.invoke('Send',[this.projectId, this.imageId, this.currentUserId]);
 
-                this.imgService.getImageById(this.imageId).toPromise().then(Response => {
-                    if (Response && Response.result) {
-                        
-                        Helpers.setLoading(false);
+        this.imgService.getCurrentWorker(this.projectId, this.imageId, this.currentUserId).toPromise().then(Response => {
+            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    this.tags = Response.result;
 
-                        this.currentImage = Response.result;
-                        this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
-                        this.timerSerive.startTimer(this.currentImage.tagTime);
-                        this.initCanvas();
-                    }
-                });
-            }
+                    this.imgService.getImageById(this.currentUserId, this.imageId).toPromise().then(Response => {
+                        if (Response && Response.result) {
+
+                            Helpers.setLoading(false);
+
+                            this.currentImage = Response.result;
+                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
+                            this.timerSerive.startTimer(this.currentImage.tagTime);
+                            this.initCanvas();
+                        }
+                    });
+                }
+            });
+        }).catch(err => {
+            this.GetNextImage();
         });
     }
 
 
 
-    GetNextImage(){
+    GetNextImage() {
+
         this.imgIds.splice(this.imgIds.indexOf(this.imageId), 1);
-        if(this.imgIds.length > 0)
+        if (this.imgIds.length > 0) {
             this.imageId = this.imgIds[0];
-        else
-            {
-                this.imgService.getImageListId(this.projectId).toPromise().then(Response=>{
-                    if(Response && Response.result){
-                        this.imgIds = Response.result;
-                    }
-                });
-                Helpers.setLoading(false);
-                this.btnSaveEnabled = true;
-                return;
-            }
-        
+        }
+        else {
+            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    this.imgIds = Response.result;
+                }
+            });
+            Helpers.setLoading(false);
+            this.btnSaveEnabled = true;
+            return;
+        }
+
         this.canvas.clear();
-        this.canvas = null;
         this.currentImage = {};
         this.classData = [];
         // this.tagMode = false;
@@ -235,10 +257,15 @@ export class ProjecTagComponent {
         });
     }
 
-    nextImage(){
+    nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        this.GetNextImage();
+        this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
+            if (!Response) {
+                this.GetNextImage();
+            }
+        });
+
     }
 
     saveChange() {
@@ -458,7 +485,7 @@ export class ProjecTagComponent {
                     stroke: '#ff26fb',
                     strokeDashArray: [5, 5],
                 });
-                mother.excluseArea.paths.push(new Coordinate(_x,_y));
+                mother.excluseArea.paths.push(new Coordinate(_x, _y));
                 mother.polygonPoints.push(new fabric.Point(_x, _y));
                 mother.lines.push(line);
 

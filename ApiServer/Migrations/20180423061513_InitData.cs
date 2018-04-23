@@ -48,6 +48,21 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "imageQueues",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ImageId = table.Column<Guid>(nullable: false),
+                    ProjectId = table.Column<Guid>(nullable: false),
+                    UserId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_imageQueues", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -660,6 +675,9 @@ namespace ApiServer.Migrations
 
             migrationBuilder.DropTable(
                 name: "EventLogEntries");
+
+            migrationBuilder.DropTable(
+                name: "imageQueues");
 
             migrationBuilder.DropTable(
                 name: "Notifications");

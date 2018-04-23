@@ -18,6 +18,9 @@ using static ApiServer.Model.views.ImageModel;
 using System.Net;
 using System.Net.Http.Headers;
 using VDS.Security;
+using Microsoft.AspNetCore.SignalR;
+using ApiServer.Hubs;
+using ApiServer.Core.SignalR;
 
 namespace ApiServer.Controllers
 {
@@ -30,12 +33,14 @@ namespace ApiServer.Controllers
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment)
+        private IHubContext<VdsHub> _hubContext;
+
+        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
+            _hubContext = hubContext;
         }
-
 
 
         public User GetCurrentUser()
@@ -73,7 +78,7 @@ namespace ApiServer.Controllers
             var _currentUser = GetCurrentUser();
             var _currentRoles = await GetCurrentRole(_currentUser.Id);
             var results = new List<ImageForView>();
-            if (_currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
                 var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Skip(start).Take(stop);
                 foreach (var img in imgs)
@@ -92,7 +97,7 @@ namespace ApiServer.Controllers
                         UserQc = img.UserQc != null ? img.UserQc.UserName : null,
                         QcDate = img.QcDate,
                         TaggedDate = img.TaggedDate,
-                        
+
                     };
                     imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
                     results.Add(imgForView);
@@ -136,10 +141,10 @@ namespace ApiServer.Controllers
         public async Task<IActionResult> GetImageListId([FromRoute] Guid id)
         {
             var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == id);
-            if(project == null) { return Content("Project not found !"); }
+            if (project == null) { return Content("Project not found !"); }
 
             var imgList = _context.Images.Where(x => x.Project == project).Select(x => x.Id);
-            if(imgList.Count() <= 0)
+            if (imgList.Count() <= 0)
             {
                 return Content("Unknow Error !");
             }
@@ -178,7 +183,7 @@ namespace ApiServer.Controllers
             var results = new List<ImageForView>();
             string imgPath = string.Empty;
 
-            if (_currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
 
                 imgPath = await _context.Images.Where(x => x.Id == id).Select(a => a.Path).FirstOrDefaultAsync();
@@ -221,15 +226,14 @@ namespace ApiServer.Controllers
             //response.Headers.Add("content-type", "application/octet-stream");
         }
         // GET: api/Images/5
-        [HttpGet("{id}")]
+        [HttpGet("{userId}/{id}")]
         [ActionName("GetImageById")]
-        public async Task<IActionResult> GetImageById([FromRoute] Guid id)
+        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             var image = await _context.Images.SingleOrDefaultAsync(m => m.Id == id);
 
             if (image == null)
@@ -238,6 +242,64 @@ namespace ApiServer.Controllers
             }
 
             return Ok(image);
+
+        }
+
+        [HttpGet("{projectId}/{imageId}/{userid}")]
+        [ActionName("GetCurrentWorker")]
+        public async Task<IActionResult> GetCurrentWorker([FromRoute] Guid projectId, [FromRoute] Guid imageId, [FromRoute] long userid)
+        {
+            if (!_context.Projects.Any(x => x.Id == projectId)) return Content("Project not found !");
+
+            if (!_context.Images.Any(x => x.Id == imageId)) return Content("Image not found !");
+
+            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imageId);
+
+            if (imgQueue == null)
+            { 
+                imgQueue = new ImageQueue()
+                {
+                    ImageId = imageId,
+                    ProjectId = projectId,
+                    UserId = userid
+                };
+
+                try
+                {
+                    _context.imageQueues.Add(imgQueue);
+                    _context.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return Content(e.ToString());
+                }
+                await _hubContext.Clients.All.SendAsync("Send", imgQueue);
+                return Ok();
+            }
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("Send", imgQueue);
+                return Content("isUsing");
+            }
+        }
+
+        [HttpDelete("{imgId}")]
+        [ActionName("RelaseImage")]
+        public async Task<IActionResult> RelaseImage([FromRoute] Guid imgId)
+        {
+            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imgId);
+            if (imgQueue == null) return Ok();
+
+            try
+            {
+                _context.imageQueues.Remove(imgQueue);
+                await _context.SaveChangesAsync();
+                await _hubContext.Clients.All.SendAsync("Send", imgId);
+                return Ok();
+            }catch(Exception e)
+            {
+                return Content(e.ToString());
+            }
         }
 
         // PUT: api/Images/5
@@ -306,7 +368,7 @@ namespace ApiServer.Controllers
             var ids = id.Split('_');
             for (var i = 0; i < ids.Length; i++)
             {
-                var img = await _context.Images.Include(x=>x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
+                var img = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
                 if (img == null)
                 {
                     return Ok("error#Image not found");

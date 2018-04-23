@@ -29,10 +29,20 @@ export class ImageService{
         return this.http.get(url, { responseType: 'blob'});
     }
 
-    public getImageById(id?:string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageById/'+id;
+    public getImageById(userId: number, id?:string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageById/'+ userId +'/'+id;
 
         return this.http.get<IAppCoreResponse<Iimage[]>>(url);
+    }
+
+    public getCurrentWorker(projectId:string, imageId:string, userId:number):Observable<IAppCoreResponse<Iimage>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/GetCurrentWorker/'+projectId+'/'+imageId+'/'+userId;
+        return this.http.get<IAppCoreResponse<Iimage>>(url);
+    }
+
+    public relaseImage(imgId:string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/RelaseImage/'+imgId;
+        return this.http.delete<IAppCoreResponse<any>>(url);
     }
 
     public UpdateImage(image):Observable<IAppCoreResponse<Iimage[]>>{

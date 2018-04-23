@@ -67,11 +67,23 @@ namespace ApiServer.Controllers
             try
             {
                 var currentUser = GetCurrentUser();
-
-                var project = await _context.ProjectUsers
+                var _currentRoles = await GetCurrentRole(currentUser.Id);
+                var project = new Project();
+                if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+                {
+                    project = await _context.ProjectUsers
+                    .Include(x => x.Project)
+                    .Include(u => u.User)
+                    .Where(a=>a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
+                }
+                else
+                {
+                    project = await _context.ProjectUsers
                     .Include(x => x.Project)
                     .Include(u => u.User)
                     .Where(a => a.User.Id == currentUser.Id && a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
+                }
+                    
                 if (project == null)
                 {
                     return Content("You have no permission to upload images in this project!");

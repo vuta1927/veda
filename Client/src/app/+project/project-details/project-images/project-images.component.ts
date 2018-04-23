@@ -15,7 +15,7 @@ import * as _ from 'lodash';
 
 import { HttpClient, HttpRequest, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ConfigurationService } from "../../../shared/services/configuration.service";
-
+import { SecurityService } from '../../../shared/services/security.service';
 
 import { DxDataGridComponent } from 'devextreme-angular';
 import DataSource from 'devextreme/data/data_source';
@@ -25,6 +25,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Iimage } from '../../../shared/models/image.model';
 import { resolve, reject } from 'q';
 
+import { HubConnection } from '@aspnet/signalr';
+import { MessageTypes } from '../messageType';
 @Component({
     selector: 'app-project-images',
     templateUrl: './project-images.component.html',
@@ -49,6 +51,8 @@ export class ProjectImagesComponent implements OnInit {
     uploading: boolean = false;
     uploadedFile: number = 0;
     totalFile: number = 0;
+    messageTypes: MessageTypes = new MessageTypes();
+    private _hubConnection: HubConnection;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -60,12 +64,14 @@ export class ProjectImagesComponent implements OnInit {
         public formService: FormService,
         private http: HttpClient,
         private configurationService: ConfigurationService,
+        private authService: SecurityService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
     }
 
     ngOnInit() {
+        this.setupHub();
         this.uploadfiles = [];
         var mother = this;
         this.dataService.currentProject.subscribe(p => {
@@ -103,6 +109,22 @@ export class ProjectImagesComponent implements OnInit {
             console.log(error)
         });
 
+    }
+
+    setupHub() {
+        // let url = `${this.apiUrl + 'project?authorization=bear '}${this.authService.getToken()}`;
+        this._hubConnection = new HubConnection(this.apiUrl + 'project');
+        this._hubConnection
+            .start()
+            .then(() => console.log('connection started!'))
+            .catch(err => console.log('Error while establishing connection ('+this.apiUrl + 'project'+') !'));
+        this._hubConnection.on("send", data=>{console.log(data)});
+        // let msgTypes = this.messageTypes.getAll();
+        // msgTypes.forEach(methodType => {
+        //     this._hubConnection.on(methodType, (type: string, payload: string) => {
+        //         console.log(type,payload);
+        //     }); 
+        // });
     }
 
     appendUploadFiles(files) {
@@ -144,7 +166,7 @@ export class ProjectImagesComponent implements OnInit {
         //     return;
 
         this.uploading = true;
-        if(!this.totalFile)
+        if (!this.totalFile)
             this.totalFile = this.uploadfiles.length;
         // let totalFile = this.uploadfiles.length;
 
@@ -175,7 +197,7 @@ export class ProjectImagesComponent implements OnInit {
                 $('#errorMessage').css("display", "block");
                 this.showError(res['error'].text);
             })
-        }else{
+        } else {
             this.uploadfiles = [];
             this.totalFile = 0;
             this.uploadedFile = 0;

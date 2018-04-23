@@ -107,6 +107,22 @@ namespace ApiServer.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("ApiServer.Model.ImageQueue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<Guid>("ImageId");
+
+                    b.Property<Guid>("ProjectId");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("imageQueues");
+                });
+
             modelBuilder.Entity("ApiServer.Model.PermissionRole", b =>
                 {
                     b.Property<int>("Id")

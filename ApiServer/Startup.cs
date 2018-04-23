@@ -18,6 +18,7 @@ using ApiServer.Controllers;
 using ApiServer.Controllers.Auth;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using ApiServer.Hubs;
 
 namespace ApiServer
 {
@@ -34,6 +35,8 @@ namespace ApiServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
+
             services.AddMvc()
                 .AddJsonOptions(
                 options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -86,6 +89,7 @@ namespace ApiServer
                                 .Select(o => o.RemovePreFix("/"))
                                 .ToArray()
                         )
+                        .AllowCredentials()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                 )
@@ -106,6 +110,11 @@ namespace ApiServer
             app.UseCors(_defaultCorsPolicyName);
 
             app.UseAuthentication();
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<VdsHub>("/project");
+            });
 
             app.UseStaticFiles();
 
