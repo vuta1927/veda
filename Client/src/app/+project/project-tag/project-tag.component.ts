@@ -72,33 +72,61 @@ export class ProjecTagComponent {
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
         this.setupHub();
-        this.route.queryParams.subscribe(params => {
-            this.imageId = params.id;
-            this.projectId = params.project;
-
-            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    mother.imgIds = Response.result;
-                }
-            });
-
-            this.getImageData();
-        });
     }
 
     setupHub() {
+        let mother = this;
         this._hubConnection = new HubConnection(this.apiUrl + '/project');
         this._hubConnection
             .start()
-            .then(() => console.log('connection started!'))
+            .then(() => {
+                console.log('tag hub connection started!');
+                mother.route.queryParams.subscribe(params => {
+                    mother.imageId = params.id;
+                    mother.projectId = params.project;
+        
+                    mother.imgService.getImageListId(mother.projectId).toPromise().then(Response => {
+                        if (Response && Response.result) {
+                            mother.imgIds = Response.result;
+                        }
+                    });
+        
+                    mother.getImageData();
+                });
+            })
             .catch(err => console.log('Error while establishing connection !'));
-        this._hubConnection.on("send", data => { console.log(data) });
-        // let msgTypes = this.messageTypes.getAll();
-        // msgTypes.forEach(methodType => {
-        //     this._hubConnection.on(methodType, (type: string, payload: string) => {
-        //         console.log(type, payload);
-        //     });
-        // });
+
+        this._hubConnection.on("currentWorker", data => {
+            if (!data) {
+                mother.tagSerivce.getTags(mother.imageId).toPromise().then(Response => {
+                    if (Response && Response.result) {
+                        mother.tags = Response.result;
+
+                        mother.imgService.getImageById(mother.currentUserId, mother.imageId).toPromise().then(Response => {
+                            if (Response && Response.result) {
+
+                                Helpers.setLoading(false);
+
+                                mother.currentImage = Response.result;
+                                mother.imageUrl = mother.apiUrl + '/' + mother.currentImage.path;
+                                mother.timerSerive.startTimer(mother.currentImage.tagTime);
+                                mother.initCanvas();
+                            }
+                        });
+                    }
+                });
+            }else{
+                console.log(data);
+                mother.GetNextImage();
+            }
+        });
+        this._hubConnection.on("imageRelease", data => { 
+            if(!data){
+                mother.GetNextImage();
+            }else{
+                console.log(data);
+            }
+         });
     }
 
     getImageData() {
@@ -114,29 +142,7 @@ export class ProjecTagComponent {
             mother.showError(error.error.text);
         });
 
-        this._hubConnection.invoke('Send',[this.projectId, this.imageId, this.currentUserId]);
-
-        this.imgService.getCurrentWorker(this.projectId, this.imageId, this.currentUserId).toPromise().then(Response => {
-            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.tags = Response.result;
-
-                    this.imgService.getImageById(this.currentUserId, this.imageId).toPromise().then(Response => {
-                        if (Response && Response.result) {
-
-                            Helpers.setLoading(false);
-
-                            this.currentImage = Response.result;
-                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
-                            this.timerSerive.startTimer(this.currentImage.tagTime);
-                            this.initCanvas();
-                        }
-                    });
-                }
-            });
-        }).catch(err => {
-            this.GetNextImage();
-        });
+        this._hubConnection.invoke('currentWorker', this.projectId, this.imageId, this.currentUserId);
     }
 
 
@@ -260,11 +266,12 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
-            if (!Response) {
-                this.GetNextImage();
-            }
-        });
+        this._hubConnection.invoke('imageRelease', this.imageId);
+        // this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
+        //     if (!Response) {
+        //         this.GetNextImage();
+        //     }
+        // });
 
     }
 

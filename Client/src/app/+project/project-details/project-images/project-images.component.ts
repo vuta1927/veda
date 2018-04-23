@@ -25,8 +25,9 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Iimage } from '../../../shared/models/image.model';
 import { resolve, reject } from 'q';
 
-import { HubConnection } from '@aspnet/signalr';
+import { SignalRService } from '../../services/signalr.service';
 import { MessageTypes } from '../messageType';
+import { HubConnection } from '@aspnet/signalr';
 @Component({
     selector: 'app-project-images',
     templateUrl: './project-images.component.html',
@@ -52,7 +53,7 @@ export class ProjectImagesComponent implements OnInit {
     uploadedFile: number = 0;
     totalFile: number = 0;
     messageTypes: MessageTypes = new MessageTypes();
-    private _hubConnection: HubConnection;
+    _hubConnection: HubConnection;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -64,7 +65,8 @@ export class ProjectImagesComponent implements OnInit {
         public formService: FormService,
         private http: HttpClient,
         private configurationService: ConfigurationService,
-        private authService: SecurityService
+        private authService: SecurityService,
+        private signalService: SignalRService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
@@ -112,19 +114,13 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     setupHub() {
-        // let url = `${this.apiUrl + 'project?authorization=bear '}${this.authService.getToken()}`;
         this._hubConnection = new HubConnection(this.apiUrl + 'project');
         this._hubConnection
             .start()
             .then(() => console.log('connection started!'))
             .catch(err => console.log('Error while establishing connection ('+this.apiUrl + 'project'+') !'));
-        this._hubConnection.on("send", data=>{console.log(data)});
-        // let msgTypes = this.messageTypes.getAll();
-        // msgTypes.forEach(methodType => {
-        //     this._hubConnection.on(methodType, (type: string, payload: string) => {
-        //         console.log(type,payload);
-        //     }); 
-        // });
+        this._hubConnection.on("userUsing", data=>{console.log("userUsing",data)});
+        this._hubConnection.on("imageReleaseBroadcast", data=>{console.log("imageReleaseBroadcast",data)});
     }
 
     appendUploadFiles(files) {

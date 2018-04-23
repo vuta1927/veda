@@ -273,12 +273,12 @@ namespace ApiServer.Controllers
                 {
                     return Content(e.ToString());
                 }
-                await _hubContext.Clients.All.SendAsync("Send", imgQueue);
+                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
                 return Ok();
             }
             else
             {
-                await _hubContext.Clients.All.SendAsync("Send", imgQueue);
+                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
                 return Content("isUsing");
             }
         }
@@ -294,7 +294,7 @@ namespace ApiServer.Controllers
             {
                 _context.imageQueues.Remove(imgQueue);
                 await _context.SaveChangesAsync();
-                await _hubContext.Clients.All.SendAsync("Send", imgId);
+                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgId);
                 return Ok();
             }catch(Exception e)
             {
