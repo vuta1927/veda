@@ -73,7 +73,6 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setupHub();
         this.uploadfiles = [];
         var mother = this;
         this.dataService.currentProject.subscribe(p => {

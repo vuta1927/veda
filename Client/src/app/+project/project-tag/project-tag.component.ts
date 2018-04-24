@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChildren, ViewEncapsulation, ViewContainerRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy, ViewChildren, ViewEncapsulation, ViewContainerRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import CustomStore from 'devextreme/data/custom_store';
 import { DxDataGridComponent } from 'devextreme-angular';
 import { Helpers } from '../../helpers';
@@ -14,6 +15,9 @@ import { SecurityService } from '../../shared/services/security.service';
 import { TimeService } from '../services/timer.service';
 import { HubConnection } from '@aspnet/signalr';
 import { MessageTypes } from '../project-details/messageType';
+
+import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
+import { Keepalive } from '@ng-idle/keepalive';
 @Component({
     selector: 'app-project-tag',
     templateUrl: 'project-tag.component.html',
@@ -51,10 +55,13 @@ export class ProjecTagComponent {
     currentUserId: number;
     imgIds: string[] = [];
     messageTypes: MessageTypes = new MessageTypes();
-    private _hubConnection: HubConnection;
+
+    timedOut = false;
+    lastPing?: Date = null;
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private imgService: ImageService,
         private classService: ClassService,
         public toastr: ToastsManager,
@@ -62,71 +69,90 @@ export class ProjecTagComponent {
         private configurationService: ConfigurationService,
         private tagSerivce: TagService,
         private authSevice: SecurityService,
-        private timerSerive: TimeService
+        private timerSerive: TimeService,
+        private idle: Idle,
+        private keepalive: Keepalive
     ) {
         this.toastr.setRootViewContainerRef(vcr);
+        this.setUpIdleTimeout(5, 5);
     }
 
     ngOnInit() {
+
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
-        this.setupHub();
+        this.route.queryParams.subscribe(params => {
+            this.imageId = params.id;
+            this.projectId = params.project;
+
+            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    mother.imgIds = Response.result;
+                }
+            });
+
+            this.getImageData();
+        });
     }
 
-    setupHub() {
+    ngOnDestroy(): void {
+        //Called once, before the instance is destroyed.
+        //Add 'implements OnDestroy' to the class.
+        console.log("leaving tag page ...");
+        if(this.idle){
+            this.idle.stop();
+        }
+        if (this.imageId) {
+            this.imgService.relaseImage(this.imageId).toPromise().then().catch(err => console.log(err.error.text));
+        }
+
+    }
+
+    setUpIdleTimeout(idleTime:number, timeOut:number) {
+        // sets an idle timeout of 5 seconds, for testing purposes.
+        this.idle.setIdle(idleTime);
+        // sets a timeout period of 5 seconds. after 10 seconds of inactivity, the user will be considered timed out.
+        this.idle.setTimeout(timeOut);
+        // sets the default interrupts, in this case, things like clicks, scrolls, touches to the document
+        this.idle.setInterrupts(DEFAULT_INTERRUPTSOURCES);
         let mother = this;
-        this._hubConnection = new HubConnection(this.apiUrl + '/project');
-        this._hubConnection
-            .start()
-            .then(() => {
-                console.log('tag hub connection started!');
-                mother.route.queryParams.subscribe(params => {
-                    mother.imageId = params.id;
-                    mother.projectId = params.project;
-        
-                    mother.imgService.getImageListId(mother.projectId).toPromise().then(Response => {
-                        if (Response && Response.result) {
-                            mother.imgIds = Response.result;
-                        }
-                    });
-        
-                    mother.getImageData();
-                });
-            })
-            .catch(err => console.log('Error while establishing connection !'));
-
-        this._hubConnection.on("currentWorker", data => {
-            if (!data) {
-                mother.tagSerivce.getTags(mother.imageId).toPromise().then(Response => {
-                    if (Response && Response.result) {
-                        mother.tags = Response.result;
-
-                        mother.imgService.getImageById(mother.currentUserId, mother.imageId).toPromise().then(Response => {
-                            if (Response && Response.result) {
-
-                                Helpers.setLoading(false);
-
-                                mother.currentImage = Response.result;
-                                mother.imageUrl = mother.apiUrl + '/' + mother.currentImage.path;
-                                mother.timerSerive.startTimer(mother.currentImage.tagTime);
-                                mother.initCanvas();
-                            }
-                        });
-                    }
-                });
-            }else{
-                console.log(data);
-                mother.GetNextImage();
+        this.idle.onIdleEnd.subscribe(() => console.log('No longer idle.'));
+        this.idle.onTimeout.subscribe(() => {
+            this.timedOut = true;
+            console.log('timeout');
+            if (this.imageId) {
+                this.imgService.relaseImage(this.imageId).toPromise().then(
+                    ()=>this.router.navigate([''])
+                ).catch(err => console.log(err.error.text));
             }
         });
-        this._hubConnection.on("imageRelease", data => { 
-            if(!data){
-                mother.GetNextImage();
-            }else{
-                console.log(data);
-            }
-         });
+        this.idle.onIdleStart.subscribe(() => console.log('You\'ve gone idle!'));
+        this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
+
+        // sets the ping interval to 15 seconds
+        this.keepalive.interval(15);
+
+        this.keepalive.onPing.subscribe(() => {
+            this.lastPing = new Date();
+            console.log(this.lastPing);
+        });
+
+        this.resetIdle();
+    }
+
+    resetIdle() {
+        this.idle.watch();
+        this.timedOut = false;
+      }
+
+    setupHub() {
+        // this._hubConnection = new HubConnection(this.apiUrl + '/project');
+        // this._hubConnection
+        //     .start()
+        //     .then(() => console.log('connection started!'))
+        //     .catch(err => console.log('Error while establishing connection !'));
+        // this._hubConnection.on("send", data => { console.log(data) });
     }
 
     getImageData() {
@@ -142,29 +168,55 @@ export class ProjecTagComponent {
             mother.showError(error.error.text);
         });
 
-        this._hubConnection.invoke('currentWorker', this.projectId, this.imageId, this.currentUserId);
+        this.imgService.getCurrentWorker(this.projectId, this.imageId, this.currentUserId).toPromise().then(Response => {
+            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    this.tags = Response.result;
+
+                    this.imgService.getImageById(this.currentUserId, this.imageId).toPromise().then(Response => {
+                        if (Response && Response.result) {
+
+                            Helpers.setLoading(false);
+
+                            this.currentImage = Response.result;
+                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
+                            this.timerSerive.startTimer(this.currentImage.tagTime);
+                            this.initCanvas();
+                        }
+                    });
+                }
+            });
+        }).catch(err => {
+            this.GetNextImage();
+        });
     }
 
 
 
     GetNextImage() {
-
+        this.resetVariables();
         this.imgIds.splice(this.imgIds.indexOf(this.imageId), 1);
         if (this.imgIds.length > 0) {
             this.imageId = this.imgIds[0];
+            this.getImageData();
         }
         else {
+            let mother = this;
             this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     this.imgIds = Response.result;
+                    Helpers.setLoading(false);
+                    this.btnSaveEnabled = true;
+                    this.getImageData();
                 }
             });
-            Helpers.setLoading(false);
-            this.btnSaveEnabled = true;
-            return;
         }
 
-        this.canvas.clear();
+    }
+
+    resetVariables() {
+        if (this.canvas)
+            this.canvas.clear();
         this.currentImage = {};
         this.classData = [];
         // this.tagMode = false;
@@ -185,8 +237,6 @@ export class ProjecTagComponent {
         this.ExcluseAreas = [];
         this.excluseArea = new ExcluseArea();
         this.dataToUpdate = null;
-
-        this.getImageData();
     }
 
     switchTagMode() {
@@ -266,12 +316,11 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        this._hubConnection.invoke('imageRelease', this.imageId);
-        // this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
-        //     if (!Response) {
-        //         this.GetNextImage();
-        //     }
-        // });
+        this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
+            if (!Response) {
+                this.GetNextImage();
+            }
+        });
 
     }
 

@@ -39,11 +39,11 @@ namespace ApiServer.Hubs
 
             try
             {
-                var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
-                if (imgQueue != null)
-                {
-                    ImageRelease(imgQueue.ImageId);
-                }
+                //var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
+                //if (imgQueue != null)
+                //{
+                //    ImageRelease(imgQueue.ImageId);
+                //}
             }
             catch (Exception)
             {
@@ -55,11 +55,11 @@ namespace ApiServer.Hubs
         }
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
-            if (imgQueue != null)
-            {
-                ImageRelease(imgQueue.ImageId);
-            }
+            //var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
+            //if (imgQueue != null)
+            //{
+            //    ImageRelease(imgQueue.ImageId);
+            //}
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -84,8 +84,7 @@ namespace ApiServer.Hubs
                 {
                     ImageId = imageId,
                     ProjectId = projectId,
-                    UserId = userid,
-                    ConnectionId = Context.ConnectionId
+                    UserId = userid
                 };
 
                 try

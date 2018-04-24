@@ -20,7 +20,9 @@ import { TranslateHttpClientLoader } from './shared/i18n/http-client-loader';
 
 import { ToastModule } from 'ng2-toastr/ng2-toastr';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import { ColorPickerModule } from 'ngx-color-picker'
+import { ColorPickerModule } from 'ngx-color-picker';
+import { NgIdleKeepaliveModule } from '@ng-idle/keepalive'; // this includes the core NgIdleModule but includes keepalive providers for easy wireup
+
 @NgModule({
   declarations: [
     AppComponent
@@ -30,6 +32,7 @@ import { ColorPickerModule } from 'ngx-color-picker'
     FormsModule,
     
     ToastModule.forRoot(),
+    NgIdleKeepaliveModule.forRoot(),
     BrowserAnimationsModule,
     ColorPickerModule,
     

@@ -21,6 +21,8 @@ using VDS.Security;
 using Microsoft.AspNetCore.SignalR;
 using ApiServer.Hubs;
 using ApiServer.Core.SignalR;
+using ApiServer.BackgroundJobs;
+using Hangfire;
 
 namespace ApiServer.Controllers
 {
@@ -33,13 +35,12 @@ namespace ApiServer.Controllers
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        private IHubContext<VdsHub> _hubContext;
+        //private IHubContext<VdsHub> _hubContext;
 
-        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
+        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
-            _hubContext = hubContext;
         }
 
 
@@ -228,13 +229,13 @@ namespace ApiServer.Controllers
         // GET: api/Images/5
         [HttpGet("{userId}/{id}")]
         [ActionName("GetImageById")]
-        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid id)
+        public IActionResult GetImageById([FromRoute] long userId, [FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var image = await _context.Images.SingleOrDefaultAsync(m => m.Id == id);
+            var image = _context.Images.SingleOrDefault(m => m.Id == id);
 
             if (image == null)
             {
@@ -245,23 +246,32 @@ namespace ApiServer.Controllers
 
         }
 
+        [HttpPost("{imageId}/{userId}")]
+        [ActionName("BgStart")]
+        public IActionResult BgStart([FromRoute] Guid imageId, [FromRoute] long userId)
+        {
+            var c = new ImageQueueJobs(_context);
+            RecurringJob.AddOrUpdate(()=>c.CheckTimeOut(imageId, userId), Cron.Minutely);
+            return NoContent();
+        }
+
         [HttpGet("{projectId}/{imageId}/{userid}")]
         [ActionName("GetCurrentWorker")]
-        public async Task<IActionResult> GetCurrentWorker([FromRoute] Guid projectId, [FromRoute] Guid imageId, [FromRoute] long userid)
+        public IActionResult GetCurrentWorker([FromRoute] Guid projectId, [FromRoute] Guid imageId, [FromRoute] long userid)
         {
             if (!_context.Projects.Any(x => x.Id == projectId)) return Content("Project not found !");
 
             if (!_context.Images.Any(x => x.Id == imageId)) return Content("Image not found !");
 
             var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imageId);
-
             if (imgQueue == null)
             { 
                 imgQueue = new ImageQueue()
                 {
                     ImageId = imageId,
                     ProjectId = projectId,
-                    UserId = userid
+                    UserId = userid,
+                    LastPing = DateTime.Now
                 };
 
                 try
@@ -273,19 +283,40 @@ namespace ApiServer.Controllers
                 {
                     return Content(e.ToString());
                 }
-                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
+                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
                 return Ok();
             }
             else
             {
-                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
+                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
                 return Content("isUsing");
+            }
+        }
+
+        [HttpPut("{imgId}/{pingTime}")]
+        [ActionName("PingImage")]
+        public IActionResult PingImage([FromRoute] Guid imgId, [FromRoute] DateTime pingTime)
+        {
+
+            if (!_context.Images.Any(x => x.Id == imgId)) return Content("Image not found !");
+
+            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imgId);
+            if (imgQueue == null) return Content("Image not found!");
+
+            imgQueue.LastPing = pingTime;
+            try
+            {
+                _context.SaveChanges();
+                return Ok();
+            }catch(Exception e)
+            {
+                return Content(e.ToString());
             }
         }
 
         [HttpDelete("{imgId}")]
         [ActionName("RelaseImage")]
-        public async Task<IActionResult> RelaseImage([FromRoute] Guid imgId)
+        public IActionResult RelaseImage([FromRoute] Guid imgId)
         {
             var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imgId);
             if (imgQueue == null) return Ok();
@@ -293,8 +324,8 @@ namespace ApiServer.Controllers
             try
             {
                 _context.imageQueues.Remove(imgQueue);
-                await _context.SaveChangesAsync();
-                await _hubContext.Clients.All.SendAsync("broadcastMessage", imgId);
+                _context.SaveChanges();
+                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgId);
                 return Ok();
             }catch(Exception e)
             {

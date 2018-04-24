@@ -7,8 +7,14 @@ import { DxDataGridModule, DxMenuModule } from 'devextreme-angular';
 import { CreateUpdateProjectComponent } from './create-update/create-update-project.component';
 
 @NgModule({
-    imports: [SharedModule, RouterModule.forChild(routes), DxDataGridModule, DxMenuModule],
-    declarations: [ProjectComponent, CreateUpdateProjectComponent],
+    imports: [
+        SharedModule, 
+        RouterModule.forChild(routes), 
+        DxDataGridModule, 
+        DxMenuModule],
+    declarations: [
+        ProjectComponent, 
+        CreateUpdateProjectComponent],
     entryComponents : [CreateUpdateProjectComponent]
 })
 

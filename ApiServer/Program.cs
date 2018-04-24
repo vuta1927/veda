@@ -7,6 +7,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+//using Hangfire;
+using ApiServer.BackgroundJobs;
 
 namespace ApiServer
 {
@@ -15,6 +17,8 @@ namespace ApiServer
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
+            
+            //RecurringJob.AddOrUpdate(() => Console.WriteLine("hang file job."), Cron.Minutely);
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

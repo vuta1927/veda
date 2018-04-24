@@ -18,7 +18,9 @@ using ApiServer.Controllers;
 using ApiServer.Controllers.Auth;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
-using ApiServer.Hubs;
+using VDS.BackgroundJobs;
+using VDS.BackgroundJobs.Hangfire;
+using Hangfire;
 
 namespace ApiServer
 {
@@ -35,7 +37,7 @@ namespace ApiServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR();
+            //services.AddSignalR();
 
             services.AddMvc()
                 .AddJsonOptions(
@@ -77,6 +79,8 @@ namespace ApiServer
                 opts.Audience = "vds-api";
             });
 
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("HangFireDB")));
+            
             // Configure CORS for angular5 UI
             services.AddCors(
                 options => options.AddPolicy(
@@ -109,12 +113,15 @@ namespace ApiServer
 
             app.UseCors(_defaultCorsPolicyName);
 
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
+
             app.UseAuthentication();
 
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<VdsHub>("/project");
-            });
+            //app.UseSignalR(routes =>
+            //{
+            //    routes.MapHub<VdsHub>("/project");
+            //});
 
             app.UseStaticFiles();
 

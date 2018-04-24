@@ -11,6 +11,6 @@ namespace ApiServer.Model
         public Guid ProjectId { get; set; }
         public Guid ImageId { get; set; }
         public long UserId { get; set; }
-        public string ConnectionId { get; set; }
+        public DateTime LastPing { get; set; }
     }
 }
