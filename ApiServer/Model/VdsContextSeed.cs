@@ -32,8 +32,6 @@ namespace ApiServer.Model
                 using (_ctx)
                 {
                     await AddUser(_ctx);
-
-                    await AddQcType(_ctx);
                 }
             });
         }
@@ -129,6 +127,34 @@ namespace ApiServer.Model
 
             if (!_ctx.Users.Any(x => x.Email == "teacher@demo.com"))
             {
+                var pmUser = _ctx.Users.FirstOrDefault(u => u.UserName == "teacher");
+                if (pmUser == null)
+                {
+                    pmUser = new User
+                    {
+                        UserName = "pm",
+                        NormalizedUserName = "PM",
+                        Name = "pm",
+                        Surname = "pm",
+                        Email = "pm@demo.com",
+                        NormalizedEmail = "PM@DEMO.COM",
+                        IsActive = true,
+                        EmailConfirmed = true,
+                        PasswordHash = "AM4OLBpptxBYmM79lGOX9egzZk3vIQU3d/gFCJzaBjAPXzYIK3tQ2N7X4fcrHtElTw==" //123qwe
+                    };
+
+                    _ctx.Users.Add(pmUser);
+
+                    _ctx.SaveChanges();
+
+                    _ctx.UserRoles.Add(new UserRole(pmUser.Id, projectManagerRole.Id));
+
+                    _ctx.SaveChanges();
+                }
+            }
+
+            if (!_ctx.Users.Any(x => x.Email == "teacher@demo.com"))
+            {
                 var testUser = _ctx.Users.FirstOrDefault(u => u.UserName == "teacher");
                 if (testUser == null)
                 {
@@ -217,7 +243,7 @@ namespace ApiServer.Model
                 }
             }
 
-            var projectRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "Project");
+            var projectRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "ProjectManager");
             if (projectRole != null)
             {
                 var mangementPermissions = new VdsPermissionProvider();
@@ -235,18 +261,6 @@ namespace ApiServer.Model
                         }
                     }
                 }
-            }
-        }
-
-        private async Task AddQcType(VdsContext _ctx)
-        {
-            if (!_ctx.QuantityCheckTypes.Any())
-            {
-                var qcProvider = new QcProvider();
-                var QcTemplates = qcProvider.GetQcs();
-                await _ctx.AddRangeAsync(QcTemplates);
-
-                _ctx.SaveChanges();
             }
         }
 

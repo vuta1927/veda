@@ -246,14 +246,6 @@ namespace ApiServer.Controllers
 
         }
 
-        [HttpPost("{imageId}/{userId}")]
-        [ActionName("BgStart")]
-        public IActionResult BgStart([FromRoute] Guid imageId, [FromRoute] long userId)
-        {
-            var c = new ImageQueueJobs(_context);
-            RecurringJob.AddOrUpdate(()=>c.CheckTimeOut(imageId, userId), Cron.Minutely);
-            return NoContent();
-        }
 
         [HttpGet("{projectId}/{imageId}/{userid}")]
         [ActionName("GetCurrentWorker")]

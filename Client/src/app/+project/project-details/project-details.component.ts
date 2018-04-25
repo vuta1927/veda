@@ -11,6 +11,7 @@ import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../../shared/services/security.service';
 import { ActivatedRoute } from '@angular/router';
 import { DataService } from './data.service';
+import {Constants} from '../../constants';
 import 'rxjs/add/operator/filter';
 
 @Component({
@@ -29,6 +30,10 @@ export class ProjectDetailsComponent implements OnInit {
     permissionSource: any;
     permissions: PermissionCategory[];
     isAdmin: boolean = false;
+    viewProject: boolean = false;
+    editProject: boolean = false;
+    addProject: boolean = false;
+
     constructor(
         private modalService: NgbModal, 
         private securityService: SecurityService, 
@@ -39,6 +44,10 @@ export class ProjectDetailsComponent implements OnInit {
         private dataSerivce: DataService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
+        this.viewProject = this.securityService.IsGranted(Constants.viewProject);
+        this.editProject = this.securityService.IsGranted(Constants.editProject);
+        this.addProject = this.securityService.IsGranted(Constants.addProject);
+        
         let currentUserData = this.securityService.getUserRoles();
         if (currentUserData == "Administrator")
             this.isAdmin = true;

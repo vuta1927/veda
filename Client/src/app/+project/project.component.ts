@@ -3,12 +3,12 @@ import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DxDataGridComponent } from 'devextreme-angular';
 import { Helpers } from '../helpers';
-import { PermissionCategory } from '../shared/models/permission.model';
 import { ProjectService } from './project.service';
 import { CreateUpdateProjectComponent } from './create-update/create-update-project.component';
 import { ProjectForAdd } from '../shared/models/project.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../shared/services/security.service';
+import { Constants } from '../constants';
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
@@ -20,17 +20,26 @@ import { SecurityService } from '../shared/services/security.service';
 export class ProjectComponent {
     @ViewChildren(DxDataGridComponent) dataGrid: DxDataGridComponent
     dataSource: any = {};
-    permissionSource: any;
     selectedProjects: any[] = [];
-    permissions: PermissionCategory[];
     isAdmin: boolean = false;
+    addProject: boolean = false;
+    editProject: boolean = false;
+    deleteProject: boolean = false;
+
     noData: string = "There are no data to load";
-    constructor(private modalService: NgbModal, private securityService: SecurityService, private projectService: ProjectService, public toastr: ToastsManager, private vcr: ViewContainerRef) {
+    constructor(
+        private modalService: NgbModal, 
+        private securityService: SecurityService, 
+        private projectService: ProjectService, 
+        public toastr: ToastsManager, 
+        private vcr: ViewContainerRef
+    ) {
         this.toastr.setRootViewContainerRef(vcr);
-        let currentUserData = this.securityService.getUserRoles();
-        console.log(currentUserData.indexOf("Administrator"));
-        if (currentUserData.indexOf("Administrator") != -1)
-            this.isAdmin = true;
+        this.isAdmin = this.securityService.IsGranted(Constants.admin);
+        this.addProject = this.securityService.IsGranted(Constants.addProject);
+        this.editProject = this.securityService.IsGranted(Constants.editProject);
+        this.deleteProject = this.securityService.IsGranted(Constants.deleteProject);
+        
         this.dataSource.store = new CustomStore({
             load: function (loadOptions: any) {
                 var params = '';
@@ -92,7 +101,7 @@ export class ProjectComponent {
         console.log(data);
     }
 
-    addProject() {
+    addProjectClicked() {
         this.openCreateOrUpdateModal();
     }
 

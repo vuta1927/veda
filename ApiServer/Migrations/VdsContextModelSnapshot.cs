@@ -80,7 +80,9 @@ namespace ApiServer.Migrations
 
                     b.Property<DateTime>("QcDate");
 
-                    b.Property<string>("QcStatus");
+                    b.Property<bool>("QcStatus");
+
+                    b.Property<int?>("QuantityCheckId");
 
                     b.Property<int>("TagHasClass");
 
@@ -100,6 +102,10 @@ namespace ApiServer.Migrations
 
                     b.HasIndex("ProjectId");
 
+                    b.HasIndex("QuantityCheckId")
+                        .IsUnique()
+                        .HasFilter("[QuantityCheckId] IS NOT NULL");
+
                     b.HasIndex("UserQcId");
 
                     b.HasIndex("UserTaggedId");
@@ -113,6 +119,8 @@ namespace ApiServer.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<Guid>("ImageId");
+
+                    b.Property<DateTime>("LastPing");
 
                     b.Property<Guid>("ProjectId");
 
@@ -200,29 +208,23 @@ namespace ApiServer.Migrations
 
                     b.Property<DateTime>("QCDate");
 
-                    b.Property<int?>("QuantityCheckTypeId");
-
                     b.Property<long?>("UserQcId");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("Value1");
 
-                    b.HasIndex("QuantityCheckTypeId");
+                    b.Property<bool>("Value2");
+
+                    b.Property<bool>("Value3");
+
+                    b.Property<bool>("Value4");
+
+                    b.Property<bool>("Value5");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("UserQcId");
 
                     b.ToTable("QuantityChecks");
-                });
-
-            modelBuilder.Entity("ApiServer.Model.QuantityCheckType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("QuantityCheckTypes");
                 });
 
             modelBuilder.Entity("ApiServer.Model.Tag", b =>
@@ -250,9 +252,7 @@ namespace ApiServer.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.HasIndex("QuantityCheckId")
-                        .IsUnique()
-                        .HasFilter("[QuantityCheckId] IS NOT NULL");
+                    b.HasIndex("QuantityCheckId");
 
                     b.HasIndex("UserTaggedId");
 
@@ -628,6 +628,10 @@ namespace ApiServer.Migrations
                         .WithMany()
                         .HasForeignKey("ProjectId");
 
+                    b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
+                        .WithOne("Image")
+                        .HasForeignKey("ApiServer.Model.Image", "QuantityCheckId");
+
                     b.HasOne("VDS.Security.User", "UserQc")
                         .WithMany()
                         .HasForeignKey("UserQcId");
@@ -667,10 +671,6 @@ namespace ApiServer.Migrations
 
             modelBuilder.Entity("ApiServer.Model.QuantityCheck", b =>
                 {
-                    b.HasOne("ApiServer.Model.QuantityCheckType", "QuantityCheckType")
-                        .WithMany("quantityChecks")
-                        .HasForeignKey("QuantityCheckTypeId");
-
                     b.HasOne("VDS.Security.User", "UserQc")
                         .WithMany()
                         .HasForeignKey("UserQcId");
@@ -683,8 +683,8 @@ namespace ApiServer.Migrations
                         .HasForeignKey("ImageId");
 
                     b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
-                        .WithOne("Tag")
-                        .HasForeignKey("ApiServer.Model.Tag", "QuantityCheckId");
+                        .WithMany()
+                        .HasForeignKey("QuantityCheckId");
 
                     b.HasOne("VDS.Security.User", "UserTagged")
                         .WithMany()

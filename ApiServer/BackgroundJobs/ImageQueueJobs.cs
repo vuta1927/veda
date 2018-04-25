@@ -7,28 +7,23 @@ using ApiServer.Model;
 
 namespace ApiServer.BackgroundJobs
 {
-    public class ImageQueueJobs
+    public static class ImageQueueJobs
     {
-        private readonly VdsContext _ctx;
-        public ImageQueueJobs(VdsContext context)
-        {
-            _ctx = context;
-        }
-
-        public void Clean()
+        public static void Clean(VdsContext _ctx)
         {
             _ctx.imageQueues.RemoveRange(_ctx.imageQueues);
         }
 
-        public void CheckTimeOut(Guid imageId, long userId)
+        public static void CheckTimeOut(VdsContext _ctx)
         {
             var currentTime = DateTime.Now;
-            var data = _ctx.imageQueues.Where(x=>x.ImageId == imageId && x.UserId == userId);
+            var data = _ctx.imageQueues;
 
             if(data.Count() > 0)
             {
                 foreach (var row in data)
                 {
+                    if (row.LastPing == null) return;
                     var t = DateTime.Now.Subtract(row.LastPing).TotalMinutes;
                     if(t >= 30)
                     {

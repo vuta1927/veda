@@ -80,6 +80,14 @@ export class SecurityService {
         return _.includes(permissions, permission);
     }
 
+    public IsRole(role: string): boolean{
+        if(!this.IsAuthorized) return false;
+        let dataAccessToken: any = this.getDataFromToken(this.oauthService.getAccessToken());
+        let roles = _.values(dataAccessToken.Roles);
+
+        return _.includes(roles, role);
+    }
+
     private urlBase64Decode(str: string) {
         let output = str.replace('-', '+').replace('_', '/');
         switch (output.length % 4) {

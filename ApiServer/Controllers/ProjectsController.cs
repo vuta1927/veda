@@ -183,6 +183,7 @@ namespace ApiServer.Controllers
                 proj.TotalImgNotTagged += 1;
                 proj.TotalImgNotClassed += 1;
                 proj.TotalImgNotQC += 1;
+                proj.TotalImgQC = 0;
                 await _context.SaveChangesAsync();
             }
             catch (Exception)

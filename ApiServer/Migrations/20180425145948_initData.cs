@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ApiServer.Migrations
 {
-    public partial class InitData : Migration
+    public partial class initData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -54,6 +54,7 @@ namespace ApiServer.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ImageId = table.Column<Guid>(nullable: false),
+                    LastPing = table.Column<DateTime>(nullable: false),
                     ProjectId = table.Column<Guid>(nullable: false),
                     UserId = table.Column<long>(nullable: false)
                 },
@@ -164,19 +165,6 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuantityCheckTypes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_QuantityCheckTypes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Settings",
                 columns: table => new
                 {
@@ -255,48 +243,6 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Images",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Classes = table.Column<string>(nullable: true),
-                    Ignored = table.Column<bool>(nullable: false),
-                    Path = table.Column<string>(nullable: true),
-                    ProjectId = table.Column<Guid>(nullable: true),
-                    QcDate = table.Column<DateTime>(nullable: false),
-                    QcStatus = table.Column<string>(nullable: true),
-                    TagHasClass = table.Column<int>(nullable: false),
-                    TagNotHasClass = table.Column<int>(nullable: false),
-                    TagTime = table.Column<double>(nullable: false),
-                    TaggedDate = table.Column<DateTime>(nullable: false),
-                    TotalClass = table.Column<int>(nullable: false),
-                    UserQcId = table.Column<long>(nullable: true),
-                    UserTaggedId = table.Column<long>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Images", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Images_Projects_ProjectId",
-                        column: x => x.ProjectId,
-                        principalTable: "Projects",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Images_Users_UserQcId",
-                        column: x => x.UserQcId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Images_Users_UserTaggedId",
-                        column: x => x.UserTaggedId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "QuantityChecks",
                 columns: table => new
                 {
@@ -304,18 +250,16 @@ namespace ApiServer.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Comment = table.Column<string>(nullable: true),
                     QCDate = table.Column<DateTime>(nullable: false),
-                    QuantityCheckTypeId = table.Column<int>(nullable: true),
-                    UserQcId = table.Column<long>(nullable: true)
+                    UserQcId = table.Column<long>(nullable: true),
+                    Value1 = table.Column<bool>(nullable: false),
+                    Value2 = table.Column<bool>(nullable: false),
+                    Value3 = table.Column<bool>(nullable: false),
+                    Value4 = table.Column<bool>(nullable: false),
+                    Value5 = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_QuantityChecks", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_QuantityChecks_QuantityCheckTypes_QuantityCheckTypeId",
-                        column: x => x.QuantityCheckTypeId,
-                        principalTable: "QuantityCheckTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_QuantityChecks_Users_UserQcId",
                         column: x => x.UserQcId,
@@ -409,37 +353,48 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tags",
+                name: "Images",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    ImageId = table.Column<Guid>(nullable: true),
-                    Index = table.Column<int>(nullable: false),
-                    Left = table.Column<double>(nullable: false),
+                    Id = table.Column<Guid>(nullable: false),
+                    Classes = table.Column<string>(nullable: true),
+                    Ignored = table.Column<bool>(nullable: false),
+                    Path = table.Column<string>(nullable: true),
+                    ProjectId = table.Column<Guid>(nullable: true),
+                    QcDate = table.Column<DateTime>(nullable: false),
+                    QcStatus = table.Column<bool>(nullable: false),
                     QuantityCheckId = table.Column<int>(nullable: true),
-                    Top = table.Column<double>(nullable: false),
-                    UserTaggedId = table.Column<long>(nullable: true),
-                    Width = table.Column<double>(nullable: false),
-                    height = table.Column<double>(nullable: false)
+                    TagHasClass = table.Column<int>(nullable: false),
+                    TagNotHasClass = table.Column<int>(nullable: false),
+                    TagTime = table.Column<double>(nullable: false),
+                    TaggedDate = table.Column<DateTime>(nullable: false),
+                    TotalClass = table.Column<int>(nullable: false),
+                    UserQcId = table.Column<long>(nullable: true),
+                    UserTaggedId = table.Column<long>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.PrimaryKey("PK_Images", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tags_Images_ImageId",
-                        column: x => x.ImageId,
-                        principalTable: "Images",
+                        name: "FK_Images_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Tags_QuantityChecks_QuantityCheckId",
+                        name: "FK_Images_QuantityChecks_QuantityCheckId",
                         column: x => x.QuantityCheckId,
                         principalTable: "QuantityChecks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Tags_Users_UserTaggedId",
+                        name: "FK_Images_Users_UserQcId",
+                        column: x => x.UserQcId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Images_Users_UserTaggedId",
                         column: x => x.UserTaggedId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -526,6 +481,44 @@ namespace ApiServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ImageId = table.Column<Guid>(nullable: true),
+                    Index = table.Column<int>(nullable: false),
+                    Left = table.Column<double>(nullable: false),
+                    QuantityCheckId = table.Column<int>(nullable: true),
+                    Top = table.Column<double>(nullable: false),
+                    UserTaggedId = table.Column<long>(nullable: true),
+                    Width = table.Column<double>(nullable: false),
+                    height = table.Column<double>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tags_Images_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Images",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Tags_QuantityChecks_QuantityCheckId",
+                        column: x => x.QuantityCheckId,
+                        principalTable: "QuantityChecks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Tags_Users_UserTaggedId",
+                        column: x => x.UserTaggedId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "classTags",
                 columns: table => new
                 {
@@ -568,6 +561,13 @@ namespace ApiServer.Migrations
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Images_QuantityCheckId",
+                table: "Images",
+                column: "QuantityCheckId",
+                unique: true,
+                filter: "[QuantityCheckId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Images_UserQcId",
                 table: "Images",
                 column: "UserQcId");
@@ -608,11 +608,6 @@ namespace ApiServer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuantityChecks_QuantityCheckTypeId",
-                table: "QuantityChecks",
-                column: "QuantityCheckTypeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_QuantityChecks_UserQcId",
                 table: "QuantityChecks",
                 column: "UserQcId");
@@ -645,9 +640,7 @@ namespace ApiServer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Tags_QuantityCheckId",
                 table: "Tags",
-                column: "QuantityCheckId",
-                unique: true,
-                filter: "[QuantityCheckId] IS NOT NULL");
+                column: "QuantityCheckId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tags_UserTaggedId",
@@ -725,13 +718,10 @@ namespace ApiServer.Migrations
                 name: "Images");
 
             migrationBuilder.DropTable(
-                name: "QuantityChecks");
-
-            migrationBuilder.DropTable(
                 name: "Projects");
 
             migrationBuilder.DropTable(
-                name: "QuantityCheckTypes");
+                name: "QuantityChecks");
 
             migrationBuilder.DropTable(
                 name: "Users");

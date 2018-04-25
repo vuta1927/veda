@@ -40,20 +40,20 @@
   <div class="m-portlet m-portlet--mobile">
     <div class="m-portlet__body">
       <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-12" *ngIf="addProject">
           <div class="dropdown">
             <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
               aria-expanded="false">
               Actions
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
-              <a class="dropdown-item" (click)="addProject()">
+              <a class="dropdown-item" (click)="addProjectClicked()">
                 <i class="la la-plus i-plus"></i>
                 Add new project
               </a>
               <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
-              <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
+              <a *ngIf="(!selectedProjects.length || deleteProject)" class="dropdown-item disabled">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
             </div>
           </div>

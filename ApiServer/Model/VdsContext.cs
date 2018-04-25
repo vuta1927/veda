@@ -26,7 +26,6 @@ namespace ApiServer.Model
         public DbSet<Class> Classes { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
-        public DbSet<QuantityCheckType> QuantityCheckTypes { get; set; }
         public DbSet<ApiServer.Model.Tag> Tags { get; set; }
         public DbSet<ClassTag> classTags { get; set; }
         public DbSet<ImageQueue> imageQueues { get; set; }

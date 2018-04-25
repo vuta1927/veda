@@ -56,7 +56,7 @@ namespace ApiServer.Controllers.Auth
         [HttpGet]
         public IActionResult GetCategorys()
         {
-            var temp = _context.Permissions.GroupBy(p => p.Category).Select(c=>c.Key);
+            var temp = _context.Permissions.GroupBy(p => p.Category).Select(c => c.Key);
             return Ok(temp);
         }
 
@@ -84,14 +84,14 @@ namespace ApiServer.Controllers.Auth
 
                 foreach (var permission in permissionWithCategors)
                 {
-                    var permisionRole = _context.PermissionRoles.SingleOrDefault(p => p.RoleId == roleId && p.PermissionId == permission.Id);
+                    var permisionRole = _context.PermissionRoles.FirstOrDefault(p => p.RoleId == roleId && p.PermissionId == permission.Id);
                     if (permisionRole != null)
                     {
                         permission.IsCheck = true;
                     }
                 }
             }
-            
+
 
             return Ok(permissionWithCategors);
         }
@@ -154,19 +154,16 @@ namespace ApiServer.Controllers.Auth
                 return BadRequest(ModelState);
             }
 
-            if (PermissionRoleExists(permission.Id))
-            {
-                var per = await _context.PermissionRoles.SingleOrDefaultAsync(m => m.PermissionId == permission.Id);
-                if (per == null)
-                {
-                    return NotFound();
+            var pers = _context.PermissionRoles.Where(m => m.PermissionId == permission.Id && m.RoleId == id);
 
-                }
-                _context.PermissionRoles.Remove(per);   
+            if (pers.Count() > 0)
+            {
+                _context.PermissionRoles.RemoveRange(pers);
             }
+
             else
             {
-                _context.PermissionRoles.Add(new PermissionRole() { Id = permission.Id, RoleId = id});
+                _context.PermissionRoles.Add(new PermissionRole() { PermissionId = permission.Id, RoleId = id });
             }
 
             try

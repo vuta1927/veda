@@ -9,15 +9,18 @@ import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
 import { Tag, ExcluseArea, Coordinate, DataUpdate } from '../../shared/models/tag.model';
 import { TagService } from '../services/tag.service';
+import { QcService } from '../services/qc.service';
 import { ClassList } from '../../shared/models/class.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../../shared/services/security.service';
+import { Constants } from '../../constants';
 import { TimeService } from '../services/timer.service';
 import { HubConnection } from '@aspnet/signalr';
 import { MessageTypes } from '../project-details/messageType';
 
 import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
 import { Keepalive } from '@ng-idle/keepalive';
+import context_menu from 'devextreme/ui/context_menu';
 @Component({
     selector: 'app-project-tag',
     templateUrl: 'project-tag.component.html',
@@ -35,7 +38,7 @@ export class ProjecTagComponent {
     isDragging: boolean = false;
     selection: boolean = false;
     projectId: string = null;
-    selectedClass: Tag;
+    selectedTag: Tag;
     tags: Array<Tag> = new Array<Tag>();
     canvasTags: any = [];
     canvasLabels: any = [];
@@ -55,10 +58,15 @@ export class ProjecTagComponent {
     currentUserId: number;
     imgIds: string[] = [];
     messageTypes: MessageTypes = new MessageTypes();
-
+    qcValues: any = [{ name: 'Passed', value: true }, { name: 'Falsed', value: false }];
+    qcValue: boolean = false;
     timedOut = false;
     lastPing?: Date = null;
 
+    isAdmin: boolean = false;
+    viewTag: boolean = false; editTag: boolean = false; deleteTag: boolean = false; addTag: boolean = false; viewImg: boolean = false;
+    viewQc: boolean = false; addQc: boolean = false; editQc: boolean = false; deleteQc: boolean = false;
+    qcComment: string = '';
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -71,13 +79,26 @@ export class ProjecTagComponent {
         private authSevice: SecurityService,
         private timerSerive: TimeService,
         private idle: Idle,
-        private keepalive: Keepalive
+        private keepalive: Keepalive,
+        private securityServce: SecurityService,
+        private qcService: QcService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        this.setUpIdleTimeout(5, 5);
+        this.setUpIdleTimeout(600, 5);
     }
 
     ngOnInit() {
+        this.isAdmin = this.securityServce.IsGranted(Constants.admin);
+        this.viewTag = this.securityServce.IsGranted(Constants.ViewTag);
+        this.editTag = this.securityServce.IsGranted(Constants.EditTag);
+        this.deleteTag = this.securityServce.IsGranted(Constants.DeleteTag);
+        this.addTag = this.securityServce.IsGranted(Constants.AddTag);
+        this.viewImg = this.securityServce.IsGranted(Constants.viewImage);
+        this.addQc = this.securityServce.IsGranted(Constants.QcAdd);
+        this.editQc = this.securityServce.IsGranted(Constants.QcEdit);
+        this.viewQc = this.securityServce.IsGranted(Constants.QcView);
+        this.deleteQc = this.securityServce.IsGranted(Constants.QcDelete);
+
 
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
@@ -100,7 +121,7 @@ export class ProjecTagComponent {
         //Called once, before the instance is destroyed.
         //Add 'implements OnDestroy' to the class.
         console.log("leaving tag page ...");
-        if(this.idle){
+        if (this.idle) {
             this.idle.stop();
         }
         if (this.imageId) {
@@ -109,7 +130,7 @@ export class ProjecTagComponent {
 
     }
 
-    setUpIdleTimeout(idleTime:number, timeOut:number) {
+    setUpIdleTimeout(idleTime: number, timeOut: number) {
         // sets an idle timeout of 5 seconds, for testing purposes.
         this.idle.setIdle(idleTime);
         // sets a timeout period of 5 seconds. after 10 seconds of inactivity, the user will be considered timed out.
@@ -123,7 +144,7 @@ export class ProjecTagComponent {
             console.log('timeout');
             if (this.imageId) {
                 this.imgService.relaseImage(this.imageId).toPromise().then(
-                    ()=>this.router.navigate([''])
+                    () => this.router.navigate([''])
                 ).catch(err => console.log(err.error.text));
             }
         });
@@ -144,7 +165,7 @@ export class ProjecTagComponent {
     resetIdle() {
         this.idle.watch();
         this.timedOut = false;
-      }
+    }
 
     setupHub() {
         // this._hubConnection = new HubConnection(this.apiUrl + '/project');
@@ -215,14 +236,13 @@ export class ProjecTagComponent {
     }
 
     resetVariables() {
-        if (this.canvas)
-            this.canvas.clear();
+        this.canvas.clear();
         this.currentImage = {};
         this.classData = [];
         // this.tagMode = false;
         // this.isDragging = false;
         this.selection = false;
-        this.selectedClass = null;
+        this.selectedTag = null;
         this.tags = new Array<Tag>();
         this.canvasTags = [];
         this.canvasLabels = [];
@@ -253,7 +273,7 @@ export class ProjecTagComponent {
     }
 
     classRadioChange(e) {
-        if (this.selectedClass == null) return;
+        if (this.selectedTag == null) return;
 
         var value = Number(e.target.value);
 
@@ -266,7 +286,7 @@ export class ProjecTagComponent {
         }
 
         this.tags.forEach(tag => {
-            if (tag.index == this.selectedClass.index) {
+            if (tag.index == this.selectedTag.index) {
                 tag.classIds = [];
 
                 if (e.target.checked) {
@@ -328,17 +348,26 @@ export class ProjecTagComponent {
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
-        this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
+        if (this.addTag && this.editTag) {
+            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
 
-        this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
-            console.log(this.projectId, this.imageId);
-            Helpers.setLoading(false);
-            mother.GetNextImage();
-        }).catch(errorResp => {
-            Helpers.setLoading(false);
-            mother.showError(errorResp.error.text);
-            mother.btnSaveEnabled = true;
-        });
+            this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
+                Helpers.setLoading(false);
+                mother.GetNextImage();
+            }).catch(errorResp => {
+                Helpers.setLoading(false);
+                mother.showError(errorResp.error.text);
+                mother.btnSaveEnabled = true;
+            });
+        } else if (this.addQc && this.editQc) {
+            let data = { userId: this.currentUserId, imageId: this.imageId, qcValue: this.qcValue, qcComment: this.qcComment };
+            this.qcService.saveQc(data).toPromise().then(Response => {
+                if (Response) {
+                    Helpers.setLoading(false);
+                    mother.GetNextImage();
+                }
+            }).catch(err => { console.log(err.error.text) });
+        }
     }
 
     getColorByClass(classId) {
@@ -359,10 +388,22 @@ export class ProjecTagComponent {
 
     initCanvas() {
         var mother = this;
+        let container = document.getElementById('canvas-wrapper');
+        container.innerHTML = `<canvas id="canvas" class="canvas"></canvas>`;
+
         this.canvas = new fabric.Canvas('canvas', { selection: false });
         fabric.Circle.prototype.originX = fabric.Circle.prototype.originY = 'center';
         fabric.Line.prototype.originX = fabric.Line.prototype.originY = 'center';
-        var HideControls = {
+
+        this.setBackgroundImg();
+        this.autoResizeCanvas();
+        this.setupZoomFunc();
+        this.setUpMouseEvent();
+    }
+
+
+    setBackgroundImg() {
+        let HideControls = {
             'tl': true,      //top left
             'tr': false,     //top right
             'bl': true,      //bottom left
@@ -373,6 +414,7 @@ export class ProjecTagComponent {
             'mb': true,      //middle bottom corner
             'mtr': true,
         };
+        let mother = this;
         fabric.Image.fromURL(this.apiUrl + '/' + this.currentImage.path, function (img) {
             img.selectable = false;
             img.setControlsVisibility(HideControls);
@@ -388,10 +430,6 @@ export class ProjecTagComponent {
             mother.imageWidth = img.width;
             mother.drawTags();
         });
-
-        this.autoResizeCanvas();
-        this.setupZoomFunc();
-        this.setUpMouseEvent();
     }
 
     addDeleteBtn(x, y) {
@@ -422,8 +460,18 @@ export class ProjecTagComponent {
                 originColor: color,
                 strokeWidth: 2,
                 fill: '',
-                transparentCorners: false
+                transparentCorners: false,
+                hasRotatingPoint: mother.addTag,
+                hasControls: mother.addTag,
             });
+            rect.lockMovementX = mother.addTag;
+            rect.lockMovementY = mother.addTag;
+            rect.lockScalingX = mother.addTag;
+            rect.lockScalingY = mother.addTag;
+            rect.lockUniScaling = mother.addTag;
+            rect.lockRotation = mother.addTag;
+
+
             this.bindingEvent(rect);
             this.canvas.add(rect);
             this.canvasTags.push(rect);
@@ -550,7 +598,7 @@ export class ProjecTagComponent {
 
 
             //--- set up tag func ---
-            if (!mother.tagMode || isDragging) return;
+            if (!mother.tagMode || isDragging || mother.addTag || mother.editTag) return;
             isDown = true;
             var pointer = this.getPointer(evt);
             startPosition.x = pointer.x;
@@ -570,7 +618,9 @@ export class ProjecTagComponent {
                 originColor: '#878787',
                 strokeWidth: 2,
                 fill: '',
-                transparentCorners: false
+                transparentCorners: false,
+                hasRotatingPoint: mother.addTag,
+                hasControls: mother.addTag
             });
             this.add(rect);
         });
@@ -609,6 +659,8 @@ export class ProjecTagComponent {
                 isDragging = false;
                 return;
             } else if (!mother.tagMode) return;
+
+            if (!mother.addTag || !mother.editTag) return;
 
             mother.bindingEvent(rect);
             mother.canvas.add(rect);
@@ -653,20 +705,24 @@ export class ProjecTagComponent {
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
             // $("#deleteBtn").remove();
+            if (!mother.addTag || !mother.editTag) return;
             if (e.target.get('name').split('-')[0] == 'rect') {
                 mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
             }
         });
 
         this.canvas.on('object:modified', function (e) {
+            if (!mother.addTag || !mother.editTag) return;
             mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
+            if (!mother.addTag || !mother.editTag) return;
             $("#deleteBtn").remove();
         });
 
         this.canvas.on('object:rotating', function (e) {
+            if (!mother.addTag || !mother.editTag) return;
             $("#deleteBtn").remove();
         });
 
@@ -675,7 +731,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('selection:cleared', function () {
-            if (!mother.tagMode) return;
+            if (!mother.tagMode || !mother.addTag || !mother.editTag) return;
             mother.tagMode = true;
         });
 
@@ -796,7 +852,7 @@ export class ProjecTagComponent {
     onTagSelectedEvent(target) {
         this.tags.forEach(tag => {
             if (tag.index == target.index) {
-                this.selectedClass = tag;
+                this.selectedTag = tag;
 
                 for (let i = 0; i < this.classData.length; i++) {
                     if (tag.classIds.indexOf(this.classData[i].id) != -1) {
@@ -806,34 +862,6 @@ export class ProjecTagComponent {
                     }
                 }
             }
-        });
-    }
-
-    canvasPanning() {
-        var mother = this;
-        this.canvas.on('mouse:down', function (opt) {
-            var evt = opt.e;
-            if (evt.altKey === true) {
-                mother.isDragging = true;
-                mother.selection = false;
-                this.lastPosX = evt.clientX;
-                this.lastPosY = evt.clientY;
-            }
-        });
-        this.canvas.on('mouse:move', function (opt) {
-            if (mother.isDragging) {
-                var e = opt.e;
-                this.viewportTransform[4] += e.clientX - this.lastPosX;
-                this.viewportTransform[5] += e.clientY - this.lastPosY;
-                this.requestRenderAll();
-                this.lastPosX = e.clientX;
-                this.lastPosY = e.clientY;
-            }
-        });
-        this.canvas.on('mouse:up', function (opt) {
-
-            mother.isDragging = false;
-            mother.selection = true;
         });
     }
 

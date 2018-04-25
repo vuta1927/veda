@@ -6,7 +6,8 @@ import { ProjectForUpdate } from '../../../shared/models/project.model';
 import { FormService } from "../../../shared/services/form.service";
 import { DataService } from '../data.service';
 import { ProjectService } from '../../project.service';
-
+import { Constants } from '../../../constants';
+import { SecurityService } from '../../../shared/services/security.service';
 import { Observable } from "rxjs/Observable";
 import { matchOtherValidator } from "../../../shared/validators/validators";
 import { NGX_ERRORS_SERVICE_CHILD_PROVIDERS, NgxErrorsService } from "../../../shared/utils/form-errors/ngx-errors.service";
@@ -24,6 +25,9 @@ export class ProjectInfoComponent implements OnInit {
   form: FormGroup;
   messageHeader: string;
   message: string;
+  viewProject: boolean = false;
+  editProject: boolean = false;
+
   constructor(
     private formBuilder: FormBuilder,
     private toastr: ToastsManager,
@@ -32,12 +36,15 @@ export class ProjectInfoComponent implements OnInit {
     private projectService: ProjectService,
     private ngxErrorsService: NgxErrorsService,
     public formService: FormService,
+    private securityService: SecurityService
 
   ) {
     this.toastr.setRootViewContainerRef(vcr);
   }
 
   ngOnInit() {
+    this.viewProject = this.securityService.IsGranted(Constants.viewProject);
+    this.editProject = this.securityService.IsGranted(Constants.editProject);
     this.dataService.currentProject.subscribe(p => {
       this.currentProject = p;
       this.createForm();

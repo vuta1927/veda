@@ -46,6 +46,7 @@ import { TagService } from '../+project/services/tag.service';
 import { ProjectUserService } from '../+project/services/project-users.service';
 import { TimeService } from '../+project/services/timer.service';
 import { SignalRService } from '../+project/services/signalr.service';
+import { QcService } from '../+project/services/qc.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -106,7 +107,8 @@ export class SharedModule {
                 ClassService,
                 ProjectUserService,
                 TimeService,
-                SignalRService
+                SignalRService,
+                QcService
             ]
         }
     }

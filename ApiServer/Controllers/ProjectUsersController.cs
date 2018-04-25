@@ -192,24 +192,24 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == projectUser.Id);
+            var project = await _context.Projects.FirstOrDefaultAsync(x => x.Id == projectUser.Id);
             if (project == null)
             {
                 return Content("Not esxit in database!");
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == projectUser.UserName);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == projectUser.UserName);
             if (user == null)
             {
                 return Content("User not found!");
             }
 
-            var role = await _context.Roles.SingleOrDefaultAsync(x => x.RoleName == projectUser.RoleName);
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.RoleName == projectUser.RoleName);
             if (role == null)
             {
                 return Content("Role not found!");
             }
-            var RoleForUser = await _context.UserRoles.SingleOrDefaultAsync(x => x.RoleId == role.Id);
+            var RoleForUser = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
 
             if (RoleForUser == null)
             {
@@ -246,17 +246,17 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var projectUser = await _context.ProjectUsers.Include(x=>x.Role).SingleOrDefaultAsync(m => m.Id == id);
+            var projectUser = await _context.ProjectUsers.Include(x=>x.Role).FirstOrDefaultAsync(m => m.Id == id);
             if (projectUser == null)
             {
                 return Content("Not Found !");
             }
-            var role = await _context.Roles.SingleOrDefaultAsync(x => x.Id == projectUser.Role.Id);
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.Id == projectUser.Role.Id);
             if (role == null)
             {
                 return Content("Role not found!");
             }
-            var RoleForUser = await _context.UserRoles.SingleOrDefaultAsync(x => x.RoleId == role.Id);
+            var RoleForUser = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
 
             if (RoleForUser == null)
             {

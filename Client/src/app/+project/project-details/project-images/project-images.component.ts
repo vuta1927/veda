@@ -16,6 +16,7 @@ import * as _ from 'lodash';
 import { HttpClient, HttpRequest, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ConfigurationService } from "../../../shared/services/configuration.service";
 import { SecurityService } from '../../../shared/services/security.service';
+import { Constants } from '../../../constants';
 
 import { DxDataGridComponent } from 'devextreme-angular';
 import DataSource from 'devextreme/data/data_source';
@@ -54,6 +55,13 @@ export class ProjectImagesComponent implements OnInit {
     totalFile: number = 0;
     messageTypes: MessageTypes = new MessageTypes();
     _hubConnection: HubConnection;
+    viewProject: boolean = false;
+    editProject: boolean = false;
+    addProject: boolean = false;
+    viewImage: boolean = false;
+    addImage: boolean = false;
+    deleteImage: boolean = false;
+
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -65,7 +73,7 @@ export class ProjectImagesComponent implements OnInit {
         public formService: FormService,
         private http: HttpClient,
         private configurationService: ConfigurationService,
-        private authService: SecurityService,
+        private securityService: SecurityService,
         private signalService: SignalRService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
@@ -73,6 +81,13 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.viewProject = this.securityService.IsGranted(Constants.viewProject);
+        this.editProject = this.securityService.IsGranted(Constants.editProject);
+        this.addProject = this.securityService.IsGranted(Constants.addProject);
+        this.viewImage = this.securityService.IsGranted(Constants.viewImage);
+        this.addImage = this.securityService.IsGranted(Constants.addImage);
+        this.deleteImage = this.securityService.IsGranted(Constants.deleteImage);
+
         this.uploadfiles = [];
         var mother = this;
         this.dataService.currentProject.subscribe(p => {

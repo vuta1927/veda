@@ -21,6 +21,7 @@ using Microsoft.Extensions.FileProviders;
 using VDS.BackgroundJobs;
 using VDS.BackgroundJobs.Hangfire;
 using Hangfire;
+using ApiServer.BackgroundJobs;
 
 namespace ApiServer
 {
@@ -64,7 +65,6 @@ namespace ApiServer
             services.AddTransient<ImagesController>();
             services.AddTransient<TagsController>();
             services.AddTransient<ClassesController>();
-            services.AddTransient<QuantityCheckTypesController>();
             services.AddTransient<QuantityChecksController>();
 
             services.AddAuthentication(options =>
@@ -98,6 +98,7 @@ namespace ApiServer
                         .AllowAnyMethod()
                 )
             );
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -113,8 +114,8 @@ namespace ApiServer
 
             app.UseCors(_defaultCorsPolicyName);
 
-            app.UseHangfireServer();
-            app.UseHangfireDashboard();
+            //app.UseHangfireServer();
+            //app.UseHangfireDashboard();
 
             app.UseAuthentication();
 

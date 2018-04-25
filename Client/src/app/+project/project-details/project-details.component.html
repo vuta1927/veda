@@ -57,7 +57,7 @@
           </a>
 
         </li>
-        <li class="nav-item m-tabs__item">
+        <li class="nav-item m-tabs__item" *ngIf="editProject">
           <a class="nav-link m-tabs__link" data-toggle="tab" href="#info-tab" role="tab" aria-selected="true">
             <i class="la la-info" aria-hidden="true"></i>
             Project Info
@@ -71,7 +71,7 @@
           </a>
 
         </li>
-        <li class="nav-item m-tabs__item">
+        <li class="nav-item m-tabs__item" *ngIf="(editProject || addProject)">
           <a class="nav-link m-tabs__link" data-toggle="tab" href="#user-tab" role="tab" aria-selected="false">
             <i class="la la-users" aria-hidden="true"></i>
             Users
@@ -79,13 +79,13 @@
         </li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane" id="info-tab" role="tabpanel">
+        <div class="tab-pane" id="info-tab" role="tabpanel" *ngIf="editProject">
           <app-project-info></app-project-info>
         </div>
         <div class="tab-pane active" id="image-tab" role="tabpanel">
           <app-project-images></app-project-images>
         </div>
-        <div class="tab-pane" id="user-tab" role="tabpanel">
+        <div class="tab-pane" id="user-tab" role="tabpanel" *ngIf="(editProject || addProject)">
           <app-project-users></app-project-users>
         </div>
         <div class="tab-pane" id="class-tab" role="classpanel">

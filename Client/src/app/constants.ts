@@ -33,6 +33,11 @@ export class Constants {
     public static QcDelete = 'DeleteQuantityCheck';
     public static QcView = 'ViewQuantityCheck';
 
+    public static ViewTag = 'ViewTag';
+    public static EditTag = 'EditTag';
+    public static AddTag = 'AddTag';
+    public static DeleteTag = 'DeleteTag';
+
     public static EditUser = 'EditUser';
     public static AddUser = 'AddUser';
     public static DeleteUser = 'DeleteUser';
