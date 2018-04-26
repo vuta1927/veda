@@ -13,6 +13,9 @@ using SixLabors.ImageSharp.Advanced;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Numerics;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace ApiServer.Controllers
 {
