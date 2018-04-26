@@ -131,27 +131,28 @@
                         <dxo-paging [pageSize]="12"></dxo-paging>
                         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
                         <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column cellTemplate="tagDetail" alignment="center" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                        <dxi-column cellTemplate="tagDetail" cssClass="align-cell" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                         <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column dataField="ignored" alignment="center"></dxi-column>
-                        <dxi-column dataField="totalClass" alignment="center" caption="No of Classes"></dxi-column>
-                        <dxi-column dataField="classes" alignment="center"></dxi-column>
-                        <dxi-column caption="Using by" alignment="center"></dxi-column>
-                        <dxi-column dataField="userTagged" caption="Tagged By" alignment="center"></dxi-column>
-                        <dxi-column dataField="tagHasClass" alignment="center" caption="Tags have calss"></dxi-column>
-                        <dxi-column dataField="tagNotHasClass" alignment="center" caption="Tags not have class"></dxi-column>
-                        <dxi-column dataField="taggedDate" alignment="center" dataType="date" format="MM/dd/yyyy" caption="Tagged Time" cellTempalte="taggedDateCell"></dxi-column>
-                        <dxi-column dataField="tagTime" alignment="center" caption="Tagged Time"></dxi-column>
-                        <dxi-column dataField="userQc" alignment="center" dataType="date" format="MM/dd/yyyy" caption="Qc by"></dxi-column>
-                        <dxi-column dataField="qcDate" alignment="center" cellTemplate="QcDateCell" caption="Qc Date"></dxi-column>
+                        <dxi-column dataField="ignored" cssClass="align-cell"></dxi-column>
+                        <dxi-column dataField="totalClass" cssClass="align-cell" caption="No of Classes"></dxi-column>
+                        <dxi-column dataField="classes" cssClass="align-cell"></dxi-column>
+                        <dxi-column caption="Using by" cssClass="align-cell"></dxi-column>
+                        <dxi-column dataField="userTagged" caption="Tagged By" cssClass="align-cell"></dxi-column>
+                        <dxi-column dataField="tagHasClass" cssClass="align-cell" caption="Tags have calss"></dxi-column>
+                        <dxi-column dataField="tagNotHasClass" cssClass="align-cell" caption="Tags not have class"></dxi-column>
+                        <dxi-column dataField="taggedDate" cssClass="align-cell" dataType="date" format="MM/dd/yyyy" caption="Tagged Time" cellTempalte="taggedDateCell"></dxi-column>
+                        <dxi-column dataField="tagTime" cssClass="align-cell" caption="Tagged Time"></dxi-column>
+                        <dxi-column dataField="qcStatus" cssClass="align-cell" caption="Qc Status"></dxi-column>
+                        <dxi-column dataField="userQc" cssClass="align-cell" caption="Qc by"></dxi-column>
+                        <dxi-column dataField="qcDate" cssClass="align-cell" dataType="date" format="MM/dd/yyyy" cellTemplate="QcDateCell" caption="Qc Date"></dxi-column>
                         <div *dxTemplate="let data of 'cellImgs'">
                             <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
                         </div>
                         <div *dxTemplate="let data of 'taggedDateCell'">
-                            {{ (data.data.taggedDate=='0001-01-01T00:00:00' || data.data.taggedDate=='01/01/1901')? '':data.data.taggedDate }}
+                            {{ (((data.data.taggedDate|date:'yyyy')== '0001') || ((data.data.taggedDate|date:'yyyy') == '1901'))? '':data.data.taggedDate | date: 'dd/MM/yyyy' }}
                         </div>
                         <div *dxTemplate="let data of 'QcDateCell'">
-                            {{ (data.data.qcDate=='0001-01-01T00:00:00' || data.data.qcDate=='01/01/1901')? '':data.data.qcDate }}
+                            {{ (data.data.qcDate=='0001-01-01T00:00:00' || data.data.qcDate=='01/01/1901')? '':data.data.qcDate | date: 'dd/MM/yyyy' }}
                         </div>
                         <div *dxTemplate="let data of 'tagDetail'">
                             <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">

@@ -1,5 +1,4 @@
-@import '~devextreme/dist/css/dx.common.css';
-@import '~devextreme/dist/css/dx.light.css';
+
 .dx-menu-item-popout {
     display: none !important;
 }
@@ -8,6 +7,10 @@
     padding: 6px 10px 7px;
 }
 
+.align-cell {
+    text-align: center;
+    vertical-align: middle!important;
+}
 span {
     cursor: pointer;
 }

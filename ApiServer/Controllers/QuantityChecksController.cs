@@ -56,15 +56,19 @@ namespace ApiServer.Controllers
             }
             else
             {
-                qc.Comment = data.QcComment;
-                qc.QCDate = DateTime.Now;
-                qc.Image = img;
-                qc.UserQc = user;
-                _context.QuantityChecks.Add(qc);
-                qc.Value1 = data.QcValue;
+                qc = new QuantityCheck()
+                {
+                    Comment = string.IsNullOrEmpty(data.QcComment) ? "" : data.QcComment,
+                    QCDate = DateTime.Now,
+                    Image = img,
+                    UserQc = user,
+                    Value1 = data.QcValue
+                };
 
                 img.QuantityCheck = qc;
             }
+                
+            
             img.QcStatus = qc.Value1;
             img.QcDate = DateTime.Now;
             img.UserQc = user;

@@ -32,7 +32,12 @@ export class ImageService{
     public getImageById(userId: number, id?:string){
         let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageById/'+ userId +'/'+id;
 
-        return this.http.get<IAppCoreResponse<Iimage[]>>(url);
+        return this.http.get<IAppCoreResponse<any>>(url);
+    }
+
+    public sendPing(imgId:string, pingTime:Date):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/PingImage/'+imgId+'/'+pingTime;
+        return this.http.put<IAppCoreResponse<any>>(url, pingTime);
     }
 
     public getCurrentWorker(projectId:string, imageId:string, userId:number):Observable<IAppCoreResponse<Iimage>>{

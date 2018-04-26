@@ -9,7 +9,7 @@ using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
 using ApiServer.Model.views;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Advanced;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Numerics;
@@ -131,6 +131,7 @@ namespace ApiServer.Controllers
                     {
                         var extension = image.Path.Split('.').Last();
                         var imgName = image.Id + "." + extension;
+                       
                         img.Mutate(ctx => ctx.FillPolygon(Rgba32.Black, points));
                         string tempFolderName = "temp";
                         string tempFileFullPath = webRootPath + "\\" + tempFolderName + '\\' + imgName;
@@ -374,16 +375,37 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include("ClassTags.Class").Include(x => x.Image).ThenInclude(x=>x.Project).SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
                 return Content("Tag not found !");
             }
+            var img = tag.Image;
+            var project = img.Project;
+
+            if (tag.Classes.Count() > 0)
+                img.TagHasClass -= 1;
+            else
+                img.TagNotHasClass -= 1;
+
+            if (img.TagHasClass == 0)
+                project.TotalImgNotClassed += 1;
+
+            img.Tags.Remove(tag);
+
+            if (img.Tags.Count() <= 0)
+                project.TotalImgNotTagged += 1;
 
             _context.Tags.Remove(tag);
-            await _context.SaveChangesAsync();
-
-            return Ok(tag);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(tag);
+            }
+            catch(Exception e)
+            {
+                return Content(e.ToString());
+            }
         }
 
         private bool TagExists(int id)

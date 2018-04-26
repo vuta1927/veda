@@ -10,7 +10,7 @@ using VDS.Security.Permissions;
 using ApiServer.Model;
 namespace ApiServer.Model
 {
-    public class VdsContext : DataContextBase<VdsContext>, IPersistedGrantDbContext
+    public class VdsContext : DataContextBase<VdsContext>
     {
         public VdsContext(DbContextOptions<VdsContext> options, ICurrentUnitOfWorkProvider currentUnitOfWorkProvider, IMediator eventBus)
             : base(options, currentUnitOfWorkProvider, eventBus)

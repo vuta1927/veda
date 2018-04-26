@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VDS.Security;
 using VDS.Storage.EntityFrameworkCore;
+using ApiServer.BackgroundJobs;
 
 namespace ApiServer.Model
 {
@@ -32,6 +33,8 @@ namespace ApiServer.Model
                 using (_ctx)
                 {
                     await AddUser(_ctx);
+
+                    ImageQueueJobs.Clean(_ctx);
                 }
             });
         }
@@ -250,7 +253,47 @@ namespace ApiServer.Model
                 var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if (permission.Category == VdsPermissions.ProjectCategory)
+                    if (permission.Category == VdsPermissions.ProjectCategory || permission.Category == VdsPermissions.ImageCategory || permission.Category == VdsPermissions.QcCategory || permission.Category == VdsPermissions.TagCategory)
+                    {
+                        var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
+                        if (permissionInDatabase != null)
+                        {
+                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = projectRole.Id });
+
+                            _ctx.SaveChanges();
+                        }
+                    }
+                }
+            }
+
+            var teacherRole = await _ctx.Roles.FirstOrDefaultAsync(x => x.RoleName == "Teacher");
+            if(teacherRole != null)
+            {
+                var mangementPermissions = new VdsPermissionProvider();
+                var permissions = mangementPermissions.GetPermissions();
+                foreach (var permission in permissions)
+                {
+                    if (permission.Name == VdsPermissions.ViewProject || permission.Name == VdsPermissions.ViewQc || permission.Category == VdsPermissions.ImageCategory ||  permission.Category == VdsPermissions.TagCategory)
+                    {
+                        var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
+                        if (permissionInDatabase != null)
+                        {
+                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = projectRole.Id });
+
+                            _ctx.SaveChanges();
+                        }
+                    }
+                }
+            }
+
+            var qcRole = await _ctx.Roles.FirstOrDefaultAsync(x => x.RoleName == "QuantityCheck");
+            if (qcRole != null)
+            {
+                var mangementPermissions = new VdsPermissionProvider();
+                var permissions = mangementPermissions.GetPermissions();
+                foreach (var permission in permissions)
+                {
+                    if (permission.Name == VdsPermissions.ViewProject || permission.Category == VdsPermissions.QcCategory || permission.Name == VdsPermissions.ViewImage || permission.Name == VdsPermissions.ViewTag)
                     {
                         var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
                         if (permissionInDatabase != null)

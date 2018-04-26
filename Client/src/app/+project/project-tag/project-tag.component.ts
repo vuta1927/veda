@@ -67,6 +67,8 @@ export class ProjecTagComponent {
     viewTag: boolean = false; editTag: boolean = false; deleteTag: boolean = false; addTag: boolean = false; viewImg: boolean = false;
     viewQc: boolean = false; addQc: boolean = false; editQc: boolean = false; deleteQc: boolean = false;
     qcComment: string = '';
+    isQc: boolean = false;
+    tagsFromSrv: any = [];
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -156,7 +158,11 @@ export class ProjecTagComponent {
 
         this.keepalive.onPing.subscribe(() => {
             this.lastPing = new Date();
-            console.log(this.lastPing);
+            // this.imgService.sendPing(this.imageId, this.lastPing).toPromise().then(Response=>{
+            //     if(Response){
+            //         console.log('ping success!');
+            //     }
+            // }).catch(err=>{console.log(err.error.text)});
         });
 
         this.resetIdle();
@@ -193,12 +199,15 @@ export class ProjecTagComponent {
             this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     this.tags = Response.result;
-
+                    this.tagsFromSrv = Response.result;
                     this.imgService.getImageById(this.currentUserId, this.imageId).toPromise().then(Response => {
                         if (Response && Response.result) {
 
                             Helpers.setLoading(false);
-
+                            this.isQc = Response.result.quantityCheck ? true : false;
+                            this.qcValue = Response.result.qcStatus;
+                            if (Response.result.quantityCheck)
+                                this.qcComment = Response.result.quantityCheck.comment ? Response.result.quantityCheck.comment : '';
                             this.currentImage = Response.result;
                             this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
                             this.timerSerive.startTimer(this.currentImage.tagTime);
@@ -270,6 +279,10 @@ export class ProjecTagComponent {
             this.tagMode = true;
             this.excluseMode = false;
         }
+    }
+    qcValueSelectChange(e) {
+        var value = e.target.value;
+        this.qcValue = value;
     }
 
     classRadioChange(e) {
@@ -348,7 +361,7 @@ export class ProjecTagComponent {
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
-        if (this.addTag && this.editTag) {
+        if (this.addTag && this.editTag && !this.isQc) {
             this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
@@ -359,7 +372,7 @@ export class ProjecTagComponent {
                 mother.showError(errorResp.error.text);
                 mother.btnSaveEnabled = true;
             });
-        } else if (this.addQc && this.editQc) {
+        } else if (this.addQc || this.editQc) {
             let data = { userId: this.currentUserId, imageId: this.imageId, qcValue: this.qcValue, qcComment: this.qcComment };
             this.qcService.saveQc(data).toPromise().then(Response => {
                 if (Response) {
@@ -368,6 +381,32 @@ export class ProjecTagComponent {
                 }
             }).catch(err => { console.log(err.error.text) });
         }
+    }
+
+    reload() {
+        this.canvas.clear();
+        this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                this.tags = Response.result;
+
+                this.selection = false;
+                this.selectedTag = null;
+                this.canvasTags = [];
+                this.canvasLabels = [];
+                this.btnSaveEnabled = true;
+                this.excluseMode = false;
+                this.polygonPoints = [];
+                this.startPoint = null;
+                this.lines = [];
+                this.ExcluseAreas = [];
+                this.excluseArea = new ExcluseArea();
+                this.dataToUpdate = null;
+                this.setBackgroundImg();
+            }
+        });
+        // this.tagMode = false;
+        // this.isDragging = false;
+
     }
 
     getColorByClass(classId) {
@@ -443,10 +482,10 @@ export class ProjecTagComponent {
     drawTags() {
         let mother = this;
         this.tags.forEach(tag => {
-            let x = this.GetValueFromPercent(tag.left, this.imageWidth);
-            let y = this.GetValueFromPercent(tag.top, this.imageHeight);
-            let width = this.GetValueFromPercent(tag.width, this.imageWidth);
-            let height = this.GetValueFromPercent(tag.height, this.imageHeight);
+            let x = this.GetValueFromPercent(tag.left, mother.imageWidth);
+            let y = this.GetValueFromPercent(tag.top, mother.imageHeight);
+            let width = this.GetValueFromPercent(tag.width, mother.imageWidth);
+            let height = this.GetValueFromPercent(tag.height, mother.imageHeight);
             let color = tag.classIds.length > 0 ? mother.getColorByClass(tag.classIds[0]) : '#878787';
             let rect = new fabric.Rect({
                 id: tag.id,
@@ -464,12 +503,16 @@ export class ProjecTagComponent {
                 hasRotatingPoint: mother.addTag,
                 hasControls: mother.addTag,
             });
-            rect.lockMovementX = mother.addTag;
-            rect.lockMovementY = mother.addTag;
-            rect.lockScalingX = mother.addTag;
-            rect.lockScalingY = mother.addTag;
-            rect.lockUniScaling = mother.addTag;
-            rect.lockRotation = mother.addTag;
+            if (mother.isQc) {
+                rect.hasRotatingPoint = false;
+                rect.hasControls = false;
+            }
+            rect.lockMovementX = !mother.addTag;
+            rect.lockMovementY = !mother.addTag;
+            rect.lockScalingX = !mother.addTag;
+            rect.lockScalingY = !mother.addTag;
+            rect.lockUniScaling = !mother.addTag;
+            rect.lockRotation = !mother.addTag;
 
 
             this.bindingEvent(rect);
@@ -496,6 +539,27 @@ export class ProjecTagComponent {
             this.canvas.add(label);
             this.canvasLabels.push(label);
         });
+    }
+
+    deleteObject(){
+        if(!this.selectedTag) return;
+
+        if(this.selectedTag.id == -1){
+            this.canvas.clear();
+            this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+            if(this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
+                this.ExcluseAreas = [];
+
+            this.setBackgroundImg();
+        }else{
+            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response=>{
+                if(Response){
+                    this.canvas.clear();
+                    this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+                    this.setBackgroundImg();
+                }
+            }).catch(err=>{console.log(err.error.text)});
+        }
     }
 
     setUpMouseEvent() {
@@ -538,12 +602,13 @@ export class ProjecTagComponent {
             }
         });
 
-        this.canvas.on('mouse:down', function (event) {
+        fabric.util.addListener(window, "keydown", function (evt) {
+            if (evt.which === 46) {
+                mother.deleteObject();
+            }
+        });
 
-            // $("#deleteBtn").remove();
-            // if (!mother.canvas.getActiveObject()) {
-            //     $("#deleteBtn").remove();
-            // }
+        this.canvas.on('mouse:down', function (event) {
 
             // --- set up panning func ---
             var evt = event.e;
@@ -598,7 +663,7 @@ export class ProjecTagComponent {
 
 
             //--- set up tag func ---
-            if (!mother.tagMode || isDragging || mother.addTag || mother.editTag) return;
+            if (!mother.tagMode || isDragging || !mother.addTag || !mother.editTag || this.isQc) return;
             isDown = true;
             var pointer = this.getPointer(evt);
             startPosition.x = pointer.x;
@@ -660,7 +725,7 @@ export class ProjecTagComponent {
                 return;
             } else if (!mother.tagMode) return;
 
-            if (!mother.addTag || !mother.editTag) return;
+            if (!mother.addTag || !mother.editTag || this.isQc) return;
 
             mother.bindingEvent(rect);
             mother.canvas.add(rect);
@@ -705,38 +770,28 @@ export class ProjecTagComponent {
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
             // $("#deleteBtn").remove();
-            if (!mother.addTag || !mother.editTag) return;
-            if (e.target.get('name').split('-')[0] == 'rect') {
-                mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
-            }
+            if (!mother.addTag || !mother.editTag || mother.isQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
-            if (!mother.addTag || !mother.editTag) return;
-            mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
+            if (!mother.addTag || !mother.editTag || mother.isQc) return;
+            // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
-            if (!mother.addTag || !mother.editTag) return;
-            $("#deleteBtn").remove();
+            if (!mother.addTag || !mother.editTag || mother.isQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
-            if (!mother.addTag || !mother.editTag) return;
-            $("#deleteBtn").remove();
-        });
-
-        $(document).on('click', "#deleteBtn", function () {
-
+            if (!mother.addTag || !mother.editTag || mother.isQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
-            if (!mother.tagMode || !mother.addTag || !mother.editTag) return;
+            if (!mother.tagMode || !mother.addTag || !mother.editTag || mother.isQc) return;
             mother.tagMode = true;
         });
 
         this.canvas.on('object:moving', function (e) {
-            $("#deleteBtn").remove();
             var target = e.target;
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);
@@ -756,7 +811,6 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('object:rotating', function (e) {
-            $("#deleteBtn").remove();
             var target = e.target;
             var angle = target.get('angle');
             var pointer = mother.canvas.getPointer(e.e);
@@ -899,7 +953,6 @@ export class ProjecTagComponent {
     setupZoomFunc() {
         var mother = this;
         $(this.canvas.wrapperEl).on('mousewheel', function (e) {
-            $("#deleteBtn").remove();
             var delta = e.originalEvent['wheelDelta'] / 500;
             var pointer = mother.canvas.getPointer(e['e']);
             var scaleFactor = 0;

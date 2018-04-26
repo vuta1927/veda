@@ -235,7 +235,7 @@ namespace ApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var image = _context.Images.SingleOrDefault(m => m.Id == id);
+            var image = _context.Images.Include(x=>x.QuantityCheck).SingleOrDefault(m => m.Id == id);
 
             if (image == null)
             {
@@ -287,7 +287,7 @@ namespace ApiServer.Controllers
 
         [HttpPut("{imgId}/{pingTime}")]
         [ActionName("PingImage")]
-        public IActionResult PingImage([FromRoute] Guid imgId, [FromRoute] DateTime pingTime)
+        public IActionResult PingImage([FromRoute] Guid imgId, [FromBody] DateTime pingTime)
         {
 
             if (!_context.Images.Any(x => x.Id == imgId)) return Content("Image not found !");
@@ -299,7 +299,7 @@ namespace ApiServer.Controllers
             try
             {
                 _context.SaveChanges();
-                return Ok();
+                return Ok("Ok");
             }catch(Exception e)
             {
                 return Content(e.ToString());
