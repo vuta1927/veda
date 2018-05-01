@@ -226,20 +226,34 @@ namespace ApiServer.Controllers
             //response.Headers.Add("content-type", "application/octet-stream");
         }
         // GET: api/Images/5
-        [HttpGet("{userId}/{id}")]
-        [ActionName("GetImageById")]
-        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid id)
+        [HttpGet("{userId}/{projId}/{imgId}")]
+        [ActionName("GetNextImage")]
+        public async Task<IActionResult> GetNextImage([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
 
             ImageQueues.Append(userId, project.Id, _context);
 
-            var image = await ImageQueues.GetImage(projId, userId);
+            var image = await ImageQueues.GetImage(projId, imgId, userId);
+            
+            if (image == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(image);
+
+        }
+
+        [HttpGet("{userId}/{projId}/{imgId}")]
+        [ActionName("GetImageById")]
+        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
+        {
+            var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
+            
+            ImageQueues.Append(userId, project.Id, _context);
+
+            var image = await ImageQueues.GetImageById(projId, imgId, userId);
 
             if (image == null)
             {
@@ -248,6 +262,25 @@ namespace ApiServer.Controllers
 
             return Ok(image);
 
+        }
+
+        [HttpDelete("{projId}/{imgId}")]
+        [ActionName("ReleaseImage")]
+        public IActionResult ReleaseImage([FromRoute] Guid projId, [FromRoute] Guid imgId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return NotFound();
+            }
+
+            if(ImageQueues.ReleaseImage(projId, imgId))
+            {
+                return Ok("Ok");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // PUT: api/Images/5

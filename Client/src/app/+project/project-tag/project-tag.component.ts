@@ -56,7 +56,6 @@ export class ProjecTagComponent {
     excluseBtnClass: string = 'btn btn-outline-danger btn-sm m-btn m-btn--icon m-btn--wide';
     dataToUpdate: DataUpdate;
     currentUserId: number;
-    imgIds: string[] = [];
     messageTypes: MessageTypes = new MessageTypes();
     qcValues: any = [{ name: 'Passed', value: true }, { name: 'Falsed', value: false }];
     qcValue: boolean = false;
@@ -106,16 +105,14 @@ export class ProjecTagComponent {
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
         this.route.queryParams.subscribe(params => {
-            this.imageId = params.id;
             this.projectId = params.project;
-
-            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    mother.imgIds = Response.result;
-                }
-            });
-
-            this.getImageData();
+            if(params.id){
+                this.imageId = params.id;
+                this.getImage(true);
+            }else{
+                this.imageId = '0';
+                this.getImage();
+            }
         });
     }
 
@@ -127,7 +124,7 @@ export class ProjecTagComponent {
             this.idle.stop();
         }
         if (this.imageId) {
-            this.imgService.relaseImage(this.imageId).toPromise().then().catch(err => console.log(err.error.text));
+            this.imgService.relaseImage(this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
         }
 
     }
@@ -144,11 +141,6 @@ export class ProjecTagComponent {
         this.idle.onTimeout.subscribe(() => {
             this.timedOut = true;
             console.log('timeout');
-            if (this.imageId) {
-                this.imgService.relaseImage(this.imageId).toPromise().then(
-                    () => this.router.navigate([''])
-                ).catch(err => console.log(err.error.text));
-            }
         });
         this.idle.onIdleStart.subscribe(() => console.log('You\'ve gone idle!'));
         this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
@@ -182,7 +174,7 @@ export class ProjecTagComponent {
         // this._hubConnection.on("send", data => { console.log(data) });
     }
 
-    getImageData() {
+    getImage(paramIdExist: boolean = false) {
         let mother = this;
         this.classService.getClasses(this.projectId).toPromise().then(Response => {
             if (Response && Response.result) {
@@ -194,54 +186,45 @@ export class ProjecTagComponent {
         }).catch(error => {
             mother.showError(error.error.text);
         });
-
-        this.imgService.getCurrentWorker(this.projectId, this.imageId, this.currentUserId).toPromise().then(Response => {
-            this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+        if (paramIdExist) {
+            this.imgService.getImageById(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
-                    this.tags = Response.result;
-                    this.tagsFromSrv = Response.result;
-                    this.imgService.getImageById(this.currentUserId, this.imageId).toPromise().then(Response => {
-                        if (Response && Response.result) {
-
-                            Helpers.setLoading(false);
-                            this.isQc = Response.result.quantityCheck ? true : false;
-                            this.qcValue = Response.result.qcStatus;
-                            if (Response.result.quantityCheck)
-                                this.qcComment = Response.result.quantityCheck.comment ? Response.result.quantityCheck.comment : '';
-                            this.currentImage = Response.result;
-                            this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
-                            this.timerSerive.startTimer(this.currentImage.tagTime);
-                            this.initCanvas();
-                        }
-                    });
+                    mother.getTags(Response.result);
                 }
-            });
-        }).catch(err => {
-            this.GetNextImage();
+            }).catch(err=>mother.router.navigate(['']));
+        } else {
+            this.imgService.getNextImage(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
+                if (Response && Response.result) {
+                    mother.getTags(Response.result);
+                }
+            }).catch(err=>mother.router.navigate(['']));
+        }
+    }
+
+    getTags(image) {
+        this.imageId = image.id;
+        this.isQc = image.quantityCheck ? true : false;
+        this.qcValue = image.qcStatus;
+        if (image.quantityCheck)
+            this.qcComment = image.quantityCheck.comment ? image.quantityCheck.comment : '';
+        this.currentImage = image;
+        this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
+
+        this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                Helpers.setLoading(false);
+                this.tags = Response.result;
+                this.tagsFromSrv = Response.result;
+
+                this.timerSerive.startTimer(this.currentImage.tagTime);
+                this.initCanvas();
+            }
         });
     }
 
-
-
     GetNextImage() {
         this.resetVariables();
-        this.imgIds.splice(this.imgIds.indexOf(this.imageId), 1);
-        if (this.imgIds.length > 0) {
-            this.imageId = this.imgIds[0];
-            this.getImageData();
-        }
-        else {
-            let mother = this;
-            this.imgService.getImageListId(this.projectId).toPromise().then(Response => {
-                if (Response && Response.result) {
-                    this.imgIds = Response.result;
-                    Helpers.setLoading(false);
-                    this.btnSaveEnabled = true;
-                    this.getImageData();
-                }
-            });
-        }
-
+        this.getImage();
     }
 
     resetVariables() {
@@ -349,11 +332,7 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        this.imgService.relaseImage(this.imageId).toPromise().then(Response => {
-            if (!Response) {
-                this.GetNextImage();
-            }
-        });
+        this.GetNextImage();
 
     }
 
@@ -543,24 +522,24 @@ export class ProjecTagComponent {
         });
     }
 
-    deleteObject(){
-        if(!this.selectedTag) return;
+    deleteObject() {
+        if (!this.selectedTag) return;
 
-        if(this.selectedTag.id == -1){
+        if (this.selectedTag.id == -1) {
             this.canvas.clear();
             this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-            if(this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
+            if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
                 this.ExcluseAreas = [];
 
             this.setBackgroundImg();
-        }else{
-            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response=>{
-                if(Response){
+        } else {
+            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
+                if (Response) {
                     this.canvas.clear();
                     this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
                     this.setBackgroundImg();
                 }
-            }).catch(err=>{console.log(err.error.text)});
+            }).catch(err => { console.log(err.error.text) });
         }
     }
 

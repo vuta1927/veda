@@ -29,8 +29,14 @@ export class ImageService{
         return this.http.get(url, { responseType: 'blob'});
     }
 
-    public getImageById(userId: number, id?:string){
-        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageById/'+ userId +'/'+id;
+    public getImageById(userId: number, projectId:string, imageId:string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetImageById/'+ userId +'/'+projectId+'/' + imageId;
+
+        return this.http.get<IAppCoreResponse<any>>(url);
+    }
+
+    public getNextImage(userId: number, projectId:string, imageId:string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/GetNextImage/'+ userId +'/'+projectId+'/' + imageId;
 
         return this.http.get<IAppCoreResponse<any>>(url);
     }
@@ -45,8 +51,8 @@ export class ImageService{
         return this.http.get<IAppCoreResponse<Iimage>>(url);
     }
 
-    public relaseImage(imgId:string):Observable<IAppCoreResponse<any>>{
-        let url = this.configurationService.serverSettings.apiUrl +'/api/images/RelaseImage/'+imgId;
+    public relaseImage(projId:string, imgId:string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/ReleaseImage/'+ projId +'/'+imgId;
         return this.http.delete<IAppCoreResponse<any>>(url);
     }
 

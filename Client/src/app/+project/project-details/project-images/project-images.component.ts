@@ -1,4 +1,6 @@
 import { Component, ViewEncapsulation, ViewChildren, OnInit, Input, ViewContainerRef } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { FormControl, FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { ProjectForView } from '../../../shared/models/project.model';
@@ -74,7 +76,8 @@ export class ProjectImagesComponent implements OnInit {
         private http: HttpClient,
         private configurationService: ConfigurationService,
         private securityService: SecurityService,
-        private signalService: SignalRService
+        private signalService: SignalRService,
+        private router: Router
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
@@ -170,6 +173,9 @@ export class ProjectImagesComponent implements OnInit {
         });
     }
 
+    startTrainning(){
+        this.router.navigateByUrl('/project-tag?project='+this.currentProject.id);
+    }
 
     upload() {
         // if (this.uploadfiles.length === 0)

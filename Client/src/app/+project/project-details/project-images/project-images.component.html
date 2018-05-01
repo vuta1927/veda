@@ -111,8 +111,17 @@
     <div class="col-lg-12">
         <div class="m-portlet">
             <div class="m-portlet__body">
-                <div class="col-lg-12" *ngIf="deleteImage">
-                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()">
+                <div class="col-lg-12">
+                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
+                        <span>
+                            <i class="la la-play"></i>
+                            <span>
+                                Start Trainning
+                            </span>
+                        </span>
+                    </button>
+                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
+                        *ngIf="deleteImage">
                         <span>
                             <i class="la la-trash"></i>
                             <span>
@@ -149,10 +158,12 @@
                             <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
                         </div>
                         <div *dxTemplate="let data of 'taggedDateCell'">
-                            {{ (((data.data.taggedDate|date:'yyyy')== '0001') || ((data.data.taggedDate|date:'yyyy') == '1901'))? '':data.data.taggedDate | date: 'dd/MM/yyyy' }}
+                            {{ (((data.data.taggedDate|date:'yyyy')== '0001') || ((data.data.taggedDate|date:'yyyy') == '1901'))? '':data.data.taggedDate
+                            | date: 'dd/MM/yyyy' }}
                         </div>
                         <div *dxTemplate="let data of 'QcDateCell'">
-                            {{ (data.data.qcDate=='0001-01-01T00:00:00' || data.data.qcDate=='01/01/1901')? '':data.data.qcDate | date: 'dd/MM/yyyy' }}
+                            {{ (data.data.qcDate=='0001-01-01T00:00:00' || data.data.qcDate=='01/01/1901')? '':data.data.qcDate | date: 'dd/MM/yyyy'
+                            }}
                         </div>
                         <div *dxTemplate="let data of 'tagDetail'">
                             <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">
