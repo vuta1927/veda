@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using VDS.Security;
 using VDS.Storage.EntityFrameworkCore;
-using ApiServer.BackgroundJobs;
 
 namespace ApiServer.Model
 {
@@ -33,8 +32,6 @@ namespace ApiServer.Model
                 using (_ctx)
                 {
                     await AddUser(_ctx);
-
-                    ImageQueueJobs.Clean(_ctx);
                 }
             });
         }

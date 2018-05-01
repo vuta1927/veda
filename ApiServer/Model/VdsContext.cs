@@ -28,7 +28,6 @@ namespace ApiServer.Model
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
         public DbSet<ApiServer.Model.Tag> Tags { get; set; }
         public DbSet<ClassTag> classTags { get; set; }
-        public DbSet<ImageQueue> imageQueues { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClassTag>()

@@ -365,8 +365,10 @@ export class ProjecTagComponent {
             this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
-                Helpers.setLoading(false);
-                mother.GetNextImage();
+                if (Response) {
+                    Helpers.setLoading(false);
+                    mother.GetNextImage();
+                }
             }).catch(errorResp => {
                 Helpers.setLoading(false);
                 mother.showError(errorResp.error.text);

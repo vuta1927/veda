@@ -16,6 +16,7 @@ using System.Numerics;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
+using VDS.Security;
 
 namespace ApiServer.Controllers
 {
@@ -115,8 +116,6 @@ namespace ApiServer.Controllers
                 return Content("User not found !");
             }
 
-
-
             string webRootPath = _hostingEnvironment.WebRootPath;
             var imgPath = webRootPath + image.Path;
             if (data.ExcluseAreas.Count() > 0)
@@ -167,7 +166,7 @@ namespace ApiServer.Controllers
                     }
                     catch (Exception ex)
                     {
-                        return Content("Unknow error !");
+                        return Content(ex.ToString());
                     }
 
                     originTag.Index = tag.Index;
@@ -194,7 +193,7 @@ namespace ApiServer.Controllers
                     }
                     catch (Exception ex)
                     {
-                        return Content("Unknow error !");
+                        return Content(ex.ToString());
                     }
 
                 }
@@ -229,7 +228,7 @@ namespace ApiServer.Controllers
                     }
                     catch (Exception ex)
                     {
-                        return Content("Unknow error !");
+                        return Content(ex.ToString());
                     }
                 }
             }

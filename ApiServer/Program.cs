@@ -7,8 +7,6 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-//using Hangfire;
-using ApiServer.BackgroundJobs;
 using Microsoft.Extensions.DependencyInjection;
 using ApiServer.Model;
 using Hangfire;
@@ -30,22 +28,5 @@ namespace ApiServer
             .UseUrls("http://localhost:52719")
             .UseStartup<Startup>()
             .Build();
-
-        public static IWebHost RunBackgroundJob(this IWebHost webHost)
-        {
-            var serviceScopeFactory = (IServiceScopeFactory)webHost.Services.GetService(typeof(IServiceScopeFactory));
-
-            using (var scope = serviceScopeFactory.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var dbContext = services.GetRequiredService<VdsContext>();
-
-                BackgroundJob.Enqueue(() => ImageQueueJobs.Clean(dbContext));
-                RecurringJob.AddOrUpdate(() => ImageQueueJobs.CheckTimeOut(dbContext), Cron.Minutely);
-            }
-
-            return webHost;
-            
-        }
     }
 }

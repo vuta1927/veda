@@ -21,8 +21,7 @@ using VDS.Security;
 using Microsoft.AspNetCore.SignalR;
 using ApiServer.Hubs;
 using ApiServer.Core.SignalR;
-using ApiServer.BackgroundJobs;
-using Hangfire;
+using ApiServer.Core.Queues;
 
 namespace ApiServer.Controllers
 {
@@ -229,13 +228,18 @@ namespace ApiServer.Controllers
         // GET: api/Images/5
         [HttpGet("{userId}/{id}")]
         [ActionName("GetImageById")]
-        public IActionResult GetImageById([FromRoute] long userId, [FromRoute] Guid id)
+        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var image = _context.Images.Include(x=>x.QuantityCheck).SingleOrDefault(m => m.Id == id);
+
+            var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
+
+            ImageQueues.Append(userId, project.Id, _context);
+
+            var image = await ImageQueues.GetImage(projId, userId);
 
             if (image == null)
             {
@@ -244,85 +248,6 @@ namespace ApiServer.Controllers
 
             return Ok(image);
 
-        }
-
-
-        [HttpGet("{projectId}/{imageId}/{userid}")]
-        [ActionName("GetCurrentWorker")]
-        public IActionResult GetCurrentWorker([FromRoute] Guid projectId, [FromRoute] Guid imageId, [FromRoute] long userid)
-        {
-            if (!_context.Projects.Any(x => x.Id == projectId)) return Content("Project not found !");
-
-            if (!_context.Images.Any(x => x.Id == imageId)) return Content("Image not found !");
-
-            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imageId);
-            if (imgQueue == null)
-            { 
-                imgQueue = new ImageQueue()
-                {
-                    ImageId = imageId,
-                    ProjectId = projectId,
-                    UserId = userid,
-                    LastPing = DateTime.Now
-                };
-
-                try
-                {
-                    _context.imageQueues.Add(imgQueue);
-                    _context.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    return Content(e.ToString());
-                }
-                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
-                return Ok();
-            }
-            else
-            {
-                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgQueue);
-                return Content("isUsing");
-            }
-        }
-
-        [HttpPut("{imgId}/{pingTime}")]
-        [ActionName("PingImage")]
-        public IActionResult PingImage([FromRoute] Guid imgId, [FromBody] DateTime pingTime)
-        {
-
-            if (!_context.Images.Any(x => x.Id == imgId)) return Content("Image not found !");
-
-            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imgId);
-            if (imgQueue == null) return Content("Image not found!");
-
-            imgQueue.LastPing = pingTime;
-            try
-            {
-                _context.SaveChanges();
-                return Ok("Ok");
-            }catch(Exception e)
-            {
-                return Content(e.ToString());
-            }
-        }
-
-        [HttpDelete("{imgId}")]
-        [ActionName("RelaseImage")]
-        public IActionResult RelaseImage([FromRoute] Guid imgId)
-        {
-            var imgQueue = _context.imageQueues.SingleOrDefault(x => x.ImageId == imgId);
-            if (imgQueue == null) return Ok();
-
-            try
-            {
-                _context.imageQueues.Remove(imgQueue);
-                _context.SaveChanges();
-                //await _hubContext.Clients.All.SendAsync("broadcastMessage", imgId);
-                return Ok();
-            }catch(Exception e)
-            {
-                return Content(e.ToString());
-            }
         }
 
         // PUT: api/Images/5

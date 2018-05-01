@@ -21,7 +21,6 @@ using Microsoft.Extensions.FileProviders;
 using VDS.BackgroundJobs;
 using VDS.BackgroundJobs.Hangfire;
 using Hangfire;
-using ApiServer.BackgroundJobs;
 using MediatR;
 
 namespace ApiServer
@@ -116,13 +115,6 @@ namespace ApiServer
             app.UseCors(_defaultCorsPolicyName);
 
             app.UseAuthentication();
-            
-            app.UseHangfireServer();
-            app.UseHangfireDashboard();
-
-            //var context = app.ApplicationServices.GetService<VdsContext>();
-
-            //RecurringJob.AddOrUpdate(() => ImageQueueJobs.CheckTimeOut(context), Cron.Minutely);
 
             //app.UseSignalR(routes =>
             //{
