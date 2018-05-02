@@ -21,5 +21,6 @@ namespace ApiServer.Model
         public bool IsDisabled { get; set; }
         public string Description { get; set; }
         public string Note { get; set; }
+        public ICollection<ProjectUser> Users { get; set; } = new List<ProjectUser>();
     }
 }

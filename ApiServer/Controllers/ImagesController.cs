@@ -17,12 +17,11 @@ using System.Security.Claims;
 using static ApiServer.Model.views.ImageModel;
 using System.Net;
 using System.Net.Http.Headers;
-using VDS.Security;
 using Microsoft.AspNetCore.SignalR;
 using ApiServer.Hubs;
 using ApiServer.Core.SignalR;
 using ApiServer.Core.Queues;
-
+using VDS.Security;
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -59,10 +58,10 @@ namespace ApiServer.Controllers
             return null;
         }
 
-        public async Task<List<Role>> GetCurrentRole(long UserId)
+        public async Task<List<VDS.Security.Role>> GetCurrentRole(long UserId)
         {
             var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
-            var result = new List<Role>();
+            var result = new List<VDS.Security.Role>();
             foreach (var r in userRoles)
             {
                 result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
@@ -283,6 +282,14 @@ namespace ApiServer.Controllers
             }
         }
 
+        [HttpPost("{projId}/{imgId}")]
+        [ActionName("Ping")]
+        public IActionResult Ping([FromRoute] Guid projId, [FromRoute] Guid imgId)
+        {
+            ImageQueues.SetTimePing(projId, imgId, DateTime.Now);
+
+            return Ok();
+        }
         // PUT: api/Images/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] Image image)

@@ -112,7 +112,7 @@
         <div class="m-portlet">
             <div class="m-portlet__body">
                 <div class="col-lg-12">
-                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
+                    <button class="btn btn-brand btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
                         <span>
                             <i class="la la-play"></i>
                             <span>
@@ -120,7 +120,7 @@
                             </span>
                         </span>
                     </button>
-                    <button class="btn btn-danger btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
+                    <button class="btn btn-secondary btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
                         *ngIf="deleteImage">
                         <span>
                             <i class="la la-trash"></i>

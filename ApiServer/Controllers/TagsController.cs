@@ -17,7 +17,6 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
 using VDS.Security;
-
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -131,8 +130,7 @@ namespace ApiServer.Controllers
 
                     using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
                     {
-                        var extension = image.Path.Split('.').Last();
-                        var imgName = image.Id + "." + extension;
+                        var imgName = image.Path.Split('\\').Last();
                        
                         img.Mutate(ctx => ctx.FillPolygon(Rgba32.Black, points));
                         string tempFolderName = "temp";
@@ -236,7 +234,7 @@ namespace ApiServer.Controllers
 
         }
 
-        private async Task caculateClass(Guid imageId, VDS.Security.User user)
+        private async Task caculateClass(Guid imageId, User user)
         {
             var image = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(x => x.Id == imageId);
 

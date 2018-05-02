@@ -13,10 +13,9 @@ using System.Security.Claims;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using VDS.Security;
 using System.Net.Http.Headers;
 using System.IO.Compression;
-
+using VDS.Security;
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -48,10 +47,10 @@ namespace ApiServer.Controllers
             return null;
         }
 
-        public async Task<List<Role>> GetCurrentRole(long UserId)
+        public async Task<List<VDS.Security.Role>> GetCurrentRole(long UserId)
         {
             var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
-            var result = new List<Role>();
+            var result = new List<VDS.Security.Role>();
             foreach(var r in userRoles)
             {
                 result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
@@ -207,10 +206,7 @@ namespace ApiServer.Controllers
 
             if (currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
-                projs = _context.ProjectUsers
-                .Include(p => p.User)
-                .Include(a => a.Project)
-                .Select(b => b.Project).Distinct().OrderBy(x=>x.Name).Skip(start).Take(stop).ToList();
+                projs = _context.Projects.Include(x=>x.Users).OrderBy(x=>x.Name).Skip(start).Take(stop).ToList();
             }
             else
             {
@@ -232,19 +228,22 @@ namespace ApiServer.Controllers
                 {
                     var users = _context.ProjectUsers.Where(x => x.Project.Id == p.Id).Include(u => u.User).Select(u => u.User).ToList();
                     var usernames = string.Empty;
-
-                    for(var i=0; i < users.Count(); i++)
+                    if(users!= null || users.Count() > 0)
                     {
-                        if(i != (users.Count() - 1))
+                        for (var i = 0; i < users.Count(); i++)
                         {
-                            usernames += users[i].UserName + "; ";
+                            if (i != (users.Count() - 1))
+                            {
+                                usernames += users[i].UserName + "; ";
+                            }
+                            else
+                            {
+                                usernames += users[i].UserName;
+                            }
+
                         }
-                        else
-                        {
-                            usernames += users[i].UserName;
-                        }
-                        
                     }
+                    
 
                     results.Add(new ProjectModel.ProjectForView()
                     {

@@ -10,7 +10,6 @@ using ApiServer.Core.Authorization;
 using ApiServer.Model;
 using System.Security.Claims;
 using VDS.Security;
-
 namespace ApiServer.Controllers.Auth
 {
 
@@ -41,10 +40,10 @@ namespace ApiServer.Controllers.Auth
             return null;
         }
 
-        public async Task<List<Role>> GetCurrentRole(long UserId)
+        public async Task<List<VDS.Security.Role>> GetCurrentRole(long UserId)
         {
             var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
-            var result = new List<Role>();
+            var result = new List<VDS.Security.Role>();
             foreach (var r in userRoles)
             {
                 result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
@@ -144,7 +143,7 @@ namespace ApiServer.Controllers.Auth
 
         // POST: api/Users
         [HttpPost]
-        public async Task<IActionResult> PostUser([FromBody] VDS.Security.User user)
+        public async Task<IActionResult> PostUser([FromBody] User user)
         {
             if (!ModelState.IsValid)
             {

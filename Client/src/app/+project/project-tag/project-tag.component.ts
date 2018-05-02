@@ -40,6 +40,7 @@ export class ProjecTagComponent {
     projectId: string = null;
     selectedTag: Tag;
     tags: Array<Tag> = new Array<Tag>();
+    tagsForAddOrUpdate: Array<Tag> = new Array<Tag>();
     canvasTags: any = [];
     canvasLabels: any = [];
     imageWidth: number = 0;
@@ -85,7 +86,7 @@ export class ProjecTagComponent {
         private qcService: QcService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        this.setUpIdleTimeout(600, 5);
+        this.setUpIdleTimeout(60, 5);
     }
 
     ngOnInit() {
@@ -106,10 +107,10 @@ export class ProjecTagComponent {
         let mother = this;
         this.route.queryParams.subscribe(params => {
             this.projectId = params.project;
-            if(params.id){
+            if (params.id) {
                 this.imageId = params.id;
                 this.getImage(true);
-            }else{
+            } else {
                 this.imageId = '0';
                 this.getImage();
             }
@@ -119,7 +120,7 @@ export class ProjecTagComponent {
     ngOnDestroy(): void {
         //Called once, before the instance is destroyed.
         //Add 'implements OnDestroy' to the class.
-        console.log("leaving tag page ...");
+        // console.log("leaving tag page ...");
         if (this.idle) {
             this.idle.stop();
         }
@@ -130,31 +131,29 @@ export class ProjecTagComponent {
     }
 
     setUpIdleTimeout(idleTime: number, timeOut: number) {
-        // sets an idle timeout of 5 seconds, for testing purposes.
+        // sets an idle timeout of idleTime seconds, for testing purposes.
         this.idle.setIdle(idleTime);
-        // sets a timeout period of 5 seconds. after 10 seconds of inactivity, the user will be considered timed out.
+        // sets a timeout period of timeOut seconds. after (timeOut + idleTime) seconds of inactivity, the user will be considered timed out.
         this.idle.setTimeout(timeOut);
         // sets the default interrupts, in this case, things like clicks, scrolls, touches to the document
         this.idle.setInterrupts(DEFAULT_INTERRUPTSOURCES);
         let mother = this;
-        this.idle.onIdleEnd.subscribe(() => console.log('No longer idle.'));
+        // this.idle.onIdleEnd.subscribe(() => console.log('No longer idle.'));
         this.idle.onTimeout.subscribe(() => {
             this.timedOut = true;
-            console.log('timeout');
+            mother.router.navigate(['project-details', { id: mother.projectId }]);
         });
-        this.idle.onIdleStart.subscribe(() => console.log('You\'ve gone idle!'));
-        this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
+        // this.idle.onIdleStart.subscribe(() => console.log('You\'ve gone idle!'));
+        // this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
 
         // sets the ping interval to 15 seconds
         this.keepalive.interval(15);
 
         this.keepalive.onPing.subscribe(() => {
             this.lastPing = new Date();
-            // this.imgService.sendPing(this.imageId, this.lastPing).toPromise().then(Response=>{
-            //     if(Response){
-            //         console.log('ping success!');
-            //     }
-            // }).catch(err=>{console.log(err.error.text)});
+            this.imgService.sendPing(this.projectId, this.imageId).toPromise().then(Response => {
+
+            }).catch(err => { mother.router.navigate(['project-details', { id: mother.projectId }]) });
         });
 
         this.resetIdle();
@@ -191,13 +190,13 @@ export class ProjecTagComponent {
                 if (Response && Response.result) {
                     mother.getTags(Response.result);
                 }
-            }).catch(err=>mother.router.navigate(['']));
+            }).catch(err => mother.router.navigate(['project-details', { id: mother.projectId }]));
         } else {
             this.imgService.getNextImage(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     mother.getTags(Response.result);
                 }
-            }).catch(err=>mother.router.navigate(['']));
+            }).catch(err => mother.router.navigate(['project-details', { id: mother.projectId }]));
         }
     }
 
@@ -236,6 +235,7 @@ export class ProjecTagComponent {
         this.selection = false;
         this.selectedTag = null;
         this.tags = new Array<Tag>();
+        this.tagsForAddOrUpdate = new Array<Tag>();
         this.canvasTags = [];
         this.canvasLabels = [];
         this.imageWidth = 0;
@@ -281,42 +281,46 @@ export class ProjecTagComponent {
             });
         }
 
-        this.tags.forEach(tag => {
-            if (tag.index == this.selectedTag.index) {
-                tag.classIds = [];
+        let tag;
 
-                if (e.target.checked) {
-                    tag.classIds.push(value);
-                }
+        if (this.tagsForAddOrUpdate.indexOf(this.selectedTag) != -1) {
+            tag = this.tagsForAddOrUpdate.find(x => x.index == this.selectedTag.index);
+        } else {
+            tag = this.tags.find(x => x.index == this.selectedTag.index);
+        }
+
+        tag.classIds = [];
+
+        if (e.target.checked) {
+            tag.classIds.push(value);
+        }
 
 
-                let color: string;
-                if (tag.classIds.length > 0) {
-                    color = e.target.labels[0].childNodes[3].attributes[0].value.split(':')[1].split(';')[0].trim();
-                } else {
-                    color = '#ccc';
-                }
+        let color: string;
+        if (tag.classIds.length > 0) {
+            color = e.target.labels[0].childNodes[3].attributes[0].value.split(':')[1].split(';')[0].trim();
+        } else {
+            color = '#ccc';
+        }
 
-                this.canvasTags.forEach(cvTag => {
-                    if (cvTag.index == tag.index) {
-                        cvTag.set('stroke', color);
-                        cvTag.set('originColor', color);
+        this.canvasTags.forEach(cvTag => {
+            if (cvTag.index == tag.index) {
+                cvTag.set('stroke', color);
+                cvTag.set('originColor', color);
 
-                    }
-                });
-
-                this.canvasLabels.forEach(cvLabel => {
-                    if (cvLabel.index == tag.index) {
-                        cvLabel.set('originColor', color);
-                        cvLabel.set('stroke', color);
-                        cvLabel.set('fill', color);
-
-                    }
-                });
-
-                this.canvas.renderAll();
             }
         });
+
+        this.canvasLabels.forEach(cvLabel => {
+            if (cvLabel.index == tag.index) {
+                cvLabel.set('originColor', color);
+                cvLabel.set('stroke', color);
+                cvLabel.set('fill', color);
+
+            }
+        });
+
+        this.canvas.renderAll();
 
         this.classData.forEach(c => {
             if (c.id == value) {
@@ -341,7 +345,14 @@ export class ProjecTagComponent {
         var mother = this;
         this.btnSaveEnabled = false;
         if (this.addTag && this.editTag && !this.isQc) {
-            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tags, this.ExcluseAreas);
+            // this.tagsForAddOrUpdate.forEach(t => {
+            //     t.top = this.GetPercent(t.top, this.imageHeight);
+            //     t.left = this.GetPercent(t.left, this.imageWidth);
+            //     t.width = this.GetPercent(t.width, this.imageWidth);
+            //     t.height = this.GetPercent(t.height, this.imageHeight);
+            // });
+
+            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.ExcluseAreas);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
                 if (Response) {
@@ -467,7 +478,7 @@ export class ProjecTagComponent {
             let y = this.GetValueFromPercent(tag.top, mother.imageHeight);
             let width = this.GetValueFromPercent(tag.width, mother.imageWidth);
             let height = this.GetValueFromPercent(tag.height, mother.imageHeight);
-            let color = tag.classIds.length > 0 ? mother.getColorByClass(tag.classIds[0]) : '#878787';
+            let color = tag.classIds.length > 0 ? mother.getColorByClass(tag.classIds[0]) : '#FFFFFF';
             let rect = new fabric.Rect({
                 id: tag.id,
                 index: tag.index,
@@ -523,24 +534,31 @@ export class ProjecTagComponent {
     }
 
     deleteObject() {
-        if (!this.selectedTag) return;
+        var currentObject = this.canvas.getActiveObject();
+        this.canvas.remove(currentObject);
+        // if (!this.selectedTag) return;
 
-        if (this.selectedTag.id == -1) {
-            this.canvas.clear();
-            this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-            if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
-                this.ExcluseAreas = [];
+        // if (this.selectedTag.id == -1) {
+        //     this.canvas.clear();
+        //     this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
+        //     if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
+        //         this.ExcluseAreas = [];
 
-            this.setBackgroundImg();
-        } else {
-            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
-                if (Response) {
-                    this.canvas.clear();
-                    this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-                    this.setBackgroundImg();
-                }
-            }).catch(err => { console.log(err.error.text) });
-        }
+        //     this.setBackgroundImg();
+        // } else {
+        //     this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
+        //         if (Response) {
+        //             this.canvas.clear();
+        //             if (this.tags.indexOf(this.selectedTag) != -1)
+        //                 this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+
+        //             if (this.tagsForAddOrUpdate.indexOf(this.selectedTag) != -1)
+        //                 this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
+
+        //             this.setBackgroundImg();
+        //         }
+        //     }).catch(err => { console.log(err.error.text) });
+        // }
     }
 
     setUpMouseEvent() {
@@ -610,8 +628,8 @@ export class ProjecTagComponent {
                     var startPoint = new fabric.Circle({
                         left: _x,
                         top: _y,
-                        fill: "#ff26fb",
-                        radius: 7,
+                        fill: "#FFFFFF",
+                        radius: 6,
                         strokeWidth: 1,
                         stroke: "black",
                         hoverCursor: "pointer",
@@ -632,7 +650,7 @@ export class ProjecTagComponent {
                 var line = new fabric.Line([_x, _y, _x, _y], {
                     strokeWidth: 2,
                     selectable: false,
-                    stroke: '#ff26fb',
+                    stroke: '#FFFFFF',
                     strokeDashArray: [5, 5],
                 });
                 mother.excluseArea.paths.push(new Coordinate(_x, _y));
@@ -660,8 +678,8 @@ export class ProjecTagComponent {
                 top: pointer.y,
                 width: 0,
                 height: 0,
-                stroke: '#878787',
-                originColor: '#878787',
+                stroke: '#FFFFFF',
+                originColor: '#FFFFFF',
                 strokeWidth: 2,
                 fill: '',
                 transparentCorners: false,
@@ -714,7 +732,7 @@ export class ProjecTagComponent {
 
             let index = rect.get('index');
             let id = rect.get('id');
-            mother.tags.push(new Tag(
+            mother.tagsForAddOrUpdate.push(new Tag(
                 -1,
                 index,
                 mother.imageId,
@@ -734,16 +752,14 @@ export class ProjecTagComponent {
                 top: rect.get('top') - 30,
                 fontFamily: "calibri",
                 fontSize: 25,
-                fill: '#878787',
-                stroke: '#878787',
-                originColor: '#878787',
+                fill: '#FFFFFF',
+                stroke: '#FFFFFF',
+                originColor: '#FFFFFF',
                 strokeWidth: 0,
                 hasRotatingPoint: false,
                 centerTransform: true,
                 selectable: false
             });
-            // console.log(rect.get("top"), rect.get("left"), rect.get("width"), rect.get("height"));
-            // console.log(mother.tags)
             mother.canvas.add(label);
             mother.canvasLabels.push(label);
         });
@@ -864,6 +880,7 @@ export class ProjecTagComponent {
     }
 
     getNewCoodirnate(target) {
+        console.log(this.tags);
         var activeObject = this.canvas.getActiveObject();
         if (activeObject.get('name') != target.name) {
             return;
@@ -874,30 +891,60 @@ export class ProjecTagComponent {
         let width = activeObject.get('width') * activeObject.scaleX;
         let height = activeObject.get('height') * activeObject.scaleY;
 
-        this.tags.forEach(tag => {
-            if (tag.index == target.index) {
-                tag.top = this.GetPercent(top, this.imageHeight);
-                tag.left = this.GetPercent(left, this.imageWidth);
-                tag.width = this.GetPercent((left + width), this.imageWidth);
-                tag.height = this.GetPercent((top + height), this.imageHeight);
-            };
-        });
+        let tag = this.tagsForAddOrUpdate.find(x => x.index == target.index);
+
+        if (!tag) {
+            tag = this.tags.find(x => x.index == target.index);
+        }
+
+        tag.top = this.GetPercent(top, this.imageHeight);
+        tag.left = this.GetPercent(left, this.imageWidth);
+        tag.width = this.GetPercent((left + width), this.imageWidth);
+        tag.height = this.GetPercent((top + height), this.imageHeight);
+
+        if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {
+            this.tagsForAddOrUpdate.push(tag);
+        }
+
+        // this.tagsForAddOrUpdate.forEach(t => {
+        //     if (t.index == target.index) {
+        //         t.top = this.GetPercent(top, this.imageHeight);
+        //         t.left = this.GetPercent(left, this.imageWidth);
+        //         t.width = this.GetPercent((left + width), this.imageWidth);
+        //         t.height = this.GetPercent((top + height), this.imageHeight);
+        //     };
+        // });
     }
 
     onTagSelectedEvent(target) {
-        this.tags.forEach(tag => {
-            if (tag.index == target.index) {
-                this.selectedTag = tag;
+        let tag = this.tagsForAddOrUpdate.find(x => x.index == target.index);
+        if (!tag) {
+            tag = this.tags.find(x => x.index == target.index);
+            this.tagsForAddOrUpdate.push(tag);
+        }
 
-                for (let i = 0; i < this.classData.length; i++) {
-                    if (tag.classIds.indexOf(this.classData[i].id) != -1) {
-                        this.classData[i].checked = true;
-                    } else {
-                        this.classData[i].checked = false;
-                    }
-                }
+        this.selectedTag = tag;
+
+        for (let i = 0; i < this.classData.length; i++) {
+            if (tag.classIds.indexOf(this.classData[i].id) != -1) {
+                this.classData[i].checked = true;
+            } else {
+                this.classData[i].checked = false;
             }
-        });
+        }
+
+        // this.tags.forEach(t => {
+        //     if (t.index == target.index) {
+        //         for (let i = 0; i < this.classData.length; i++) {
+        //             if (t.classIds.indexOf(this.classData[i].id) != -1) {
+        //                 this.classData[i].checked = true;
+        //             } else {
+        //                 this.classData[i].checked = false;
+        //             }
+        //         }
+        //     }
+        // })
+
     }
 
     autoResizeCanvas() {
@@ -952,9 +999,22 @@ export class ProjecTagComponent {
 
     generateId() {
         let index: number = 1;
+        return (index + this.getHighestIndex());
+    }
+
+    getHighestIndex() {
+        let index: number = 1;
         this.tags.forEach(tag => {
-            index += 1;
+            if (tag.index > index) {
+                index = tag.index;
+            }
         });
+        this.tagsForAddOrUpdate.forEach(tag => {
+            if (tag.index > index) {
+                index = tag.index;
+            }
+        });
+
         return index;
     }
 

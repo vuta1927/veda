@@ -41,9 +41,9 @@ export class ImageService{
         return this.http.get<IAppCoreResponse<any>>(url);
     }
 
-    public sendPing(imgId:string, pingTime:Date):Observable<IAppCoreResponse<any>>{
-        let url = this.configurationService.serverSettings.apiUrl +'/api/images/PingImage/'+imgId+'/'+pingTime;
-        return this.http.put<IAppCoreResponse<any>>(url, pingTime);
+    public sendPing(projectId:string, imgId:string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/Ping/'+projectId+'/'+imgId;
+        return this.http.post<IAppCoreResponse<any>>(url, null);
     }
 
     public getCurrentWorker(projectId:string, imageId:string, userId:number):Observable<IAppCoreResponse<Iimage>>{

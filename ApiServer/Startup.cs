@@ -45,10 +45,11 @@ namespace ApiServer
                 options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
 
+            //services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("HangFireDB")));
+
             services.AddDomain(options =>
             {
                 options.DefaultNameOrConnectionString = Configuration.GetConnectionString("Default");
-                options.BackgroundJobs.IsJobExecutionEnabled = false;
                 // Configure storage
                 options.Storage.UseEntityFrameworkCore(c =>
                 {
@@ -78,8 +79,6 @@ namespace ApiServer
                 opts.RequireHttpsMetadata = false;
                 opts.Audience = "vds-api";
             });
-
-            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("HangFireDB")));
             
             // Configure CORS for angular5 UI
             services.AddCors(
