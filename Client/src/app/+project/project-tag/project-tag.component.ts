@@ -534,31 +534,51 @@ export class ProjecTagComponent {
     }
 
     deleteObject() {
-        var currentObject = this.canvas.getActiveObject();
-        this.canvas.remove(currentObject);
-        // if (!this.selectedTag) return;
+        // var currentObject = this.canvas.getActiveObject();
 
-        // if (this.selectedTag.id == -1) {
-        //     this.canvas.clear();
-        //     this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
-        //     if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
-        //         this.ExcluseAreas = [];
-
-        //     this.setBackgroundImg();
+        // if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex') {
+        //     this.ExcluseAreas = [];
         // } else {
-        //     this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
-        //         if (Response) {
-        //             this.canvas.clear();
-        //             if (this.tags.indexOf(this.selectedTag) != -1)
-        //                 this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-
-        //             if (this.tagsForAddOrUpdate.indexOf(this.selectedTag) != -1)
-        //                 this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
-
-        //             this.setBackgroundImg();
-        //         }
-        //     }).catch(err => { console.log(err.error.text) });
+        //     let tag = this.tags.find(x => x.index == currentObject.get('index'));
+        //     if (tag) {
+        //         this.tagSerivce.DeleteTag(tag.id).toPromise().then(Response => {
+        //             if (Response) {
+        //                 this.canvas.clear();
+        //                 if (this.tags.indexOf(this.selectedTag) != -1)
+        //                     this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+        //             }
+        //         }).catch(err => { console.log(err.error.text) });
+        //     } else {
+        //         tag = this.tagsForAddOrUpdate.find(x => x.index == currentObject.get('index'));
+        //         this.tagsForAddOrUpdate.slice(this.tagsForAddOrUpdate.indexOf(tag), 1);
+        //     }
         // }
+
+        // this.canvas.remove(currentObject);
+        
+        if (!this.selectedTag) return;
+
+        if (this.selectedTag.id == -1) {
+            this.canvas.clear();
+            this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
+            if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
+                this.ExcluseAreas = [];
+
+            this.setBackgroundImg();
+        } else {
+            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
+                if (Response) {
+                    this.canvas.clear();
+                    if (this.tags.indexOf(this.selectedTag) != -1)
+                        this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+
+                    if (this.tagsForAddOrUpdate.indexOf(this.selectedTag) != -1)
+                        this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
+
+                    this.setBackgroundImg();
+                }
+            }).catch(err => { console.log(err.error.text) });
+        }
     }
 
     setUpMouseEvent() {
