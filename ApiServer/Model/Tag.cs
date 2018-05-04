@@ -10,7 +10,6 @@ namespace ApiServer.Model
 {
     public class Tag
     {
-        public Tag() => Classes = new JoinCollectionFacade<Class, ClassTag>(ClassTags, ct => ct.Class, c => new ClassTag { Class = c, Tag = this });
         public int Id { get; set; }
         public int Index { get; set; }
         public double Top { get; set; }
@@ -20,8 +19,7 @@ namespace ApiServer.Model
         public virtual Image Image { get; set; }
         public QuantityCheck QuantityCheck { get; set; }
         public virtual User UserTagged { get; set; }
-        private ICollection<ClassTag> ClassTags { get; } = new List<ClassTag>();
-        [NotMapped]
-        public ICollection<Class> Classes { get; set; }
+        public virtual Class Class { get; set; }
+        public int ClassId { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace ApiServer.Model.views
             public int Id { get; set; }
             public int Index { get; set; }
             public Guid ImageId { get; set; }
-            public IEnumerable<int> ClassIds { get; set; }
+            public int ClassId { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
             public double Width { get; set; }
@@ -25,7 +25,7 @@ namespace ApiServer.Model.views
             public int Id { get; set; }
             public int Index { get; set; }
             public Guid ImageId { get; set; }
-            public IEnumerable<int> ClassIds { get; set; }
+            public int ClassId { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
             public double Width { get; set; }
@@ -37,7 +37,7 @@ namespace ApiServer.Model.views
             public int Id { get; set; }
             public int Index { get; set; }
             public Guid ImageId { get; set; }
-            public IEnumerable<int> ClassIds { get; set; }
+            public int ClassId { get; set; }
             public double Top { get; set; }
             public double Left { get; set; }
             public double Width { get; set; }

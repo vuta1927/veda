@@ -2,7 +2,7 @@ export interface ITag{
     id: number;
     index: number;
     imageId: string;
-    classIds: number[];
+    classId: number;
     quantityCheckId: number;
     top: number;
     left: number;
@@ -12,7 +12,7 @@ export interface ITag{
 
 export interface ITagForAdd{
     imageId:number;
-    classId:number[];
+    classId:number;
     top: number;
     left: number;
     width: number;
@@ -22,7 +22,7 @@ export interface ITagForAdd{
 export interface ITagForUpdate{
     id: number;
     imageId:number;
-    classId:number[];
+    classId:number;
     top: number;
     left: number;
     width: number;
@@ -34,7 +34,7 @@ export class Tag implements ITag{
         public id: number = -1, 
         public index: number,
         public imageId: string, 
-        public classIds: number[] = [], 
+        public classId: number, 
         public quantityCheckId: number = -1, 
         public top: number, 
         public left: number,
@@ -54,6 +54,7 @@ export class DataUpdate{
 
 export class ExcluseArea {
     constructor(
+        public name: string = null,
         public paths: Coordinate[] = []
     ){}
 }

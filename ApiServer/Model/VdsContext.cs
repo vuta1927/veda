@@ -27,20 +27,19 @@ namespace ApiServer.Model
         public DbSet<Image> Images { get; set; }
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
         public DbSet<ApiServer.Model.Tag> Tags { get; set; }
-        public DbSet<ClassTag> classTags { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<ClassTag>()
-                .HasKey(t => new { t.ClassId, t.TagId });
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<ClassTag>()
+        //        .HasKey(t => new { t.ClassId, t.TagId });
 
-            modelBuilder.Entity<ClassTag>()
-                .HasOne(ct => ct.Class)
-                .WithMany("ClassTags");
+        //    modelBuilder.Entity<ClassTag>()
+        //        .HasOne(ct => ct.Class)
+        //        .WithMany("ClassTags");
 
-            modelBuilder.Entity<ClassTag>()
-                .HasOne(ct => ct.Tag)
-                .WithMany("ClassTags");
-        }
+        //    modelBuilder.Entity<ClassTag>()
+        //        .HasOne(ct => ct.Tag)
+        //        .WithMany("ClassTags");
+        //}
     }
 
 }

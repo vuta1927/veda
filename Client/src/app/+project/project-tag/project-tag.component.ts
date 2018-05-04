@@ -39,6 +39,7 @@ export class ProjecTagComponent {
     selection: boolean = false;
     projectId: string = null;
     selectedTag: Tag;
+    selectedObject: any;
     tags: Array<Tag> = new Array<Tag>();
     tagsForAddOrUpdate: Array<Tag> = new Array<Tag>();
     canvasTags: any = [];
@@ -478,7 +479,7 @@ export class ProjecTagComponent {
             let y = this.GetValueFromPercent(tag.top, mother.imageHeight);
             let width = this.GetValueFromPercent(tag.width, mother.imageWidth);
             let height = this.GetValueFromPercent(tag.height, mother.imageHeight);
-            let color = tag.classIds.length > 0 ? mother.getColorByClass(tag.classIds[0]) : '#FFFFFF';
+            let color = tag.classId > 0 ? mother.getColorByClass(tag.classId) : '#FFFFFF';
             let rect = new fabric.Rect({
                 id: tag.id,
                 index: tag.index,
@@ -494,6 +495,7 @@ export class ProjecTagComponent {
                 transparentCorners: false,
                 hasRotatingPoint: mother.addTag,
                 hasControls: mother.addTag,
+                selectable: true
             });
             if (mother.isQc) {
                 rect.hasRotatingPoint = false;
@@ -534,50 +536,52 @@ export class ProjecTagComponent {
     }
 
     deleteObject() {
-        // var currentObject = this.canvas.getActiveObject();
+        var currentObject = this.selectedObject;
+        var allObject = this.canvas.getObjects();
 
-        // if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex') {
-        //     this.ExcluseAreas = [];
-        // } else {
-        //     let tag = this.tags.find(x => x.index == currentObject.get('index'));
-        //     if (tag) {
-        //         this.tagSerivce.DeleteTag(tag.id).toPromise().then(Response => {
-        //             if (Response) {
-        //                 this.canvas.clear();
-        //                 if (this.tags.indexOf(this.selectedTag) != -1)
-        //                     this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-        //             }
-        //         }).catch(err => { console.log(err.error.text) });
-        //     } else {
-        //         tag = this.tagsForAddOrUpdate.find(x => x.index == currentObject.get('index'));
-        //         this.tagsForAddOrUpdate.slice(this.tagsForAddOrUpdate.indexOf(tag), 1);
-        //     }
-        // }
+        if (currentObject.get('name').split('-')[0] == 'ex') {
+            this.ExcluseAreas.splice(this.ExcluseAreas.indexOf(this.ExcluseAreas.find(x => x.name == currentObject.name)), 1);
 
-        // this.canvas.remove(currentObject);
-        
-        if (!this.selectedTag) return;
-
-        if (this.selectedTag.id == -1) {
-            this.canvas.clear();
-            this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
-            if (this.canvas.getActiveObject().get('name').split('-')[0] == 'ex')
-                this.ExcluseAreas = [];
-
-            this.setBackgroundImg();
-        } else {
-            this.tagSerivce.DeleteTag(this.selectedTag.id).toPromise().then(Response => {
-                if (Response) {
-                    this.canvas.clear();
-                    if (this.tags.indexOf(this.selectedTag) != -1)
-                        this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
-
-                    if (this.tagsForAddOrUpdate.indexOf(this.selectedTag) != -1)
-                        this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(this.selectedTag), 1);
-
-                    this.setBackgroundImg();
+            for (var i = 0; i < allObject.length; i++) {
+                if (allObject[i].name == currentObject.name) {
+                    this.canvas.remove(allObject[i]);
                 }
-            }).catch(err => { console.log(err.error.text) });
+            }
+        } else {
+            let tag = this.tags.find(x => x.index == currentObject.get('index'));
+            if (tag) {
+                this.tagSerivce.DeleteTag(tag.id).toPromise().then(Response => {
+                    if (Response) {
+                        if (this.tags.indexOf(this.selectedTag) != -1)
+                            this.tags.splice(this.tags.indexOf(this.selectedTag), 1);
+
+                        for (var i = 0; i < allObject.length; i++) {
+                            if (allObject[i].index == currentObject.index) {
+                                this.canvas.remove(allObject[i]);
+                            }
+                        }
+                        for (var i = 0; i < allObject.length; i++) {
+                            if (allObject[i].index == currentObject.index) {
+                                this.canvas.remove(allObject[i]);
+                            }
+                        }
+                    }
+                }).catch(err => { console.log(err.error.text) });
+            } else {
+                tag = this.tagsForAddOrUpdate.find(x => x.index == currentObject.get('index'));
+                this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(tag), 1);
+
+                for (var i = 0; i < allObject.length; i++) {
+                    if (allObject[i].index == currentObject.index) {
+                        this.canvas.remove(allObject[i]);
+                    }
+                }
+                for (var i = 0; i < allObject.length; i++) {
+                    if (allObject[i].index == currentObject.index) {
+                        this.canvas.remove(allObject[i]);
+                    }
+                }
+            }
         }
     }
 
@@ -628,7 +632,16 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('mouse:down', function (event) {
+            var obj = event.target;
 
+            if (obj.get('type') != 'image') {
+                var tag = mother.tagsForAddOrUpdate.find(x => x.index == obj.get('index'));
+                if (!tag)
+                    tag = mother.tags.find(x => x.index == obj.get('index'));
+
+                mother.selectedTag = tag;
+                mother.selectedObject = obj;
+            }
             // --- set up panning func ---
             var evt = event.e;
             if (evt.altKey === true) {
@@ -704,7 +717,8 @@ export class ProjecTagComponent {
                 fill: '',
                 transparentCorners: false,
                 hasRotatingPoint: mother.addTag,
-                hasControls: mother.addTag
+                hasControls: mother.addTag,
+                selectable: true
             });
             this.add(rect);
         });
@@ -729,8 +743,7 @@ export class ProjecTagComponent {
             } else if (!isDown || !mother.tagMode) return;
 
             var pointer = mother.canvas.getPointer(evt);
-            rect.set('width', Math.abs(pointer.x - startPosition.x));
-            rect.set('height', Math.abs(pointer.y - startPosition.y));
+            rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
 
             mother.bindingEvent(rect);
             mother.canvas.renderAll();
@@ -745,8 +758,8 @@ export class ProjecTagComponent {
             } else if (!mother.tagMode) return;
 
             if (!mother.addTag || !mother.editTag || this.isQc) return;
-
             mother.bindingEvent(rect);
+            mother.canvas.remove(rect);
             mother.canvas.add(rect);
             mother.canvasTags.push(rect);
 
@@ -756,7 +769,7 @@ export class ProjecTagComponent {
                 -1,
                 index,
                 mother.imageId,
-                [],
+                0,
                 0,
                 mother.GetPercent(rect.get("top"), mother.imageHeight),
                 mother.GetPercent(rect.get("left"), mother.imageWidth),
@@ -865,8 +878,10 @@ export class ProjecTagComponent {
         var left = fabric.util.array.min(this.polygonPoints, "x");
         var top = fabric.util.array.min(this.polygonPoints, "y");
         let mother = this;
+        let name = 'ex-' + mother.generateId();
         this.polygonPoints.push(new fabric.Point(this.polygonPoints[0].x, this.polygonPoints[0].y));
         this.excluseArea.paths.push(new Coordinate(this.polygonPoints[0].x, this.polygonPoints[0].y));
+        this.excluseArea.name = name;
         this.ExcluseAreas.push(this.excluseArea);
         this.excluseArea = new ExcluseArea();
         return new fabric.Polygon(this.polygonPoints.slice(), {
@@ -874,7 +889,7 @@ export class ProjecTagComponent {
             top: top,
             fill: '#000000',
             stroke: 'black',
-            name: 'ex-' + mother.generateId(),
+            name: name,
             id: -1,
             transparentCorners: false
         });
@@ -946,7 +961,7 @@ export class ProjecTagComponent {
         this.selectedTag = tag;
 
         for (let i = 0; i < this.classData.length; i++) {
-            if (tag.classIds.indexOf(this.classData[i].id) != -1) {
+            if (tag.classId = this.classData[i].id) {
                 this.classData[i].checked = true;
             } else {
                 this.classData[i].checked = false;

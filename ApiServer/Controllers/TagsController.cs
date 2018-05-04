@@ -38,7 +38,7 @@ namespace ApiServer.Controllers
         [ActionName("GetTags")]
         public IActionResult GetTags([FromRoute] Guid id)
         {
-            var tags = _context.Tags.Include(t => t.Image).Where(x => x.Image.Id == id).Include("ClassTags.Class").Include(q => q.QuantityCheck);
+            var tags = _context.Tags.Include(t => t.Image).Where(x => x.Image.Id == id).Include(x=>x.Class).Include(q => q.QuantityCheck);
             var results = new List<TagModel.TagForView>();
             foreach (var tag in tags)
             {
@@ -56,7 +56,7 @@ namespace ApiServer.Controllers
                 {
                     t.QuantityCheckId = tag.QuantityCheck.Id;
                 }
-                t.ClassIds = tag.Classes.Select(x => x.Id);
+                t.ClassId = tag.Class.Id;
 
                 results.Add(t);
             }
@@ -72,7 +72,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.Include(t => t.Image).Include("ClassTags.Class").Include(q => q.QuantityCheck).SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include(t => t.Image).Include(x => x.Class).Include(q => q.QuantityCheck).SingleOrDefaultAsync(m => m.Id == id);
 
             if (tag == null)
             {
@@ -87,7 +87,7 @@ namespace ApiServer.Controllers
                 Top = tag.Top,
                 Width = tag.Width,
                 height = tag.height,
-                ClassIds = tag.Classes.Select(x => x.Id),
+                ClassId = tag.Class.Id,
                 QuantityCheckId = tag.QuantityCheck.Id,
                 ImageId = tag.Image.Id
             });
@@ -150,14 +150,13 @@ namespace ApiServer.Controllers
             {
                 if (tag.Id > 0)
                 {
-                    var originTag = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(x => x.Id == tag.Id);
+                    var originTag = await _context.Tags.Include(x=>x.Class).SingleOrDefaultAsync(x => x.Id == tag.Id);
                     if (originTag == null)
                     {
                         return Content("Tag:" + tag.Id + " not found !");
                     }
 
-                    originTag.Classes.Clear();
-
+                   
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -167,22 +166,22 @@ namespace ApiServer.Controllers
                         return Content(ex.ToString());
                     }
 
+                    var newClass = _context.Classes.SingleOrDefault(x => x.Id == tag.ClassId);
+                    if(originTag.Class != newClass)
+                    {
+                        originTag.Class.Tags.Remove(originTag);
+
+                        await _context.SaveChangesAsync();
+                    }
+
                     originTag.Index = tag.Index;
                     originTag.Left = tag.Left;
                     originTag.Top = tag.Top;
                     originTag.Width = tag.Width;
                     originTag.height = tag.height;
                     originTag.UserTagged = currentUser;
+                    originTag.Class = newClass;
 
-                    if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
-                    {
-                        foreach (var classId in tag.ClassIds)
-                        {
-                            var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
-                            originTag.Classes.Add(@class);
-                            //classes.Add(@class);
-                        }
-                    }
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -205,19 +204,15 @@ namespace ApiServer.Controllers
                         Top = tag.Top,
                         Width = tag.Width,
                         height = tag.height,
-                        UserTagged = currentUser
+                        UserTagged = currentUser,
+                        ClassId = tag.ClassId
                     };
 
-                    if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
-                    {
-                        foreach (var classId in tag.ClassIds)
-                        {
-                            var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
-                            newTag.Classes.Add(@class);
-                        }
-
-                    }
                     _context.Tags.Add(newTag);
+
+                    var @class = _context.Classes.FirstOrDefault(x => x.Id == tag.ClassId);
+                    @class.Tags.Add(newTag);
+
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -236,7 +231,8 @@ namespace ApiServer.Controllers
 
         private async Task caculateClass(Guid imageId, User user)
         {
-            var image = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(x => x.Id == imageId);
+            var image = await _context.Images.Include(x => x.Tags).ThenInclude(x=>x.Class).SingleOrDefaultAsync(x => x.Id == imageId);
+
 
             if (image == null) return;
 
@@ -250,16 +246,20 @@ namespace ApiServer.Controllers
             var tagHaveClass = 0;
             foreach (var t in image.Tags)
             {
-                var classes = _context.Tags.Include("ClassTags.Class").Single(x => x.Id == t.Id).Classes;
-                if(classes.Count() > 0)
+                if(t.Class != null)
                 {
                     tagHaveClass += 1;
+
+                    image.Classes = t.Class.Name;
                 }
             }
             image.TagHasClass = tagHaveClass;
             image.TagNotHasClass = tagCount - tagHaveClass;
             image.TaggedDate = DateTime.Now;
             image.UserTagged = user;
+
+            var test = image.Classes.Distinct();
+            var num = test.Count();
 
             try
             {
@@ -310,61 +310,7 @@ namespace ApiServer.Controllers
                 return;
             }
         }
-        // POST: api/Tags
-        [HttpPost]
-        public async Task<IActionResult> AddTag([FromBody] TagModel.TagForAddOrUpdate tag)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var originTag = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
-            if (originTag != null)
-            {
-                return Content("Tag id " + tag.Id + " is exsit !");
-            }
-
-            var image = await _context.Images.SingleOrDefaultAsync(x => x.Id == tag.ImageId);
-            if (image == null)
-            {
-                return Content("Image not found !");
-            }
-
-
-            var classes = new List<Class>();
-            if (tag.ClassIds != null && tag.ClassIds.Count() > 0)
-            {
-                foreach (var classId in tag.ClassIds)
-                {
-                    var @class = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
-                    classes.Add(@class);
-                }
-
-            }
-            try
-            {
-                _context.Tags.Add(new Tag()
-                {
-                    Id = tag.Id,
-                    Index = tag.Index,
-                    Classes = classes,
-                    Image = image,
-                    Left = tag.Left,
-                    Top = tag.Top,
-                    Width = tag.Width,
-                    height = tag.height
-                });
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
-            }
-            catch (Exception ex)
-            {
-                return Content(ex.Message);
-            }
-
-        }
+        
 
         // DELETE: api/Tags/5
         [HttpDelete("{id}")]
@@ -375,7 +321,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.Include("ClassTags.Class").Include(x => x.Image).ThenInclude(x=>x.Project).SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include(x=>x.Class).Include(x => x.Image).ThenInclude(x=>x.Project).SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
                 return Content("Tag not found !");
@@ -383,7 +329,7 @@ namespace ApiServer.Controllers
             var img = tag.Image;
             var project = img.Project;
 
-            if (tag.Classes.Count() > 0)
+            if (tag.Class != null)
                 img.TagHasClass -= 1;
             else
                 img.TagNotHasClass -= 1;
@@ -395,6 +341,8 @@ namespace ApiServer.Controllers
 
             if (img.Tags.Count() <= 0)
                 project.TotalImgNotTagged += 1;
+
+            tag.Class.Tags.Remove(tag);
 
             _context.Tags.Remove(tag);
             try

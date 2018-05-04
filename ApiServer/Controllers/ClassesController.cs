@@ -28,7 +28,7 @@ namespace ApiServer.Controllers
         [ActionName("GetClasses")]
         public IActionResult GetClasses([FromRoute] Guid id)
         {
-            var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include("ClassTags.Tag");
+            var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include(x=>x.Tags);
             var results = new List<ClassModel.ClassForView>();
             if(classes.Count() > 0)
             {
@@ -55,7 +55,7 @@ namespace ApiServer.Controllers
         public IActionResult GetTotal([FromRoute] Guid id)
         {
             var result = 0;
-            result = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include("ClassTags.Tag").Count();
+            result = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include(x => x.Tags).Count();
             return Ok(result);
         }
         // GET: api/Classes/5
@@ -207,15 +207,10 @@ namespace ApiServer.Controllers
             var ids = id.Split('_');
             for (var j = 0; j < ids.Length; j++)
             {
-                var @class = await _context.Classes.Include("ClassTags.Tag").SingleOrDefaultAsync(m => m.Id == int.Parse(ids[j]));
+                var @class = await _context.Classes.Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == int.Parse(ids[j]));
                 if (@class == null)
                 {
                     return Ok("Class not found");
-                }
-
-                foreach (var tag in @class.Tags)
-                {
-                    @class.Tags.Remove(tag);
                 }
                 _context.Classes.Remove(@class);
             }

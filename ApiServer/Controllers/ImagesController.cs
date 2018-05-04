@@ -367,8 +367,7 @@ namespace ApiServer.Controllers
                     {
                         foreach (var tag in img.Tags)
                         {
-                            var t = await _context.Tags.Include("ClassTags.Class").SingleOrDefaultAsync(x => x.Id == tag.Id);
-                            t.Classes.Clear();
+                            var t = await _context.Tags.SingleOrDefaultAsync(x => x.Id == tag.Id);
                             await _context.SaveChangesAsync();
                         }
                         _context.Tags.RemoveRange(img.Tags);
