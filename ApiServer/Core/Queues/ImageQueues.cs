@@ -190,8 +190,11 @@ namespace ApiServer.Core.Queues
             if(elapsedRunTime >= 60)
             {
                 ReleaseImage(projectId, image.Id);
-                _monitorTimer[image].Enabled = false;
-                _monitorTimer.Remove(image);
+                if (_monitorTimer.ContainsKey(image))
+                {
+                    _monitorTimer[image].Enabled = false;
+                    _monitorTimer.Remove(image);
+                }
             }
         }
     }

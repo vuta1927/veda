@@ -290,15 +290,15 @@ export class ProjecTagComponent {
             tag = this.tags.find(x => x.index == this.selectedTag.index);
         }
 
-        tag.classIds = [];
+        tag.classId = 0;
 
         if (e.target.checked) {
-            tag.classIds.push(value);
+            tag.classId = value;
         }
 
 
         let color: string;
-        if (tag.classIds.length > 0) {
+        if (tag.classId > 0) {
             color = e.target.labels[0].childNodes[3].attributes[0].value.split(':')[1].split(';')[0].trim();
         } else {
             color = '#ccc';
@@ -961,7 +961,7 @@ export class ProjecTagComponent {
         this.selectedTag = tag;
 
         for (let i = 0; i < this.classData.length; i++) {
-            if (tag.classId = this.classData[i].id) {
+            if (this.selectedTag.classId == this.classData[i].id) {
                 this.classData[i].checked = true;
             } else {
                 this.classData[i].checked = false;

@@ -20,6 +20,5 @@ namespace ApiServer.Model
         public QuantityCheck QuantityCheck { get; set; }
         public virtual User UserTagged { get; set; }
         public virtual Class Class { get; set; }
-        public int ClassId { get; set; }
     }
 }

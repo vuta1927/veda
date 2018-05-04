@@ -205,13 +205,16 @@ namespace ApiServer.Controllers
                         Width = tag.Width,
                         height = tag.height,
                         UserTagged = currentUser,
-                        ClassId = tag.ClassId
+                        
                     };
-
+                    if (tag.ClassId > 0)
+                    {
+                        var @class = _context.Classes.FirstOrDefault(x => x.Id == tag.ClassId);
+                        newTag.Class = @class;
+                    }
                     _context.Tags.Add(newTag);
 
-                    var @class = _context.Classes.FirstOrDefault(x => x.Id == tag.ClassId);
-                    @class.Tags.Add(newTag);
+                    
 
                     try
                     {
@@ -250,7 +253,7 @@ namespace ApiServer.Controllers
                 {
                     tagHaveClass += 1;
 
-                    image.Classes = t.Class.Name;
+                    image.Classes += ";"+ t.Class.Name;
                 }
             }
             image.TagHasClass = tagHaveClass;
