@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace ApiServer.Core.Queues
 {
-    public class ImageForQueue
+    public class UserImageForHub
     {
-        public Guid ImageId { get; set; }
         public long UserId { get; set; }
-        public DateTime LastPing { get; set; }
+        public Guid ImageId { get; set; }
     }
 }

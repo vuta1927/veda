@@ -87,7 +87,7 @@ export class ProjecTagComponent {
         private qcService: QcService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        this.setUpIdleTimeout(60, 5);
+        this.setUpIdleTimeout(600, 5); //value in second
     }
 
     ngOnInit() {
@@ -148,7 +148,7 @@ export class ProjecTagComponent {
         // this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
 
         // sets the ping interval to 15 seconds
-        this.keepalive.interval(15);
+        this.keepalive.interval(5);
 
         this.keepalive.onPing.subscribe(() => {
             this.lastPing = new Date();
@@ -455,11 +455,20 @@ export class ProjecTagComponent {
                 left: 0,
                 top: 0
             });
+            var canvasHeight = document.getElementById("canvas").offsetHeight;
+            var canvasWidth = document.getElementById("canvas").offsetWidth;
+
+            // img.scaleToHeight(canvasHeight);
+            // img.scaleToWidth(canvasWidth);
+
             mother.canvas.add(img);
             mother.canvas.sendToBack(img);
             mother.canvas.renderAll();
+            
             mother.imageHeight = img.height;
             mother.imageWidth = img.width;
+
+            mother.canvas.setZoom(canvasHeight/img.height);
             mother.drawTags();
         });
     }
@@ -915,7 +924,6 @@ export class ProjecTagComponent {
     }
 
     getNewCoodirnate(target) {
-        console.log(this.tags);
         var activeObject = this.canvas.getActiveObject();
         if (activeObject.get('name') != target.name) {
             return;
@@ -937,10 +945,11 @@ export class ProjecTagComponent {
         tag.width = this.GetPercent((left + width), this.imageWidth);
         tag.height = this.GetPercent((top + height), this.imageHeight);
 
+        console.log(tag);
         if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {
             this.tagsForAddOrUpdate.push(tag);
         }
-
+        
         // this.tagsForAddOrUpdate.forEach(t => {
         //     if (t.index == target.index) {
         //         t.top = this.GetPercent(top, this.imageHeight);
@@ -1038,7 +1047,7 @@ export class ProjecTagComponent {
     }
 
     getHighestIndex() {
-        let index: number = 1;
+        let index: number = 0;
         this.tags.forEach(tag => {
             if (tag.index > index) {
                 index = tag.index;

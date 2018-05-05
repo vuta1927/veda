@@ -15,11 +15,11 @@ namespace ApiServer.Model.views
             public int TotalClass { get; set; }
             public int TagHasClass { get; set; }
             public int TagNotHasClass { get; set; }
-            public DateTime TaggedDate { get; set; }
+            public DateTime? TaggedDate { get; set; }
             public string Classes { get; set; }
             public bool QcStatus { get; set; }
             public string UserQc { get; set; }
-            public DateTime QcDate { get; set; }
+            public DateTime? QcDate { get; set; }
             public string UserTagged { get; set; }
             public double TagTime { get; set; }
         }

@@ -217,7 +217,10 @@ namespace ApiServer.Controllers
             }
 
             var currentUser = GetCurrentUser();
-            var isRoleEsxitForUser = _context.UserRoles.Any(x => x.RoleId == role.Id);
+            
+            if(_context.ProjectUsers.Any(x=>x.UserId == user.Id)){
+                return Content("User already exsit!");
+            }
 
             try
             {

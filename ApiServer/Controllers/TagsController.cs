@@ -17,6 +17,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
 using VDS.Security;
+
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -26,7 +27,6 @@ namespace ApiServer.Controllers
     {
         private readonly VdsContext _context;
         private readonly IHostingEnvironment _hostingEnvironment;
-
         public TagsController(VdsContext context, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
@@ -38,7 +38,7 @@ namespace ApiServer.Controllers
         [ActionName("GetTags")]
         public IActionResult GetTags([FromRoute] Guid id)
         {
-            var tags = _context.Tags.Include(t => t.Image).Where(x => x.Image.Id == id).Include(x=>x.Class).Include(q => q.QuantityCheck);
+            var tags = _context.Tags.Include(t => t.Image).Include(x=>x.Class).Where(x => x.Image.Id == id).Include(x=>x.Class).Include(q => q.QuantityCheck);
             var results = new List<TagModel.TagForView>();
             foreach (var tag in tags)
             {
@@ -56,7 +56,8 @@ namespace ApiServer.Controllers
                 {
                     t.QuantityCheckId = tag.QuantityCheck.Id;
                 }
-                t.ClassId = tag.Class.Id;
+                if(tag.Class != null)
+                    t.ClassId = tag.Class.Id;
 
                 results.Add(t);
             }
@@ -181,6 +182,7 @@ namespace ApiServer.Controllers
                     originTag.height = tag.height;
                     originTag.UserTagged = currentUser;
                     originTag.Class = newClass;
+                    originTag.TaggedDate = DateTime.Now;
 
                     try
                     {
@@ -205,7 +207,7 @@ namespace ApiServer.Controllers
                         Width = tag.Width,
                         height = tag.height,
                         UserTagged = currentUser,
-                        
+                        TaggedDate = DateTime.Now
                     };
                     if (tag.ClassId > 0)
                     {
@@ -253,16 +255,27 @@ namespace ApiServer.Controllers
                 {
                     tagHaveClass += 1;
 
-                    image.Classes += ";"+ t.Class.Name;
+                    if (string.IsNullOrEmpty(image.Classes))
+                    {
+                        image.Classes = t.Class.Name;
+                        image.TotalClass = 1;
+                    }
+                    else
+                    {
+                        var classes = image.Classes.Split(';');
+                        if (!classes.Contains(t.Class.Name))
+                        {
+                            image.Classes += ";" + t.Class.Name;
+                        }
+
+                        image.TotalClass = classes.Count();
+                    }
                 }
             }
             image.TagHasClass = tagHaveClass;
             image.TagNotHasClass = tagCount - tagHaveClass;
             image.TaggedDate = DateTime.Now;
             image.UserTagged = user;
-
-            var test = image.Classes.Distinct();
-            var num = test.Count();
 
             try
             {

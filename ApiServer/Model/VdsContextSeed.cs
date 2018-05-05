@@ -215,30 +215,44 @@ namespace ApiServer.Model
 
         private async Task AddPermision(VdsContext _ctx)
         {
+            var mangementPermissions = new VdsPermissionProvider();
+            var permissions = mangementPermissions.GetPermissions();
+            foreach (var permission in permissions)
+            {
+                if (!_ctx.Permissions.Any(x => x.Name == permission.Name))
+                {
+                    var newPermission = new VDS.Security.Permissions.Permission
+                    {
+                        Name = permission.Name,
+                        Category = permission.Category,
+                        Description = permission.Description,
+                        DisplayName = permission.DisplayName
+                    };
+
+                    _ctx.Permissions.Add(newPermission);
+
+                    _ctx.SaveChanges();
+                }
+            }
+
             var adminRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "Administrator");
             if (adminRole != null)
             {
-                var mangementPermissions = new VdsPermissionProvider();
-                var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if (!_ctx.Permissions.Any(x => x.Name == permission.Name))
+                    if (permission.Category == VdsPermissions.ProjectCategory ||
+                        permission.Category == VdsPermissions.ImageCategory ||
+                        permission.Category == VdsPermissions.QcCategory ||
+                        permission.Category == VdsPermissions.TagCategory ||
+                        permission.Category == VdsPermissions.UserCategory ||
+                        permission.Category == VdsPermissions.RoleCategory ||
+                        permission.Name == VdsPermissions.Administrator)
                     {
-                        var newPermission = new VDS.Security.Permissions.Permission
+                        var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
+                        if (permissionInDatabase != null)
                         {
-                            Name = permission.Name,
-                            Category = permission.Category,
-                            Description = permission.Description,
-                            DisplayName = permission.DisplayName
-                        };
-
-                        _ctx.Permissions.Add(newPermission);
-
-                        _ctx.SaveChanges();
-
-                        _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = newPermission.Id, RoleId = adminRole.Id });
-
-                        _ctx.SaveChanges();
+                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = adminRole.Id });
+                        }
                     }
                 }
             }
@@ -246,18 +260,19 @@ namespace ApiServer.Model
             var projectRole = await _ctx.Roles.FirstOrDefaultAsync(r => r.RoleName == "ProjectManager");
             if (projectRole != null)
             {
-                var mangementPermissions = new VdsPermissionProvider();
-                var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if (permission.Category == VdsPermissions.ProjectCategory || permission.Category == VdsPermissions.ImageCategory || permission.Category == VdsPermissions.QcCategory || permission.Category == VdsPermissions.TagCategory)
+                    if (permission.Category == VdsPermissions.ProjectCategory ||
+                        permission.Category == VdsPermissions.ImageCategory ||
+                        permission.Category == VdsPermissions.QcCategory ||
+                        permission.Category == VdsPermissions.TagCategory ||
+                        permission.Category == VdsPermissions.UserCategory ||
+                        permission.Category == VdsPermissions.RoleCategory)
                     {
                         var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
                         if (permissionInDatabase != null)
                         {
                             _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = projectRole.Id });
-
-                            _ctx.SaveChanges();
                         }
                     }
                 }
@@ -266,18 +281,17 @@ namespace ApiServer.Model
             var teacherRole = await _ctx.Roles.FirstOrDefaultAsync(x => x.RoleName == "Teacher");
             if(teacherRole != null)
             {
-                var mangementPermissions = new VdsPermissionProvider();
-                var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if (permission.Name == VdsPermissions.ViewProject || permission.Name == VdsPermissions.ViewQc || permission.Category == VdsPermissions.ImageCategory ||  permission.Category == VdsPermissions.TagCategory)
+                    if (permission.Name == VdsPermissions.ViewProject || 
+                        permission.Name == VdsPermissions.ViewQc || 
+                        permission.Category == VdsPermissions.ImageCategory ||  
+                        permission.Category == VdsPermissions.TagCategory)
                     {
                         var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
                         if (permissionInDatabase != null)
                         {
-                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = projectRole.Id });
-
-                            _ctx.SaveChanges();
+                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = teacherRole.Id });
                         }
                     }
                 }
@@ -286,22 +300,30 @@ namespace ApiServer.Model
             var qcRole = await _ctx.Roles.FirstOrDefaultAsync(x => x.RoleName == "QuantityCheck");
             if (qcRole != null)
             {
-                var mangementPermissions = new VdsPermissionProvider();
-                var permissions = mangementPermissions.GetPermissions();
                 foreach (var permission in permissions)
                 {
-                    if (permission.Name == VdsPermissions.ViewProject || permission.Category == VdsPermissions.QcCategory || permission.Name == VdsPermissions.ViewImage || permission.Name == VdsPermissions.ViewTag)
+                    if (permission.Name == VdsPermissions.ViewProject || 
+                        permission.Category == VdsPermissions.QcCategory || 
+                        permission.Name == VdsPermissions.ViewImage || 
+                        permission.Name == VdsPermissions.ViewTag)
                     {
                         var permissionInDatabase = await _ctx.Permissions.SingleOrDefaultAsync(x => x.Name == permission.Name);
                         if (permissionInDatabase != null)
                         {
-                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = projectRole.Id });
-
-                            _ctx.SaveChanges();
+                            _ctx.PermissionRoles.Add(new PermissionRole { PermissionId = permissionInDatabase.Id, RoleId = qcRole.Id });
                         }
                     }
                 }
             }
+
+            try {
+                await _ctx.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            
         }
 
         private Policy CreatePolicy(string prefix, int retries = 3)

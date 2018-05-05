@@ -63,7 +63,7 @@ export class ProjectImagesComponent implements OnInit {
     viewImage: boolean = false;
     addImage: boolean = false;
     deleteImage: boolean = false;
-
+    userUsing: any;
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -93,6 +93,7 @@ export class ProjectImagesComponent implements OnInit {
 
         this.uploadfiles = [];
         var mother = this;
+        this.setupHub();
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
             this.dataSource = new DataSource({
@@ -107,6 +108,7 @@ export class ProjectImagesComponent implements OnInit {
 
                         return mother.imgService.getImages(p.id, params)
                             .toPromise().then(response => {
+                                
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
                                     if (resp.result) {
                                         return {
@@ -131,13 +133,13 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     setupHub() {
-        this._hubConnection = new HubConnection(this.apiUrl + 'project');
+        this._hubConnection = new HubConnection(this.apiUrl + 'hubs/image');
         this._hubConnection
             .start()
             .then(() => console.log('connection started!'))
-            .catch(err => console.log('Error while establishing connection ('+this.apiUrl + 'project'+') !'));
-        this._hubConnection.on("userUsing", data=>{console.log("userUsing",data)});
-        this._hubConnection.on("imageReleaseBroadcast", data=>{console.log("imageReleaseBroadcast",data)});
+            .catch(err => console.log('Error while establishing connection ('+this.apiUrl + 'hubs/image'+') !'));
+        this._hubConnection.on("userUsing", data=>{console.log("user using",data)});
+        this._hubConnection.on("userRelease", data=>{console.log("user release",data)});
     }
 
     appendUploadFiles(files) {
@@ -146,7 +148,9 @@ export class ProjectImagesComponent implements OnInit {
     selectionChanged(data: any) {
         this.selectedImages = data.selectedRowsData;
     }
-
+    ignoredChange(data){
+        console.log(data);
+    }
     deleteSelectedImages() {
         Helpers.setLoading(true);
         let ids = '';

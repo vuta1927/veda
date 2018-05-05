@@ -22,12 +22,16 @@ using VDS.BackgroundJobs;
 using VDS.BackgroundJobs.Hangfire;
 using Hangfire;
 using MediatR;
+using ApiServer.Hubs;
 
 namespace ApiServer
 {
     public class Startup
     {
         private static string _defaultCorsPolicyName = "http://localhost:4200";
+
+        public static IServiceProvider Provider { get; private set; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -38,7 +42,7 @@ namespace ApiServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddSignalR();
+            services.AddSignalR();
 
             services.AddMvc()
                 .AddJsonOptions(
@@ -115,10 +119,12 @@ namespace ApiServer
 
             app.UseAuthentication();
 
-            //app.UseSignalR(routes =>
-            //{
-            //    routes.MapHub<VdsHub>("/project");
-            //});
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<VdsHub>("/hubs/image");
+            });
+
+            Provider = app.ApplicationServices;
 
             app.UseStaticFiles();
 

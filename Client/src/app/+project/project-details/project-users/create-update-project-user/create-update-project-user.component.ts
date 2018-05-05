@@ -65,7 +65,8 @@ export class CreateUpdateProjectUserComponent implements OnInit {
 
             }
         }).catch(err => {
-            this.messageHeader = "Error";
+            Helpers.setLoading(false);
+            this.messageHeader = "Error ";
             this.message = err.error.text;
             this.isError = true;
         });

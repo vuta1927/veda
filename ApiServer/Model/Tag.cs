@@ -17,8 +17,10 @@ namespace ApiServer.Model
         public double Width { get; set; }
         public double height { get; set; }
         public virtual Image Image { get; set; }
+        public DateTime TaggedDate { get; set; }
         public QuantityCheck QuantityCheck { get; set; }
         public virtual User UserTagged { get; set; }
+        public int? ClassId { get; set; }
         public virtual Class Class { get; set; }
     }
 }

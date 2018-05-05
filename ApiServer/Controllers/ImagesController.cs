@@ -32,12 +32,14 @@ namespace ApiServer.Controllers
         private readonly VdsContext _context;
 
         private readonly IHostingEnvironment _hostingEnvironment;
+        private IHubContext<VdsHub> _hubContext;
 
         //private IHubContext<VdsHub> _hubContext;
 
-        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment)
+        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
             _hostingEnvironment = hostingEnvironment;
         }
 
@@ -231,7 +233,7 @@ namespace ApiServer.Controllers
         {
             var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
 
-            ImageQueues.Append(userId, project.Id, _context);
+            ImageQueues.Append(userId, project.Id, _context, _hubContext);
 
             var image = await ImageQueues.GetImage(projId, imgId, userId);
             
@@ -250,7 +252,7 @@ namespace ApiServer.Controllers
         {
             var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
             
-            ImageQueues.Append(userId, project.Id, _context);
+            ImageQueues.Append(userId, project.Id, _context, _hubContext);
 
             var image = await ImageQueues.GetImageById(projId, imgId, userId);
 
@@ -263,17 +265,18 @@ namespace ApiServer.Controllers
 
         }
 
-        [HttpDelete("{projId}/{imgId}")]
+        [HttpDelete("{userId}/{projId}/{imgId}")]
         [ActionName("ReleaseImage")]
-        public IActionResult ReleaseImage([FromRoute] Guid projId, [FromRoute] Guid imgId)
+        public async Task<IActionResult> ReleaseImage([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
             if (!ModelState.IsValid)
             {
                 return NotFound();
             }
 
-            if(ImageQueues.ReleaseImage(projId, imgId))
+            if(await ImageQueues.ReleaseImage(projId, imgId))
             {
+
                 return Ok("Ok");
             }
             else
