@@ -41,6 +41,7 @@ import { HubConnection } from '@aspnet/signalr';
 export class ProjectImagesComponent implements OnInit {
     @ViewChildren(DxDataGridComponent) dataGrid: DxDataGridComponent;
     dataSource: any = {};
+    rawData: any = {};
     selectedImages: any[] = [];
     images: any[] = [];
     currentProject: ProjectForView = new ProjectForView("0");
@@ -64,6 +65,7 @@ export class ProjectImagesComponent implements OnInit {
     addImage: boolean = false;
     deleteImage: boolean = false;
     userUsing: any;
+
     constructor(
         private formBuilder: FormBuilder,
         private toastr: ToastsManager,
@@ -108,16 +110,18 @@ export class ProjectImagesComponent implements OnInit {
 
                         return mother.imgService.getImages(p.id, params)
                             .toPromise().then(response => {
-                                
+
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
+                                    mother.rawData = response.result;
+
                                     if (resp.result) {
                                         return {
-                                            data: response.result,
+                                            data: mother.rawData,
                                             totalCount: resp.result,
                                         }
                                     } else {
                                         return {
-                                            data: response.result,
+                                            data: mother.rawData,
                                             totalCount: 0
                                         }
                                     }
@@ -133,13 +137,27 @@ export class ProjectImagesComponent implements OnInit {
     }
 
     setupHub() {
+        var mother = this;
         this._hubConnection = new HubConnection(this.apiUrl + 'hubs/image');
         this._hubConnection
             .start()
             .then(() => console.log('connection started!'))
-            .catch(err => console.log('Error while establishing connection ('+this.apiUrl + 'hubs/image'+') !'));
-        this._hubConnection.on("userUsing", data=>{console.log("user using",data)});
-        this._hubConnection.on("userRelease", data=>{console.log("user release",data)});
+            .catch(err => console.log('Error while establishing connection (' + this.apiUrl + 'hubs/image' + ') !'));
+        this._hubConnection.on("userUsingInfo", data => {
+            console.log("userUsingInfo", data);
+            mother.updateUserUsing(data);
+        });
+    }
+
+    updateUserUsing(userUsingInfoData) {
+        var mother = this;
+        userUsingInfoData.forEach(data => {
+            var obj = mother.rawData.find(x=>x.id == data.imageId);
+            if(obj){
+                obj.userUsing = data.userName;
+                mother.dataSource.reload();
+            }
+        });
     }
 
     appendUploadFiles(files) {
@@ -148,7 +166,7 @@ export class ProjectImagesComponent implements OnInit {
     selectionChanged(data: any) {
         this.selectedImages = data.selectedRowsData;
     }
-    ignoredChange(data){
+    ignoredChange(data) {
         console.log(data);
     }
     deleteSelectedImages() {
@@ -177,8 +195,8 @@ export class ProjectImagesComponent implements OnInit {
         });
     }
 
-    startTrainning(){
-        this.router.navigateByUrl('/project-tag?project='+this.currentProject.id);
+    startTrainning() {
+        this.router.navigateByUrl('/project-tag?project=' + this.currentProject.id);
     }
 
     upload() {

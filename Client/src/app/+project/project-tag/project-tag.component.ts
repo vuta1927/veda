@@ -125,9 +125,8 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        if (this.imageId) {
-            this.imgService.relaseImage(this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
-        }
+        this.imgService.relaseImage(this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
+
 
     }
 
@@ -464,11 +463,11 @@ export class ProjecTagComponent {
             mother.canvas.add(img);
             mother.canvas.sendToBack(img);
             mother.canvas.renderAll();
-            
+
             mother.imageHeight = img.height;
             mother.imageWidth = img.width;
 
-            mother.canvas.setZoom(canvasHeight/img.height);
+            mother.canvas.setZoom(canvasHeight / img.height);
             mother.drawTags();
         });
     }
@@ -949,7 +948,7 @@ export class ProjecTagComponent {
         if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {
             this.tagsForAddOrUpdate.push(tag);
         }
-        
+
         // this.tagsForAddOrUpdate.forEach(t => {
         //     if (t.index == target.index) {
         //         t.top = this.GetPercent(top, this.imageHeight);

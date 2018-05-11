@@ -12,4 +12,5 @@ export interface Iimage{
     qcDate: Date;
     userTagged: string;
     tagTime: number;
+    userUsing: string;
 }

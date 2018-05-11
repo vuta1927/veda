@@ -22,6 +22,7 @@ namespace ApiServer.Model.views
             public DateTime? QcDate { get; set; }
             public string UserTagged { get; set; }
             public double TagTime { get; set; }
+            public string UserUsing { get; set; }
         }
     }
 }

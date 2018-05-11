@@ -96,9 +96,9 @@ namespace ApiServer.Core.Queues
 
                     if (image != null)
                     {
-                        var ImageTakent = GetListImagesTaken(projectId);
+                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
 
-                        await _hubContext.Clients.All.SendAsync("userUsing", ImageTakent);
+                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { ImageTakent });
                     }
 
                     return image;
@@ -128,11 +128,11 @@ namespace ApiServer.Core.Queues
 
                     if (image != null)
                     {
-                        var ImageTakent = GetListImagesTaken(projectId);
 
-                        await _hubContext.Clients.All.SendAsync("userUsing", ImageTakent);
-
-                        await _hubContext.Clients.All.SendAsync("userRelease", imageRelease);
+                        var a = new List<UserImageForHub>();
+                        a.Add(new UserImageForHub() { ImageId = imageRelease.ImageId, UserName = null });
+                        a.Add(new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName });
+                        await _hubContext.Clients.All.SendAsync("userUsingInfo", a);
                     }
 
                     return image;
@@ -174,9 +174,9 @@ namespace ApiServer.Core.Queues
 
                     if (image != null)
                     {
-                        var ImageTakent = GetListImagesTaken(projectId);
+                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName};
 
-                        await _hubContext.Clients.All.SendAsync("userUsing", ImageTakent);
+                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { ImageTakent });
                     }
 
                     return image;
@@ -190,13 +190,13 @@ namespace ApiServer.Core.Queues
             var img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imgId);
             if (img != null && _image_Taken[projectId].Contains(img))
             {
-                var a = new UserImageForHub() { UserId = img.UserId, ImageId = imgId };
+                var a = new UserImageForHub() { UserName = null, ImageId = imgId };
 
                 _image_Taken[projectId].Remove(img);
                 img.LastPing = new DateTime();
                 _image_notTaken[projectId].Add(img);
 
-                await _hubContext.Clients.All.SendAsync("userRelease", a);
+                await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { a });
 
                 return true;
             }
@@ -222,7 +222,7 @@ namespace ApiServer.Core.Queues
 
         public static void SetTimePing(Guid projectId, Guid imageId, DateTime pingTime)
         {
-            var img = _image_Taken[projectId].SingleOrDefault(x => x.ImageId == imageId);
+            var img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imageId);
             if (img != null)
             {
                 img.LastPing = pingTime;
@@ -245,18 +245,19 @@ namespace ApiServer.Core.Queues
             }
         }
 
-        public static List<UserImageForHub> GetListImagesTaken(Guid projectId)
+        public static string GetUserUsing(Guid projectId, Guid ImageId, VdsContext context)
         {
             var result = new List<UserImageForHub>();
             if (_image_Taken.ContainsKey(projectId))
             {
                 foreach (var data in _image_Taken[projectId])
                 {
-                    result.Add( new UserImageForHub() { ImageId = data.ImageId, UserId = data.UserId });
+                    if (data.ImageId == ImageId)
+                        return context.Users.FirstOrDefault(x => x.Id == data.UserId).UserName;
                 }
             }
 
-            return result;
+            return null;
         }
     }
 }

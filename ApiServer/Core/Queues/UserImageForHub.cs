@@ -7,7 +7,7 @@ namespace ApiServer.Core.Queues
 {
     public class UserImageForHub
     {
-        public long UserId { get; set; }
+        public string UserName { get; set; }
         public Guid ImageId { get; set; }
     }
 }

@@ -98,6 +98,7 @@ namespace ApiServer.Controllers
                         UserQc = img.UserQc != null ? img.UserQc.UserName : null,
                         QcDate = img.QcDate,
                         TaggedDate = img.TaggedDate,
+                        UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context)
 
                     };
                     imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
@@ -127,7 +128,8 @@ namespace ApiServer.Controllers
                             TotalClass = img.TotalClass,
                             UserQc = img.UserQc != null ? img.UserQc.UserName : null,
                             QcDate = img.QcDate,
-                            TaggedDate = img.TaggedDate
+                            TaggedDate = img.TaggedDate,
+                            UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context)
                         };
 
                         results.Add(imgForView);

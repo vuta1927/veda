@@ -138,13 +138,14 @@
                         </dxo-remote-operations>
                         <dxo-paging [pageSize]="12"></dxo-paging>
                         <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                        <dxo-load-panel [enabled]="false"></dxo-load-panel>
                         <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                         <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                         <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
                         <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
                         <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
                         <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
-                        <dxi-column caption="Using by"></dxi-column>
+                        <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
                         <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
                         <dxi-column dataField="tagHasClass" caption="Tags have calss"></dxi-column>
                         <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
@@ -153,6 +154,11 @@
                         <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" caption="Qc Status"></dxi-column>
                         <dxi-column dataField="userQc" caption="Qc by"></dxi-column>
                         <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
+                        <div *dxTemplate="let data of 'userUsingCell'">
+                            <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="data.data.userUsing">
+                                {{data.data.userUsing}}
+                            </span>
+                        </div>
                         <div *dxTemplate="let data of 'qcStatusCell'">
                             <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
                                 <input type="checkbox" disabled>
@@ -176,7 +182,7 @@
                         </div>
                         <div *dxTemplate="let data of 'classesCell'">
                             <div *ngIf="data.data.classes">
-                                <span class="m-badge m-badge--brand m-badge--wide" *ngFor="let class of data.data.classes.split(';')">
+                                <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let class of data.data.classes.split(';')">
                                     <b>{{(class)}}</b>
                                 </span>
                             </div>
