@@ -152,12 +152,17 @@ export class ProjectImagesComponent implements OnInit {
     updateUserUsing(userUsingInfoData) {
         var mother = this;
         userUsingInfoData.forEach(data => {
-            var obj = mother.rawData.find(x=>x.id == data.imageId);
-            if(obj){
-                obj.userUsing = data.userName;
-                mother.dataSource.reload();
-            }
+            // var obj = mother.rawData.find(x=>x.id == data.imageId);
+            mother.rawData.forEach(dt => {
+                if(dt.id == data.imageId){
+                    dt.userUsing = data.userName;
+                }
+            });
+            // if(obj){
+            //     obj.userUsing = data.userName;
+            // }
         });
+        this.dataSource.reload();
     }
 
     appendUploadFiles(files) {
