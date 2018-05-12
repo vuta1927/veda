@@ -51,9 +51,13 @@
                 <i class="la la-plus i-plus"></i>
                 Add new project
               </a>
+              <a class="dropdown-item" (click)="mergeProject()">
+                <i class="la 	la-magnet i-magnet"></i>
+                Merge
+              </a>
               <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
-              <a *ngIf="(!selectedProjects.length || deleteProject)" class="dropdown-item disabled">
+              <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
             </div>
           </div>

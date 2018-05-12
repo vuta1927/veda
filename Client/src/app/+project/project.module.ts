@@ -13,7 +13,7 @@ import { CreateUpdateProjectComponent } from './create-update/create-update-proj
         DxDataGridModule, 
         DxMenuModule],
     declarations: [
-        ProjectComponent, 
+        ProjectComponent,
         CreateUpdateProjectComponent],
     entryComponents : [CreateUpdateProjectComponent]
 })

@@ -23,18 +23,19 @@ export const ROUTES: Routes = [
       },
       {
         path: 'project',
-        loadChildren: 'app/+project/project.module#ProjectModule',
-        data: {pageTitle: 'Project'}
+        loadChildren: 'app/+project/project.module#ProjectModule'
       },
       {
         path: 'project-details',
-        loadChildren: 'app/+project/project-details/project-details.module#ProjectDetailsModule',
-        data: {pageTitle: 'Project Details'}
+        loadChildren: 'app/+project/project-details/project-details.module#ProjectDetailsModule'
       },
       {
         path: 'project-tag',
-        loadChildren: 'app/+project/project-tag/project-tag.module#ProjectTagModule',
-        data: {pageTitle: 'Project Tag'}
+        loadChildren: 'app/+project/project-tag/project-tag.module#ProjectTagModule'
+      },
+      {
+        path: 'merge-project',
+        loadChildren: 'app/+project/merge-project/merge-project.module#MergeProjectModule',
       },
       {
         path: '404',

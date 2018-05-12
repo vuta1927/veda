@@ -131,7 +131,7 @@ namespace ApiServer.Core.Queues
 
                         var a = new List<UserImageForHub>();
                         a.Add(new UserImageForHub() { ImageId = imageRelease.ImageId, UserName = null });
-                        a.Add(new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName });
+                        a.Add(new UserImageForHub() { ImageId = image.Id, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName });
                         await _hubContext.Clients.All.SendAsync("userUsingInfo", a);
                     }
 

@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation, ViewChild, ViewChildren, QueryList, ViewContainerRef } from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
 import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DxDataGridComponent } from 'devextreme-angular';
@@ -32,7 +33,9 @@ export class ProjectComponent {
         private securityService: SecurityService, 
         private projectService: ProjectService, 
         public toastr: ToastsManager, 
-        private vcr: ViewContainerRef
+        private vcr: ViewContainerRef,
+        private route: Router,
+        private acRoute: ActivatedRoute
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.isAdmin = this.securityService.IsGranted(Constants.admin);
@@ -95,6 +98,14 @@ export class ProjectComponent {
                 mother.showInfo("Projects deleted");
             }
         });
+    }
+
+    mergeProject(){
+        var params = [];
+        this.selectedProjects.forEach(p => {
+            params.push(p.id);
+        });
+        this.route.navigate(['merge-project', { projects: params }]);
     }
 
     cellNameClicked(data) {

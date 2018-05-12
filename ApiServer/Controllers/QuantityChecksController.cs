@@ -48,10 +48,35 @@ namespace ApiServer.Controllers
             var project = img.Project;
 
             var qc = await _context.QuantityChecks.FirstOrDefaultAsync(x => x.Image == img);
+            var qcStatusText = "";
 
             if(qc != null)
             {
-                qc.Value1 = data.QcValue;
+                if(qc.Value1 == null)
+                {
+                    qc.Value1 = data.QcValue;
+                    qcStatusText += "level 1: " + data.QcValue;
+                }
+                else if(qc.Value2 == null)
+                {
+                    qc.Value2 = data.QcValue;
+                    qcStatusText += "level 2: " + data.QcValue;
+                }
+                else if(qc.Value3 == null)
+                {
+                    qc.Value3 = data.QcValue;
+                    qcStatusText += "level 3: " + data.QcValue;
+                }
+                else if(qc.Value4 == data.QcValue)
+                {
+                    qc.Value4 = data.QcValue;
+                    qcStatusText += "level 4: " + data.QcValue;
+                }
+                else if(qc.Value5 == data.QcValue)
+                {
+                    qc.Value5 = data.QcValue;
+                    qcStatusText += "level 5: " + data.QcValue;
+                }
                 qc.UserQc = user;
             }
             else
@@ -64,12 +89,12 @@ namespace ApiServer.Controllers
                     UserQc = user,
                     Value1 = data.QcValue
                 };
-
+                qcStatusText += "level 1: " + data.QcValue;
                 img.QuantityCheck = qc;
             }
                 
             
-            img.QcStatus = qc.Value1;
+            img.QcStatus = qcStatusText;
             img.QcDate = DateTime.Now;
             img.UserQc = user;
 

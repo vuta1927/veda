@@ -17,7 +17,7 @@ namespace ApiServer.Model
         public int TagNotHasClass { get; set; }
         public DateTime? TaggedDate { get; set; }
         public string Classes { get; set; }
-        public bool QcStatus { get; set; }
+        public string QcStatus { get; set; }
         public virtual User UserQc { get; set; }
         public DateTime? QcDate { get; set; }
         public virtual User UserTagged { get; set; }

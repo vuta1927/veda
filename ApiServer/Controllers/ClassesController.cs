@@ -37,7 +37,6 @@ namespace ApiServer.Controllers
                     var newClass = new ClassModel.ClassForView()
                     {
                         Id = c.Id,
-                        Code = c.Code,
                         Description = c.Description,
                         Name = c.Name,
                         TotalTag = c.Tags.Count,
@@ -47,6 +46,37 @@ namespace ApiServer.Controllers
                 }
             }
             
+            return Ok(results);
+        }
+
+        [HttpGet("{ids}")]
+        [ActionName("GetClassProjects")]
+        public IActionResult GetClassProjects([FromRoute] string ids)
+        {
+            var results = new List<ClassModel.ClassForView>();
+            var projectIds = ids.Split(',');
+            foreach(var id in projectIds)
+            {
+                var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id.ToString().Equals(id)).Include(x => x.Tags);
+
+                if (classes.Count() > 0)
+                {
+                    foreach (var c in classes)
+                    {
+                        var newClass = new ClassModel.ClassForView()
+                        {
+                            Id = c.Id,
+                            Description = c.Description,
+                            Name = c.Name,
+                            TotalTag = c.Tags.Count,
+                            ClassColor = c.ClassColor,
+                            Project = c.Project.Name
+                        };
+                        results.Add(newClass);
+                    }
+                }
+
+            }
             return Ok(results);
         }
 
@@ -75,7 +105,7 @@ namespace ApiServer.Controllers
                 return Content("Class not found !");
             }
 
-            return Ok(new ClassModel.ClassForView() { Id = @class.Id, Code = @class.Code, Name = @class.Name, Description = @class.Description });
+            return Ok(new ClassModel.ClassForView() { Id = @class.Id, Name = @class.Name, Description = @class.Description });
         }
 
         [HttpGet("{id}/{name}")]
@@ -87,25 +117,6 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
             var @class = await _context.Classes.Include(x => x.Project).SingleOrDefaultAsync(x => x.Project.Id == id && x.Name == name);
-            if (@class != null)
-            {
-                return Ok(@class);
-            }
-            else
-            {
-                return Ok();
-            }
-
-        }
-        [HttpGet("{id}/{code}")]
-        [ActionName("GetCodeOfClass")]
-        public async Task<IActionResult> GetCodeOfClass([FromRoute] Guid id, [FromRoute] string code)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var @class = await _context.Classes.Include(x => x.Project).SingleOrDefaultAsync(x => x.Project.Id == id && x.Code == code);
             if (@class != null)
             {
                 return Ok(@class);
@@ -140,7 +151,6 @@ namespace ApiServer.Controllers
 
             originClass.Name = @class.Name;
             originClass.Description = @class.Description;
-            originClass.Code = @class.Code;
             originClass.ClassColor = @class.ClassColor;
 
             try
@@ -177,7 +187,6 @@ namespace ApiServer.Controllers
 
             var newClass = new Class()
             {
-                Code = @class.Code,
                 Description = @class.Description,
                 Name = @class.Name,
                 ClassColor = @class.ClassColor,
