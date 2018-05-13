@@ -69,10 +69,6 @@ export class CreateUpdateClassComponent implements OnInit {
                 this.validateClassNameNotTaken.bind(this)
             ],
             description: [this.currentClass.description],
-            code: [
-                this.currentClass.code, [Validators.required],
-                this.validateCodeNotTaken.bind(this)
-            ],
             classColor: [this.currentClass.classColor, [Validators.required]]
         });
         this.ngxErrorsService.setDefaultMessage('nameTaken', { message: 'The class name already taken.' });
@@ -93,29 +89,6 @@ export class CreateUpdateClassComponent implements OnInit {
             if (Response && Response.result) {
                 this.btnSaveDisable = true;
                 return { nameTaken: true }
-            } else {
-                this.btnSaveDisable = false;
-                return null;
-            }
-        });
-        return result;
-    }
-
-    validateCodeNotTaken(control: AbstractControl) {
-        console.log('code');
-        if (this.isEditMode && control.value == this.currentClass.code) {
-            this.btnSaveDisable = false;
-            return Observable.empty();
-        }
-
-        if (!control.value) {
-            return Observable.empty();
-        }
-        let result = null;
-        result = this.classService.getCodeOfClass(this.currentProject.id, control.value).toPromise().then(Response => {
-            if (Response && Response.result) {
-                this.btnSaveDisable = true;
-                return { codeTaken: true }
             } else {
                 this.btnSaveDisable = false;
                 return null;

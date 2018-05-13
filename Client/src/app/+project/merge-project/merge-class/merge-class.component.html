@@ -1,6 +1,6 @@
 <div class="modal-header">
     <h5 class="modal-title">
-        {{ title }}
+        Merge Class
     </h5>
     <button type="button" class="close" data-dismiss="modal" (click)="activeModal.close()" aria-label="Close">
         <span aria-hidden="true">
@@ -14,7 +14,7 @@
     </div>
     <form name="classInfo" role="form" [formGroup]="form" class="m-form m-form--state m-form--fit m-form--label-align-right"
         novalidate>
-        <input type="hidden" name="id" formControlName="id" />
+        
         <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" *ngIf="isError">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
             <strong>{{messageHeader}}</strong>
@@ -34,11 +34,11 @@
 
             <div class="input-group m-input-group">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1"  [style.background]="currentClass.classColor" [cpPosition]="'bottom'" [cpPositionOffset]="'50%'" [cpPositionRelativeToArrow]="true" [(colorPicker)]="currentClass.classColor" >
-                            <span class="m-badge" [style.background]="currentClass.classColor"></span>
+                    <span class="input-group-text" id="basic-addon1"  [style.background]="classColor" [cpPosition]="'bottom'" [cpPositionOffset]="'50%'" [cpPositionRelativeToArrow]="true" [(colorPicker)]="classColor" >
+                            <span class="m-badge" [style.background]="classColor"></span>
                     </span>
                 </div>
-                <input class="form-control m-input" name="classColor" formControlName="classColor" id="classColor" aria-describedby="basic-addon1" [(ngModel)]="currentClass.classColor">
+                <input class="form-control m-input" name="classColor" formControlName="classColor" id="classColor" aria-describedby="basic-addon1" [(ngModel)]="classColor">
                 <div ngxErrors="classColor" #classColorErrors></div>
             </div>
 

@@ -8,6 +8,7 @@ import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../../shared/services/security.service';
 import { Constants } from '../../constants';
 import { ClassService } from '../services/class.service';
+import {MergeClass} from './merge-class/merge-class.component';
 
 @Component({
     selector: 'app-merge-project',
@@ -17,26 +18,28 @@ import { ClassService } from '../services/class.service';
 })
 
 export class MergeProject implements OnInit {
-    @ViewChildren(DxDataGridComponent) dataGrid: DxDataGridComponent
+    @ViewChild(DxDataGridComponent) dataGrid: DxDataGridComponent;
     selectedUsers: any[] = [];
     selectedClasses: any[] = [];
     classSource: any = {};
-
+    classRawData: any;
     constructor(
         private route: Router,
         private activatedRoute: ActivatedRoute,
         public toastr: ToastsManager,
         private vcr: ViewContainerRef,
-        private classService: ClassService
+        private classService: ClassService,
+        private modalService: NgbModal,
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         let mother = this;
         activatedRoute.params.subscribe(params => {
-            console.log(params.projects.split(',')); 
+            console.log(params.projects.split(','));
             mother.classSource.store = new CustomStore({
                 load: function (loadOptions: any) {
                     return mother.classService.getClassProjects(params.projects)
                         .toPromise().then(response => {
+                            mother.classRawData = response.result;
                             return {
                                 data: response.result,
                                 totalCount: response.result.length,
@@ -56,7 +59,32 @@ export class MergeProject implements OnInit {
         //Add 'implements OnDestroy' to the class.
     }
 
-    classSelectionChanged(data:any){
+    openMergeClassModal() {
+        const config = {
+            keyboard: false,
+            beforeDismiss: () => false
+        }
+        const modalRef = this.modalService.open(MergeClass, config);
+        if (this.classRawData)
+            modalRef.componentInstance.classes = this.classRawData;
+        var mother = this;
+        modalRef.result.then(function () {
+            // mother.dataGrid["first"].instance.refresh();
+            mother.classSource.reload();
+        })
+    }
+
+    classSelectionChanged(data: any) {
+        var selectedKeys = this.dataGrid.instance.getSelectedRowKeys();
+        if(data.selectedRowsData.length > 2){
+            for (var i = 0; i < selectedKeys.length; i++) {
+                if (selectedKeys[i].project == data.currentSelectedRowKeys[0].project && selectedKeys[i].name == data.currentSelectedRowKeys[0].name) {
+                    this.dataGrid.instance.deselectRows([selectedKeys[i]]);
+                }
+            }
+        }
+        
+
         this.selectedClasses = data.selectedRowsData;
 
     }
