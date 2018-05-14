@@ -27,7 +27,10 @@ export class MergeClass implements OnInit {
     isError: boolean = false;
     btnSaveDisable: boolean = true;
     classes: Class[];
-    classColor: string = '#ffffff';
+    mergeClasses: Class[];
+    newClass: Class;
+    classColor: string = '#000000';
+    projectName: string;
     constructor(
         public activeModal: NgbActiveModal,
         private formBuilder: FormBuilder,
@@ -42,9 +45,7 @@ export class MergeClass implements OnInit {
 
     ngOnInit() {
         this.createForm();
-        this.dataService.currentClass.subscribe(p => {
-            this.classes = p;
-        });
+        console.log(this.mergeClasses);
     }
 
     createForm() {
@@ -64,12 +65,19 @@ export class MergeClass implements OnInit {
             return Observable.empty();
         }
 
-        if(this.classes.find(x=>x.name == control.value)){
+        let classesNotMerge = [];
+        this.classes.forEach(klass => {
+            if(!this.mergeClasses.find(x=>x.name == klass.name)){
+                classesNotMerge.push(klass);
+            }
+        });
+
+        if(classesNotMerge.find(x=>x.name == control.value)){
             this.btnSaveDisable = true;
-            return{nameTaken: true}
+            return { nameTaken: true };
         }else{
             this.btnSaveDisable = false;
-            return null;
+            return Observable.empty();
         }
     }
 
@@ -80,5 +88,24 @@ export class MergeClass implements OnInit {
             return;
         }
         Helpers.setLoading(true);
+        let totalTag = 0;
+        this.mergeClasses.forEach(e => {
+            var klass = this.classes.find(x=>x.name == e.name);
+            if(klass){
+                this.classes.splice(this.classes.indexOf(klass), 1);
+            }
+            totalTag += e.totalTag;
+
+        });
+
+        this.newClass = <Class>this.form.value;
+        this.newClass.id = 0;
+        this.newClass.project = this.projectName;
+        this.newClass.totalTag = totalTag;
+        this.classes.push(this.newClass);
+
+        this.dataService.changeClass(this.classes);
+        Helpers.setLoading(false);
+        this.activeModal.close();
     }
 }

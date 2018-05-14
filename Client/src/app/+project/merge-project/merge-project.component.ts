@@ -8,8 +8,11 @@ import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../../shared/services/security.service';
 import { Constants } from '../../constants';
 import { ClassService } from '../services/class.service';
+import { ProjectUserService } from '../services/project-users.service';
 import {MergeClass} from './merge-class/merge-class.component';
-
+import { DataService } from '../data.service';
+import DataSource from 'devextreme/data/data_source';
+import { Merge, QcOption, FilterOptions } from '../../shared/models/merge.model';
 @Component({
     selector: 'app-merge-project',
     styleUrls: ['merge-project.component.css'],
@@ -22,7 +25,13 @@ export class MergeProject implements OnInit {
     selectedUsers: any[] = [];
     selectedClasses: any[] = [];
     classSource: any = {};
-    classRawData: any;
+    userSource: any = {};
+    newUserSource: any = {};
+    orginClassDataSource: any;
+    orginUserDataSource: any;
+    projectName: string = '';
+    levelTotal: number = 5;
+    qcFilterOptions: QcOption[] = [];
     constructor(
         private route: Router,
         private activatedRoute: ActivatedRoute,
@@ -30,27 +39,27 @@ export class MergeProject implements OnInit {
         private vcr: ViewContainerRef,
         private classService: ClassService,
         private modalService: NgbModal,
+        private dataService: DataService,
+        private projectUserSerivce: ProjectUserService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         let mother = this;
         activatedRoute.params.subscribe(params => {
-            console.log(params.projects.split(','));
-            mother.classSource.store = new CustomStore({
-                load: function (loadOptions: any) {
-                    return mother.classService.getClassProjects(params.projects)
-                        .toPromise().then(response => {
-                            mother.classRawData = response.result;
-                            return {
-                                data: response.result,
-                                totalCount: response.result.length,
-                            }
-                        }).catch(error => { throw 'Data Loading Error' });
-                }
+            mother.classService.getClassProjects(params.projects)
+            .toPromise().then(response => {
+                mother.dataService.changeClass(response.result);
+                mother.classSource = response.result;
+                mother.orginClassDataSource = Object.assign([], response.result);
+            });
+            mother.projectUserSerivce.GetProjectUsersForMerge(params.projects)
+            .toPromise().then(response => {
+                mother.userSource = response.result;
+                mother.orginUserDataSource = Object.assign([], response.result);
             });
         });
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
 
     }
 
@@ -59,22 +68,57 @@ export class MergeProject implements OnInit {
         //Add 'implements OnDestroy' to the class.
     }
 
-    openMergeClassModal() {
+    cancel(): void {
+        this.route.navigate(['project']);
+    }
+
+    SaveAll(): void {
+        let mergeData: Merge = new Merge();
+        let  filterOptions: FilterOptions = new FilterOptions();
+        filterOptions.qcOptions = this.qcFilterOptions;
+
+        mergeData.projectName = this.projectName;
+        mergeData.classes = this.classSource;
+        mergeData.filterOptions = filterOptions;
+        console.log(mergeData);
+    }
+
+    qcLevelChange(e){
+        var ele = e.target;
+        var qcOpt = this.qcFilterOptions.find(x=>x.index == ele.name);
+        if(qcOpt){
+            qcOpt.value = ele.value;
+        }else{
+            this.qcFilterOptions.push({ index: ele.name ,value: ele.value});
+        }
+    }
+
+    openMergeClassModal(): void {
         const config = {
             keyboard: false,
             beforeDismiss: () => false
         }
         const modalRef = this.modalService.open(MergeClass, config);
-        if (this.classRawData)
-            modalRef.componentInstance.classes = this.classRawData;
+        if (this.classSource)
+            modalRef.componentInstance.classes = this.classSource;
+        
+        if(this.selectedClasses)
+            modalRef.componentInstance.mergeClasses = this.selectedClasses;
+
+        modalRef.componentInstance.projectName = this.projectName? this.projectName : 'New Project';
+
         var mother = this;
         modalRef.result.then(function () {
+            mother.dataService.currentClass.subscribe(p => {
+                mother.classSource = p;
+                console.log(p);
+            });
             // mother.dataGrid["first"].instance.refresh();
-            mother.classSource.reload();
+            // mother.classSource.reload();
         })
     }
 
-    classSelectionChanged(data: any) {
+    classSelectionChanged(data: any): void {
         var selectedKeys = this.dataGrid.instance.getSelectedRowKeys();
         if(data.selectedRowsData.length > 2){
             for (var i = 0; i < selectedKeys.length; i++) {
@@ -83,9 +127,32 @@ export class MergeProject implements OnInit {
                 }
             }
         }
-        
-
         this.selectedClasses = data.selectedRowsData;
+    }
 
+    projectNameChange(): void {
+        var mother = this;
+        this.classSource.forEach(e => {
+            if(e.id == 0){
+                e.project = mother.projectName;
+            }
+        });
+    }
+
+    resetClass(): void {
+        this.classSource =  Object.assign([], this.orginClassDataSource);
+    }
+
+    removeClass(): void {
+        if(!this.selectedClasses.length){
+            return;
+        }
+
+        this.selectedClasses.forEach(klass => {
+            var e = this.classSource.find(x=>x.name == klass.name);
+            if(e){
+                this.classSource.splice(this.classSource.indexOf(e), 1);
+            }
+        });
     }
 }

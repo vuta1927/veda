@@ -14,6 +14,14 @@ namespace ApiServer.Model.views
             public string RoleName { get; set; }
         }
 
+        public class ProjectUserForMerge
+        {
+            public int Id { get; set; }
+            public string UserName { get; set; }
+            public string RoleName { get; set; }
+            public string Project { get; set; }
+        }
+
         public class ProjectUserForAdd
         {
             public Guid Id { get; set; }

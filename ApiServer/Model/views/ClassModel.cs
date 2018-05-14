@@ -17,6 +17,15 @@ namespace ApiServer.Model.views
 
             public string Project { get; set; }
         }
+        public class ClassForMerge
+        {
+            public int Id { get; set; }
+            public string ClassColor { get; set; }
+            public string Name { get; set; }
+            public string Description { get; set; }
+
+            public string Project { get; set; }
+        }
 
         public class ClassForAdd
         {

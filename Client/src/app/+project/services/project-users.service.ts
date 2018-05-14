@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { ConfigurationService } from "../../shared/services/configuration.service";
 import { Observable } from "rxjs/Observable";
 import { IAppCoreResponse } from "../../shared/models/appcore-response.model";
-import { IProjectUser, IProjectUserForAdd } from "../../shared/models/project-user.model";
+import { IProjectUser, IProjectUserForAdd, IProjectUserForMerge } from "../../shared/models/project-user.model";
 @Injectable()
 export class ProjectUserService{
     constructor(private http: HttpClient, private configurationService: ConfigurationService){}
@@ -13,6 +13,13 @@ export class ProjectUserService{
         let result = this.http.get<IAppCoreResponse<IProjectUser[]>>(url)
         return result;
     }
+
+    public GetProjectUsersForMerge(ids: string){
+        let url = this.configurationService.serverSettings.apiUrl + '/api/ProjectUsers/GetProjectUsersForMerge/' + ids;
+        let result = this.http.get<IAppCoreResponse<IProjectUserForMerge[]>>(url)
+        return result;
+    }
+
     public getTotal(id: string):Observable<IAppCoreResponse<number>>{
         let url = this.configurationService.serverSettings.apiUrl + '/api/ProjectUsers/GetTotal/' + id;
         return this.http.get<IAppCoreResponse<number>>(url);

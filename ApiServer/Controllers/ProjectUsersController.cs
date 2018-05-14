@@ -69,6 +69,43 @@ namespace ApiServer.Controllers
             return Ok(results);
         }
 
+        [HttpGet("{ids}")]
+        [ActionName("GetProjectUsersForMerge")]
+        public IActionResult GetProjectUsersForMerge([FromRoute] string ids)
+        {
+            var projectIds = ids.Split(',');
+            var projUsers = new List<ProjectUser>();
+            foreach (var projId in projectIds)
+            {
+                var pu = _context.ProjectUsers.Include(c => c.Project).Include(a => a.Role).Include(b => b.User).Where(x => x.Project.Id.ToString().Equals(projId));
+                if (pu != null)
+                {
+                    projUsers.AddRange(pu);
+                }
+            }
+
+            var results = new List<ProjectUserForMerge>();
+
+            foreach (var p in projUsers)
+            {
+                if (p.Role.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
+                {
+                    continue;
+                }
+                else
+                {
+                    results.Add(new ProjectUserForMerge()
+                    {
+                        Id = p.Id,
+                        UserName = p.User.UserName,
+                        RoleName = p.Role.RoleName,
+                        Project = p.Project.Name,
+                    });
+                }
+            }
+            return Ok(results);
+        }
+
         [HttpGet("{id}")]
         [ActionName("GetTotal")]
         public IActionResult GetTotal([FromRoute] Guid id)
@@ -218,7 +255,7 @@ namespace ApiServer.Controllers
 
             var currentUser = GetCurrentUser();
             
-            if(_context.ProjectUsers.Any(x=>x.UserId == user.Id)){
+            if(_context.ProjectUsers.Any(x=>x.UserId == user.Id && x.ProjectId == projectUser.Id)){
                 return Content("User already exsit!");
             }
 

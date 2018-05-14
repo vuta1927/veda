@@ -5,6 +5,7 @@ export interface IClass{
     description: string;
     totalTag: number;
     classColor: string;
+    project: string;
 }
 
 export class Class implements IClass {
@@ -14,7 +15,9 @@ export class Class implements IClass {
         public name: string = null, 
         public description: string = null, 
         public totalTag: number =0, 
-        public classColor:string='#000000'){
+        public classColor:string='#000000',
+        public project:string = ''
+    ){
 
     }
 }

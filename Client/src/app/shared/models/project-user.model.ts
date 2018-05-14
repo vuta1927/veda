@@ -6,6 +6,13 @@ export interface IProjectUser {
     roleName: string;
 }
 
+export interface IProjectUserForMerge {
+    id: number;
+    userName: string;
+    roleName: string;
+    project: string;
+}
+
 export interface IProjectUserForAdd {
     id: string;
     userName: string;

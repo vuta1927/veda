@@ -40,68 +40,176 @@
     <div class="m-portlet m-portlet--mobile">
         <div class="m-portlet__body">
             <div class="form-group m-form--group col-lg-12">
-                <button class="btn btn-success btn-sm m-btn--air m-btn--wide">Save</button>
-                <button class="btn btn-metal btn-sm m-btn--air m-btn--wide">Cancel</button>
+                <button class="btn btn-success btn-sm m-btn--air m-btn--wide" (click)="SaveAll()">Save</button>
+                <button class="btn btn-metal btn-sm m-btn--air m-btn--wide" (click)="cancel()">Cancel</button>
             </div>
 
             <div class="form-group m-form__group col-lg-6">
                 <label for="projectName">
                     <strong>Project Name:</strong>
                 </label>
-                <input class="form-control m-input" id="projectName" placeholder="Enter new project name">
+                <input class="form-control m-input" id="projectName" placeholder="Enter new project name" [(ngModel)]="projectName" (change)="projectNameChange()">
             </div>
+
             <div class="form-group m-form--group col-lg-12">
                 <label>
-                    <strong>
-                        Classes
-                    </strong>
+                    <strong>Filter Options:</strong>
                 </label>
-                <div class="dropdown">
-                    <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        Actions
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
-                        <a class="dropdown-item" (click)="addProjectClicked()">
-                            <i class="la la-plus i-plus"></i>
-                            Add Class
-                        </a>
-                        <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="openMergeClassModal()">
-                            <i class="la la-magnet i-magnet"></i> Merge Class</a>
-                        <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
-                            <i class="la la-magnet i-magnet"></i> Merge Class</a>
-
-                        <a *ngIf="selectedClasses.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
-                            <i class="la la-trash i-trash"></i> Delete selected classes</a>
-                        <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
-                            <i class="la la-trash i-trash"></i> Delete selected classes</a>
+                <div class="col-lg-12">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#m_tabs_qc">
+                                Quantity Check
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="m_tabs_qc" role="tabpanel">
+                            <div class="m-form__group form-group row" style="padding-left: 60px" *ngFor="let index of [1,2,3,4,5]">
+                                <label class="col-2 col-form-label">
+                                    <strong>Level {{index}}:</strong>
+                                </label>
+                                <div class="col-10">
+                                    <div class="m-radio-inline">
+                                        <label class="m-radio">
+                                            <input type="radio" [name]="index" value="1" (change)="qcLevelChange($event)"> Passed
+                                            <span></span>
+                                        </label>
+                                        <label class="m-radio">
+                                            <input type="radio" [name]="index" value="2" (change)="qcLevelChange($event)"> UnPassed
+                                            <span></span>
+                                        </label>
+                                        <label class="m-radio">
+                                            <input type="radio" [name]="index" value="3" (change)="qcLevelChange($event)" checked> Ignore
+                                            <span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-                <div style="padding-top: 10px">
-                    <dx-data-grid id="gridClassContainer" [dataSource]="classSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
-                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="classSelectionChanged($event)"
-                        class="m_datatable">
-                        <dxo-selection mode="multiple"></dxo-selection>
-                        <dxo-remote-operations [sorting]="true" [paging]="true">
-                        </dxo-remote-operations>
-                        <dxo-paging [pageSize]="12"></dxo-paging>
-                        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-                        <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
-                        <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
-                        <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
-                        <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
-                        <dxi-column dataField="project" [groupIndex]="1" caption=""></dxi-column>
-                        <div *dxTemplate="let data of 'cellName'">
-                            <span class="span-cellname" (click)="classSelected(data.data)">
-                                <b>{{(data.data.name)}}</b>
-                            </span>
+            </div>
+
+            <div class="form-group m-form--group col-lg-12">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#m_tabs_class">
+                            Class
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#m_tabs_user">
+                            User
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="m_tabs_class" role="tabpanel">
+                        <div class="dropdown">
+                            <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+                                <a class="dropdown-item" (click)="resetClass()">
+                                    <i class="la la-refresh i-refresh"></i>
+                                    Reset
+                                </a>
+                                <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="openMergeClassModal()">
+                                    <i class="la la-magnet i-magnet"></i> Merge Class</a>
+                                <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
+                                    <i class="la la-magnet i-magnet"></i> Merge Class</a>
+                                <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="removeClass()">
+                                    <i class="la la-trash i-trash"></i> Delete selected classes</a>
+                                <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
+                                    <i class="la la-trash i-trash"></i> Delete selected classes</a>
+                            </div>
                         </div>
-                        <div *dxTemplate="let data of 'cellClassColor'">
-                            <span style="width: 132px;">
-                                <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
-                            </span>
+                        <div style="padding-top: 10px">
+                            <dx-data-grid id="gridClassContainer" [dataSource]="classSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                                [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="classSelectionChanged($event)"
+                                class="m_datatable">
+                                <dxo-selection mode="multiple"></dxo-selection>
+                                <dxo-remote-operations [sorting]="true" [paging]="true">
+                                </dxo-remote-operations>
+                                <dxo-paging [pageSize]="12"></dxo-paging>
+                                <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                                <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
+                                <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
+                                <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
+                                <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
+                                <dxi-column dataField="project" [groupIndex]="1" caption=""></dxi-column>
+                                <div *dxTemplate="let data of 'cellName'">
+                                    <span class="span-cellname" (click)="classSelected(data.data)">
+                                        <b>{{(data.data.name)}}</b>
+                                    </span>
+                                </div>
+                                <div *dxTemplate="let data of 'cellClassColor'">
+                                    <span style="width: 132px;">
+                                        <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
+                                    </span>
+                                </div>
+                            </dx-data-grid>
                         </div>
-                    </dx-data-grid>
+                    </div>
+                    <div class="tab-pane" id="m_tabs_user" role="tabpanel">
+                        <div class="dropdown">
+                            <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+                                <a class="dropdown-item" (click)="addUser()">
+                                    <i class="la la-plus i-plus"></i>
+                                    Add User
+                                </a>
+                                <a class="dropdown-item" (click)="resetUser()">
+                                    <i class="la la-refresh i-refresh"></i>
+                                    Reset
+                                </a>
+                                <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="removeClass()">
+                                    <i class="la la-trash i-trash"></i> Delete selected users</a>
+                                <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
+                                    <i class="la la-trash i-trash"></i> Delete selected users</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div style="padding-top: 10px">
+                                <dx-data-grid id="gridNewUserContainer" [dataSource]="newUserSource" [showBorders]="true" [wordWrapEnabled]="true"
+                                    [showRowLines]="true" [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true"
+                                    (onSelectionChanged)="newUserSelectionChanged($event)" class="m_datatable">
+                                    <dxo-selection mode="multiple"></dxo-selection>
+                                    <dxo-remote-operations [sorting]="true" [paging]="true">
+                                    </dxo-remote-operations>
+                                    <dxo-paging [pageSize]="12"></dxo-paging>
+                                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                                    <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                                    <dxi-column dataField="userName" caption="User Name"></dxi-column>
+                                    <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
+                                </dx-data-grid>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div style="padding-top: 10px">
+                                <dx-data-grid id="gridUserContainer" [dataSource]="userSource" [showBorders]="true" [wordWrapEnabled]="true"
+                                    [showRowLines]="true" [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true"
+                                    (onSelectionChanged)="userSelectionChanged($event)" class="m_datatable">
+                                    <dxo-selection mode="multiple"></dxo-selection>
+                                    <dxo-remote-operations [sorting]="true" [paging]="true">
+                                    </dxo-remote-operations>
+                                    <dxo-paging [pageSize]="12"></dxo-paging>
+                                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                                    <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                                    <dxi-column dataField="userName" caption="User Name"></dxi-column>
+                                    <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
+                                    <dxi-column dataField="project" [groupIndex]="1" caption=""></dxi-column>
+                                </dx-data-grid>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
