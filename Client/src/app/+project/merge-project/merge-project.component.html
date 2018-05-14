@@ -66,7 +66,7 @@
                     <div class="tab-content">
                         <div class="tab-pane active" id="m_tabs_qc" role="tabpanel">
                             <div class="m-form__group form-group row" style="padding-left: 60px" *ngFor="let index of [1,2,3,4,5]">
-                                <label class="col-2 col-form-label">
+                                <label class="col-1 col-form-label">
                                     <strong>Level {{index}}:</strong>
                                 </label>
                                 <div class="col-10">
@@ -113,7 +113,7 @@
                                 Actions
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
-                                <a class="dropdown-item" (click)="resetClass()">
+                                <a class="dropdown-item" (click)="resetUser()">
                                     <i class="la la-refresh i-refresh"></i>
                                     Reset
                                 </a>
@@ -155,58 +155,51 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="m_tabs_user" role="tabpanel">
-                        <div class="dropdown">
-                            <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                                Actions
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
-                                <a class="dropdown-item" (click)="addUser()">
-                                    <i class="la la-plus i-plus"></i>
-                                    Add User
-                                </a>
-                                <a class="dropdown-item" (click)="resetUser()">
-                                    <i class="la la-refresh i-refresh"></i>
-                                    Reset
-                                </a>
-                                <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="removeClass()">
-                                    <i class="la la-trash i-trash"></i> Delete selected users</a>
-                                <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
-                                    <i class="la la-trash i-trash"></i> Delete selected users</a>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="dropdown">
+                                    <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+                                        <a class="dropdown-item" (click)="resetUser()">
+                                            <i class="la la-refresh i-refresh"></i>
+                                            Reset
+                                        </a>
+                                        <a *ngIf="selectedClasses.length" class="dropdown-item" (click)="removeClass()">
+                                            <i class="la la-trash i-trash"></i> Delete selected users</a>
+                                        <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
+                                            <i class="la la-trash i-trash"></i> Delete selected users</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-6">
-                            <div style="padding-top: 10px">
-                                <dx-data-grid id="gridNewUserContainer" [dataSource]="newUserSource" [showBorders]="true" [wordWrapEnabled]="true"
-                                    [showRowLines]="true" [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true"
-                                    (onSelectionChanged)="newUserSelectionChanged($event)" class="m_datatable">
-                                    <dxo-selection mode="multiple"></dxo-selection>
-                                    <dxo-remote-operations [sorting]="true" [paging]="true">
-                                    </dxo-remote-operations>
-                                    <dxo-paging [pageSize]="12"></dxo-paging>
-                                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-                                    <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                                    <dxi-column dataField="userName" caption="User Name"></dxi-column>
-                                    <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
-                                </dx-data-grid>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div style="padding-top: 10px">
+                                    <dx-data-grid id="gridUserContainer" [dataSource]="userSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="userSelectionChanged($event)"
+                                        class="m_datatable">
+                                        <dxo-selection mode="multiple"></dxo-selection>
+                                        <dxo-remote-operations [sorting]="true" [paging]="true">
+                                        </dxo-remote-operations>
+                                        <dxo-paging [pageSize]="12"></dxo-paging>
+                                        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                                        <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+                                        <dxi-column dataField="userName" caption="User" cellTemplate="cellUserName"></dxi-column>
+                                        <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
+                                        <div *dxTemplate="let data of 'cellUserName'">
+                                                <span class="span-cellname" (click)="userNameSelected(data.data)">
+                                                    <b>{{(data.data.userName)}}</b>
+                                                </span>
+                                            </div>
+                                    </dx-data-grid>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div style="padding-top: 10px">
-                                <dx-data-grid id="gridUserContainer" [dataSource]="userSource" [showBorders]="true" [wordWrapEnabled]="true"
-                                    [showRowLines]="true" [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true"
-                                    (onSelectionChanged)="userSelectionChanged($event)" class="m_datatable">
-                                    <dxo-selection mode="multiple"></dxo-selection>
-                                    <dxo-remote-operations [sorting]="true" [paging]="true">
-                                    </dxo-remote-operations>
-                                    <dxo-paging [pageSize]="12"></dxo-paging>
-                                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-                                    <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                                    <dxi-column dataField="userName" caption="User Name"></dxi-column>
-                                    <dxi-column dataField="roleName" caption="Role Name"></dxi-column>
-                                    <dxi-column dataField="project" [groupIndex]="1" caption=""></dxi-column>
-                                </dx-data-grid>
-                            </div>
+
+
                         </div>
 
                     </div>

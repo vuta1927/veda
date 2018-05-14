@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Class } from '../shared/models/class.model';
 import { HubConnection } from '@aspnet/signalr';
+import { ProjectUser, IProjectUserForMerge } from '../shared/models/project-user.model';
 @Injectable()
 export class DataService{
     private classSource = new BehaviorSubject<Class[]>( new Array<Class>());
@@ -13,8 +14,8 @@ export class DataService{
     private projectNameSource = new BehaviorSubject<string>('New Project');
     currentProjectName = this.projectNameSource.asObservable();
 
-    private OriginClassSource = new BehaviorSubject<Class[]>( new Array<Class>());
-    currentOriginClass = this.OriginClassSource.asObservable();
+    private ProjectUserSource = new BehaviorSubject<IProjectUserForMerge>( new ProjectUser());
+    currentProjectUser = this.ProjectUserSource.asObservable();
 
     constructor(){
 
@@ -32,7 +33,7 @@ export class DataService{
         this.projectNameSource.next(name);
     }
 
-    changeOriginClass(klass: Class[]){
-        this.OriginClassSource.next(klass);
+    changeProjectUser(projectUser: ProjectUser){
+        this.ProjectUserSource.next(projectUser);
     }
 }

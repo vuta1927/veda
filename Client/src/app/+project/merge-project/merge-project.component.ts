@@ -10,9 +10,11 @@ import { Constants } from '../../constants';
 import { ClassService } from '../services/class.service';
 import { ProjectUserService } from '../services/project-users.service';
 import {MergeClass} from './merge-class/merge-class.component';
+import { UpdateUserComponent } from './update-user/update-user.component';
 import { DataService } from '../data.service';
 import DataSource from 'devextreme/data/data_source';
 import { Merge, QcOption, FilterOptions } from '../../shared/models/merge.model';
+import { ProjectUser } from "../../shared/models/project-user.model";
 @Component({
     selector: 'app-merge-project',
     styleUrls: ['merge-project.component.css'],
@@ -83,7 +85,7 @@ export class MergeProject implements OnInit {
         console.log(mergeData);
     }
 
-    qcLevelChange(e){
+    qcLevelChange(e): void{
         var ele = e.target;
         var qcOpt = this.qcFilterOptions.find(x=>x.index == ele.name);
         if(qcOpt){
@@ -91,6 +93,37 @@ export class MergeProject implements OnInit {
         }else{
             this.qcFilterOptions.push({ index: ele.name ,value: ele.value});
         }
+    }
+
+    userNameSelected(data: any): void{
+        this.openProjectUserModal(data);
+    }
+
+    userSelectionChanged(data: any): void{
+
+    }
+
+    openProjectUserModal(data:any): void {
+        const config = {
+            keyboard: false,
+            beforeDismiss: () => false
+        }
+        const modalRef = this.modalService.open(UpdateUserComponent, config);
+        
+        modalRef.componentInstance.projectUser = data;
+        console.log(data);
+        var mother = this;
+        modalRef.result.then(function () {
+            mother.dataService.currentProjectUser.subscribe(p => {
+                mother.userSource.forEach(e => {
+                    if(e.userName == p.userName){
+                        e.roleName = p.roleName;
+                    }
+                });
+            });
+            // mother.dataGrid["first"].instance.refresh();
+            // mother.classSource.reload();
+        })
     }
 
     openMergeClassModal(): void {
@@ -141,6 +174,13 @@ export class MergeProject implements OnInit {
 
     resetClass(): void {
         this.classSource =  Object.assign([], this.orginClassDataSource);
+    }
+
+    resetUser(): void{
+        this.orginUserDataSource.forEach(e => {
+            e.roleName = '';
+        });
+        this.userSource =  Object.assign([], this.orginUserDataSource);
     }
 
     removeClass(): void {

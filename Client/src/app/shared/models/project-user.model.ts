@@ -19,6 +19,13 @@ export interface IProjectUserForAdd {
     roleName: string;
 }
 
+
+export class ProjectUser {
+    constructor(public id:number=0, public userName:string = '', public roleName:string = '', public project = ''){
+
+    }
+}
+
 export class ProjectUserForAdd implements IProjectUserForAdd {
     constructor(
         public id: string = null,

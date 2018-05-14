@@ -77,10 +77,16 @@ namespace ApiServer.Controllers
             var projUsers = new List<ProjectUser>();
             foreach (var projId in projectIds)
             {
-                var pu = _context.ProjectUsers.Include(c => c.Project).Include(a => a.Role).Include(b => b.User).Where(x => x.Project.Id.ToString().Equals(projId));
-                if (pu != null)
+                var pus = _context.ProjectUsers.Include(c => c.Project).Include(a => a.Role).Include(b => b.User).Where(x => x.Project.Id.ToString().Equals(projId));
+                if (pus != null)
                 {
-                    projUsers.AddRange(pu);
+                    foreach(var pu in pus)
+                    {
+                        if (!projUsers.Any(x => x.User == pu.User))
+                        {
+                            projUsers.Add(pu);
+                        }
+                    }
                 }
             }
 
@@ -98,7 +104,6 @@ namespace ApiServer.Controllers
                     {
                         Id = p.Id,
                         UserName = p.User.UserName,
-                        RoleName = p.Role.RoleName,
                         Project = p.Project.Name,
                     });
                 }
