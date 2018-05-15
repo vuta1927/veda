@@ -47,6 +47,7 @@ import { ProjectUserService } from '../+project/services/project-users.service';
 import { TimeService } from '../+project/services/timer.service';
 import { SignalRService } from '../+project/services/signalr.service';
 import { QcService } from '../+project/services/qc.service';
+import { MergeService } from '../+project/services/merge-project.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -108,7 +109,8 @@ export class SharedModule {
                 ProjectUserService,
                 TimeService,
                 SignalRService,
-                QcService
+                QcService,
+                MergeService
             ]
         }
     }

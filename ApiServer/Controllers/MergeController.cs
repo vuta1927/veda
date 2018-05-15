@@ -8,34 +8,38 @@ using Microsoft.AspNetCore.Mvc;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Model;
 using ApiServer.Core.MergeProject;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
+using ApiServer.Hubs;
 
 namespace ApiServer.Controllers
-{   
+{
     [AppAuthorize(VdsPermissions.EditProject)]
     [Produces("application/json")]
-    [Route("api/Merge")]
+    [Route("api/Merge/[action]")]
     public class MergeController : Controller
     {
         private readonly VdsContext _context;
 
-        public MergeController(VdsContext context)
+        private readonly IHostingEnvironment _hostingEnvironment;
+        private IHubContext<VdsHub> _hubContext;
+
+        public MergeController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
         {
             _context = context;
             Merge._ctx = context;
+            _hubContext = hubContext;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         [HttpPost]
-        public async Task<IActionResult> MergeProjcet([FromBody] MergeModel.Merge mergeData)
+        public IActionResult MergeProjcet([FromBody] MergeModel.Merge mergeData)
         {
-            try
-            {
-                await Merge.Execute(mergeData);
-                return Ok();
-            }catch(Exception ex)
-            {
-                return Content("Cant merge there projects: error: " + ex.ToString());
-            }
-            
+            Merge.webPathRoot = _hostingEnvironment.WebRootPath;
+            Merge._hubContext = _hubContext;
+            Merge.Execute(mergeData);
+
+            return Ok();
         }
     }
 }

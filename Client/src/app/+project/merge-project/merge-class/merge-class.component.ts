@@ -45,7 +45,6 @@ export class MergeClass implements OnInit {
 
     ngOnInit() {
         this.createForm();
-        console.log(this.mergeClasses);
     }
 
     createForm() {
@@ -104,8 +103,11 @@ export class MergeClass implements OnInit {
         this.newClass.totalTag = totalTag;
         this.classes.push(this.newClass);
 
+        this.dataService.changeNewClass(this.newClass);
         this.dataService.changeClass(this.classes);
+
         Helpers.setLoading(false);
+        this.activeModal.dismiss();
         this.activeModal.close();
     }
 }

@@ -71,6 +71,7 @@ namespace ApiServer
             services.AddTransient<TagsController>();
             services.AddTransient<ClassesController>();
             services.AddTransient<QuantityChecksController>();
+            services.AddTransient<MergeController>();
 
             services.AddAuthentication(options =>
             {

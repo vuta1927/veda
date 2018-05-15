@@ -29,5 +29,10 @@ namespace ApiServer.Hubs
             await Clients.All.SendAsync("SendMessage", Context.User.Identity.Name, message);
         }
 
+        public string InvokeHubMethod()
+        {
+            return "ConnectionID";  //ConnectionID will the Id as string that you want outside the hub
+        }
+
     }
 }

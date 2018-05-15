@@ -12,6 +12,7 @@ namespace ApiServer.Model
         {
             public string ProjectName { get; set; }
             public List<Guid> Projects { get; set; }
+            public string ConnectionId { get; set; }
             public List<ClassModel.ClassForMerge> Classes { get; set; }
             public List<MergeClass> MergeClasses { get; set; }
             public List<MergeProjectUser> Users { get; set; }
@@ -26,8 +27,8 @@ namespace ApiServer.Model
 
         public class MergeClass
         {
-            public List<ClassModel.ClassForMerge> Classes { get; set; }
-            public string NewClassName { get; set; }
+            public List<ClassModel.ClassForMerge> OldClasses { get; set; }
+            public ClassModel.ClassForMerge NewClass { get; set; }
         }
 
         public class FilterOptions
@@ -38,7 +39,7 @@ namespace ApiServer.Model
         public class QcOption
         {
             public int Index { get; set; }
-            public int Value { get; set; }
+            public bool Value { get; set; }
         }
     }
 }

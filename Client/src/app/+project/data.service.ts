@@ -17,12 +17,19 @@ export class DataService{
     private ProjectUserSource = new BehaviorSubject<IProjectUserForMerge>( new ProjectUser());
     currentProjectUser = this.ProjectUserSource.asObservable();
 
+    private newClassSource = new BehaviorSubject<Class>( new Class());
+    currentNewClass = this.newClassSource.asObservable();
+
     constructor(){
 
     }
     
     changeClass(klass: Class[]){
         this.classSource.next(klass);
+    }
+
+    changeNewClass(klass: Class){
+        this.newClassSource.next(klass);
     }
 
     changeClassForMerge(klass: Class[]){

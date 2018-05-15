@@ -2,8 +2,9 @@ import { Class } from './class.model';
 
 export class Merge {
     projectName: string = '';
+    connectionId: string = '';
     classes: Class[] = [];
-    mergeClasses: MergeClass[] = [];
+    mergeClasses: MergeKlass[] = [];
     projects: string[] = [];
     users: MergeProjectUser[] = [];
     filterOptions: FilterOptions = new FilterOptions();
@@ -14,9 +15,9 @@ export class MergeProjectUser{
     roleName: string = '';
 }
 
-export class MergeClass{
-    classes: Class[] = [];
-    newClassName: string = '';
+export class MergeKlass{
+    oldClasses: Class[] = [];
+    newClass: Class = new Class();
 }
 
 export class FilterOptions{
