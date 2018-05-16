@@ -27,7 +27,7 @@ export const ROUTES: Routes = [
       },
       {
         path: 'project/import',
-        loadChildren: 'app/+project/import-project/import-project.module#ImportProjectModule',
+        loadChildren: 'app/+project/import/import-project.module#ImportProjectModule',
       },
       {
         path: 'project-details',
