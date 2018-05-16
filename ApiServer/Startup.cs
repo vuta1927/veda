@@ -74,6 +74,7 @@ namespace ApiServer
             services.AddTransient<QuantityChecksController>();
             services.AddTransient<MergeController>();
             services.AddScoped<IMergeService, MergeService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddAuthentication(options =>
             {

@@ -1,5 +1,6 @@
 
 import { HubConnection } from '@aspnet/signalr';
+import swal from 'sweetalert2';
 
 export class hub{
     public static _hubConnection: HubConnection;
@@ -15,7 +16,16 @@ export class hub{
             .catch(err => console.log('Error while establishing connection (' + apiUrl + '/hubs/image' + ') !'));
         this._hubConnection.on("MergeNotification", data => {
             console.log(data);
-            alert(data.message);
+            if(data.result){
+                swal({
+                    title: '',text: data.message, type: 'success'
+                });
+            }else{
+                swal({
+                    title: '',text: data.message, type: 'error'
+                })
+            }
+            
             this._hubConnection.stop();
         });
     }

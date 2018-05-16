@@ -19,10 +19,10 @@ import { TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpClientLoader } from './shared/i18n/http-client-loader';
 
 import { ToastModule } from 'ng2-toastr/ng2-toastr';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { NgIdleKeepaliveModule } from '@ng-idle/keepalive'; // this includes the core NgIdleModule but includes keepalive providers for easy wireup
-
+import { SweetAlert2Module } from '@toverux/ngx-sweetalert2';
 @NgModule({
   declarations: [
     AppComponent
@@ -30,12 +30,21 @@ import { NgIdleKeepaliveModule } from '@ng-idle/keepalive'; // this includes the
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     FormsModule,
-    
+
     ToastModule.forRoot(),
     NgIdleKeepaliveModule.forRoot(),
     BrowserAnimationsModule,
     ColorPickerModule,
-    
+
+    SweetAlert2Module.forRoot({
+      width: 400,
+      buttonsStyling: false,
+      confirmButtonClass: 'btn btn-success m-btn m-btn--custom',
+      cancelButtonClass: 'btn btn-secondary m-btn m-btn--custom',
+      confirmButtonColor: null,
+      cancelButtonColor: null
+    }),
+
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

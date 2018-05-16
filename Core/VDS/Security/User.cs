@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Claims;
 using VDS.Domain.Entities;
 
 namespace VDS.Security
@@ -32,6 +33,7 @@ namespace VDS.Security
         public virtual ICollection<UserLogin> Logins { get; set; }
         public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
         public bool IsActive { get; set; }
+        public static ClaimsIdentity Identity { get; set; }
 
         public User()
         {

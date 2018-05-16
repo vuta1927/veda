@@ -1,0 +1,29 @@
+
+.dx-menu-item-popout {
+    display: none !important;
+}
+
+.dx-datagrid .dx-menu .dx-menu-item .dx-menu-item-content {
+    padding: 6px 10px 7px;
+}
+
+.align-cell {
+    text-align: center;
+    vertical-align: middle!important;
+}
+span {
+    cursor: pointer;
+}
+
+
+#hide input[type=file] {
+    display: none;
+    margin: 10px;
+}
+
+#upload_button {
+    display: inline-block;
+  }
+  #upload_button input[type=file] {
+    display:none;
+  }
