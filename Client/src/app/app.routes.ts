@@ -26,10 +26,6 @@ export const ROUTES: Routes = [
         loadChildren: 'app/+project/project.module#ProjectModule'
       },
       {
-        path: 'project/import',
-        loadChildren: 'app/+project/import/import-project.module#ImportProjectModule',
-      },
-      {
         path: 'project-details',
         loadChildren: 'app/+project/project-details/project-details.module#ProjectDetailsModule'
       },

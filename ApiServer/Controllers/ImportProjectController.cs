@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VDS.AspNetCore.Mvc.Authorization;
 
+
 namespace ApiServer.Controllers
 {
     [AppAuthorize(VdsPermissions.AddProject)]
@@ -95,7 +96,21 @@ namespace ApiServer.Controllers
                         await file.CopyToAsync(stream);
                     }
 
-                    ProccessArchive(tempPath);
+                    if (ExtractFile(tempPath))
+                    {
+                        try
+                        {
+                            await ProccessFiles(tempPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            return Content(ex.ToString());
+                        }
+                    }
+                    else
+                    {
+                        return Content("Cant not import file!");
+                    }
 
                 }
 
@@ -107,25 +122,79 @@ namespace ApiServer.Controllers
             }
         }
 
-        private void ProccessArchive(string filePath)
+        private bool ExtractFile(string folderPath)
         {
-            using (ZipArchive archive = ZipFile.OpenRead(filePath))
+            using (ZipArchive archive = ZipFile.OpenRead(folderPath))
             {
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
                     string[] filenames = entry.Name.Split('.');
                     if (!AllowedFileExtensions.Contains(filenames.Last()))
                     {
-                        return;
+                        return false;
                     }
                     else
                     {
-                        entry.ExtractToFile(Path.Combine(filePath, name + '.' + filenames.Last()));
+                        entry.ExtractToFile(Path.Combine(folderPath, entry.Name));
+                    }
+                }
+            }
+            return true;
+        }
+
+        private async Task ProccessFiles(string folderPath)
+        {
+            var textFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x).ToLower().Equals("txt"));
+            var imageFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => imageExtentions.Contains(Path.GetExtension(x)));
+
+            var images = new List<Image>();
+            var tags = new List<Tag>();
+
+            foreach (var image in imageFiles)
+            {
+                var name = Path.GetFileName(image);
+                var textFile = textFiles.SingleOrDefault(x => Path.GetFileName(x).Equals(name));
+                if (textFile != null)
+                {
+                    try
+                    {
+                        using (StreamReader file = new StreamReader(textFile))
+                        {
+                            string line;
+
+                            while ((line = await file.ReadLineAsync()) != null)
+                            {
+                                var data = line.Split(';');
+                                if (data.Count() < 5)
+                                {
+                                    continue;
+                                }
+                                try
+                                {
+                                    await AddDataToContext(data, images, tags);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw ex;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
                     }
                 }
             }
         }
 
-        private void ProccessTextFile()
+        private async Task AddDataToContext(string[] data, ICollection<Image> images, ICollection<Tag> tags)
+        {
+            var classId = data[0];
+            var centerX = data[1];
+            var centerY = data[2];
+            var width = data[3];
+            var height = data[4];
+        }
     }
 }

@@ -8,15 +8,17 @@ using ApiServer.Model;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
 using ApiServer.Model.views;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Numerics;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.PixelFormats;
+//using SixLabors.ImageSharp;
+//using SixLabors.ImageSharp.Advanced;
+//using SixLabors.ImageSharp.Processing;
+//using SixLabors.ImageSharp.Processing.Drawing;
+//using SixLabors.ImageSharp.PixelFormats;
+using System.Drawing;
 using VDS.Security;
+using System.Drawing.Drawing2D;
 
 namespace ApiServer.Controllers
 {
@@ -38,7 +40,7 @@ namespace ApiServer.Controllers
         [ActionName("GetTags")]
         public IActionResult GetTags([FromRoute] Guid id)
         {
-            var tags = _context.Tags.Include(t => t.Image).Include(x=>x.Class).Where(x => x.Image.Id == id).Include(x=>x.Class).Include(q => q.QuantityCheck);
+            var tags = _context.Tags.Include(t => t.Image).Include(x => x.Class).Where(x => x.Image.Id == id).Include(x => x.Class).Include(q => q.QuantityCheck);
             var results = new List<TagModel.TagForView>();
             foreach (var tag in tags)
             {
@@ -56,7 +58,7 @@ namespace ApiServer.Controllers
                 {
                     t.QuantityCheckId = tag.QuantityCheck.Id;
                 }
-                if(tag.Class != null)
+                if (tag.Class != null)
                     t.ClassId = tag.Class.Id;
 
                 results.Add(t);
@@ -110,8 +112,8 @@ namespace ApiServer.Controllers
                 return Content("Image not found !");
             }
 
-            var currentUser =  await _context.Users.SingleAsync(x=>x.Id == data.UserId);
-            if(currentUser == null)
+            var currentUser = await _context.Users.SingleAsync(x => x.Id == data.UserId);
+            if (currentUser == null)
             {
                 return Content("User not found !");
             }
@@ -122,27 +124,54 @@ namespace ApiServer.Controllers
             {
                 foreach (var area in data.ExcluseAreas)
                 {
-                    var points = new SixLabors.Primitives.PointF[100];
-                    var t = area.Paths.Count();
-                    for (var i = 0; i < area.Paths.Count(); i++)
+
+                    //var points = new SixLabors.Primitives.PointF[100];
+                    //var t = area.Paths.Count();
+                    //for (var i = 0; i < area.Paths.Count(); i++)
+                    //{
+                    //    points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
+                    //}
+                    Point[] curvePoints = { };
+                    foreach (var p in area.Paths)
                     {
-                        points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
+                        var x = (int)p.X;
+                        var y = (int)p.Y;
+                        curvePoints.Append(new Point(x, y));
                     }
 
-                    using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
+                    try
                     {
-                        var imgName = image.Path.Split('\\').Last();
-                       
-                        img.Mutate(ctx => ctx.FillPolygon(Rgba32.Black, points));
-                        string tempFolderName = "temp";
-                        string tempFileFullPath = webRootPath + "\\" + tempFolderName + '\\' + imgName;
-                        if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                        using (var img = new Bitmap(System.Drawing.Image.FromFile(imgPath)))
                         {
-                            Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                            using (var graphics = Graphics.FromImage(img))
+                            {
+                                using(var brush = new SolidBrush(Color.Black))
+                                {
+                                    graphics.FillPolygon(brush, curvePoints);
+                                    img.Save(imgPath);
+                                }
+                            }
                         }
-                        System.IO.File.Delete(imgPath);
-                        img.Save(imgPath);
-                    };
+                    }catch(Exception ex)
+                    {
+                        return Content(ex.ToString());
+                    }
+                    
+
+                    //using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
+                    //{
+                    //    var imgName = image.Path.Split('\\').Last();
+
+                    //    img.Mutate(x => x.FillPolygon(Rgba32.Black, points));
+                    //    string tempFolderName = "temp";
+                    //    string tempFileFullPath = webRootPath + "\\" + tempFolderName + '\\' + imgName;
+                    //    if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                    //    {
+                    //        Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                    //    }
+                    //    System.IO.File.Delete(imgPath);
+                    //    img.Save(imgPath);
+                    //};
                 }
 
             }
@@ -151,13 +180,13 @@ namespace ApiServer.Controllers
             {
                 if (tag.Id > 0)
                 {
-                    var originTag = await _context.Tags.Include(x=>x.Class).SingleOrDefaultAsync(x => x.Id == tag.Id);
+                    var originTag = await _context.Tags.Include(x => x.Class).SingleOrDefaultAsync(x => x.Id == tag.Id);
                     if (originTag == null)
                     {
                         return Content("Tag:" + tag.Id + " not found !");
                     }
 
-                   
+
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -168,7 +197,7 @@ namespace ApiServer.Controllers
                     }
 
                     var newClass = _context.Classes.SingleOrDefault(x => x.Id == tag.ClassId);
-                    if(originTag.Class != newClass)
+                    if (originTag.Class != newClass)
                     {
                         originTag.Class.Tags.Remove(originTag);
 
@@ -216,7 +245,7 @@ namespace ApiServer.Controllers
                     }
                     _context.Tags.Add(newTag);
 
-                    
+
 
                     try
                     {
@@ -236,22 +265,22 @@ namespace ApiServer.Controllers
 
         private async Task caculateClass(Guid imageId, User user)
         {
-            var image = await _context.Images.Include(x => x.Tags).ThenInclude(x=>x.Class).SingleOrDefaultAsync(x => x.Id == imageId);
+            var image = await _context.Images.Include(x => x.Tags).ThenInclude(x => x.Class).SingleOrDefaultAsync(x => x.Id == imageId);
 
 
             if (image == null) return;
 
-            
+
 
             var tagCount = image.Tags.Count();
-            if(tagCount <= 0)
+            if (tagCount <= 0)
             {
                 return;
             }
             var tagHaveClass = 0;
             foreach (var t in image.Tags)
             {
-                if(t.Class != null)
+                if (t.Class != null)
                 {
                     tagHaveClass += 1;
 
@@ -299,10 +328,10 @@ namespace ApiServer.Controllers
             var imgsNotTagged = project.TotalImg;
             var imgsNotQc = project.TotalImg;
             var imgsQc = 0;
-            
-            foreach(var img in images)
+
+            foreach (var img in images)
             {
-                if(img.TagHasClass > 0)
+                if (img.TagHasClass > 0)
                 {
                     imgsNotClassed -= 1;
                 }
@@ -326,7 +355,7 @@ namespace ApiServer.Controllers
                 return;
             }
         }
-        
+
 
         // DELETE: api/Tags/5
         [HttpDelete("{id}")]
@@ -337,7 +366,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var tag = await _context.Tags.Include(x=>x.Class).Include(x => x.Image).ThenInclude(x=>x.Project).SingleOrDefaultAsync(m => m.Id == id);
+            var tag = await _context.Tags.Include(x => x.Class).Include(x => x.Image).ThenInclude(x => x.Project).SingleOrDefaultAsync(m => m.Id == id);
             if (tag == null)
             {
                 return Content("Tag not found !");
@@ -366,7 +395,7 @@ namespace ApiServer.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(tag);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Content(e.ToString());
             }
