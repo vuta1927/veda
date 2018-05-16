@@ -22,12 +22,47 @@
 
       <li class="m-menu__item  m-menu__item--submenu" routerLinkActive="m-menu__item--open m-menu__item--expanded" routerLinkActiveOptions="{ exact: true }"
         aria-haspopup="true" data-menu-submenu-toggle="hover" *ngIf="viewProject">
-        <a routerLink="/project" class="m-menu__link m-menu__toggle">
-          <i class="m-menu__link-icon flaticon-interface-2"></i>
+        <a href="" class="m-menu__link m-menu__toggle">
+          <i class="m-menu__link-icon flaticon-folder-1"></i>
           <span class="m-menu__link-text">
-            Projects
+            Project
           </span>
         </a>
+        <div class="m-menu__submenu">
+          <span class="m-menu__arrow"></span>
+          <ul class="m-menu__subnav">
+            <li class="m-menu__item" routerLinkActive="m-menu__item--active" routerLinkActiveOptions="{ exact: true }" aria-haspopup="true"
+              *ngIf="viewProject">
+              <a routerLink="/project" class="m-menu__link">
+                <i class="m-menu__link-icon flaticon-folder-2">
+                  <span></span>
+                </i>
+                <span class="m-menu__link-text">
+                  Projects
+                </span>
+              </a>
+            </li>
+
+            <li class="m-menu__item" routerLinkActive="m-menu__item--active" routerLinkActiveOptions="{ exact: true }" aria-haspopup="true"
+              *ngIf="viewRole">
+              <a routerLink="/project/import" class="m-menu__link">
+                <i class="m-menu__link-icon fa fa-cloud-upload">
+                  <span></span>
+                </i>
+                
+                <span class="m-menu__link-text">Import</span>
+              </a>
+            </li>
+            <li class="m-menu__item" routerLinkActive="m-menu__item--active" routerLinkActiveOptions="{ exact: true }" aria-haspopup="true">
+              <a routerLink="/project/export" class="m-menu__link">
+                <i class="m-menu__link-icon fa fa-cloud-download">
+                    <span></span>
+                </i>
+                <span class="m-menu__link-text">Export</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <li class="m-menu__item  m-menu__item--submenu" routerLinkActive="m-menu__item--open m-menu__item--expanded" routerLinkActiveOptions="{ exact: true }"

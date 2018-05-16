@@ -10,15 +10,23 @@ using System.IO;
 using Microsoft.AspNetCore.SignalR;
 using ApiServer.Hubs;
 
-namespace ApiServer.Core.MergeProject
+namespace ApiServer.Core.Merge
 {
-    public static class Merge
+    public class MergeService : IMergeService
     {
-        public static VdsContext _ctx;
-        public static string webPathRoot;
-        public static IHubContext<VdsHub> _hubContext;
+        private readonly VdsContext _ctx;
+        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly string webPathRoot;
+        private readonly IHubContext<VdsHub> _hubContext;
 
-        public static async Task Execute(MergeModel.Merge mergeData)
+        public MergeService(IHostingEnvironment hostingEnvironment,VdsContext context, IHubContext<VdsHub> hubContext)
+        {
+            _ctx = context;
+            _hubContext = hubContext;
+            _hostingEnvironment = hostingEnvironment;
+            webPathRoot = _hostingEnvironment.WebRootPath;
+        }
+        public async Task Execute(MergeModel.Merge mergeData)
         {
             var newProject = new Project();
             newProject.Name = mergeData.ProjectName;
@@ -117,22 +125,22 @@ namespace ApiServer.Core.MergeProject
 
             var images = MergeTag(mergeData, IndexClassMap, newProject, newClasses);
 
-            updateProjectParams(newProject, images);
+            UpdateProjectParams(newProject, images);
 
             try
             {
                 await _ctx.SaveChangesAsync();
                 await CopyImageToNewLocation(images, newProject);
                 await _hubContext.Clients.Client(mergeData.ConnectionId).SendAsync("MergeNotification", new MergeNotificationMessage() { Result = true, Message = "Merge porject success!" });
-                }
+            }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                await _hubContext.Clients.Client(mergeData.ConnectionId).SendAsync("MergeNotification", new MergeNotificationMessage() { Result = true, Message = "Merge porject success!" });
+                await _hubContext.Clients.Client(mergeData.ConnectionId).SendAsync("MergeNotification", new MergeNotificationMessage() { Result = true, Message = "Merge porject Error: " + ex.Message });
             }
         }
 
-        public static List<Image> MergeTag(MergeModel.Merge mergeData, Dictionary<int, int> tagMap, Project newProject, List<Class> newClasses)
+        public List<Image> MergeTag(MergeModel.Merge mergeData, Dictionary<int, int> tagMap, Project newProject, List<Class> newClasses)
         {
             var images = new List<Image>();
             var newTags = new List<Tag>();
@@ -143,7 +151,7 @@ namespace ApiServer.Core.MergeProject
 
                 foreach (var img in imgs)
                 {
-                    if (!filter(img, mergeData.FilterOptions))
+                    if (!Filter(img, mergeData.FilterOptions))
                     {
                         imgs.Remove(img);
                         continue;
@@ -185,7 +193,7 @@ namespace ApiServer.Core.MergeProject
                         newImg.Tags.Add(newTag);
                     }
 
-                    caculateClassTag(newProject, newImg);
+                    CaculateClassTag(newProject, newImg);
 
                     images.Add(newImg);
                 }
@@ -195,7 +203,7 @@ namespace ApiServer.Core.MergeProject
             return images;
         }
 
-        public static async Task CopyImageToNewLocation(List<Image> images, Project newProject)
+        public async Task CopyImageToNewLocation(List<Image> images, Project newProject)
         {
             string new_folderName = DateTime.UtcNow.ToString("dd-MM-yyy", CultureInfo.InvariantCulture);
             string new_projectFolder = newProject.Name + "\\" + new_folderName;
@@ -222,7 +230,7 @@ namespace ApiServer.Core.MergeProject
             await _ctx.SaveChangesAsync();
         }
 
-        public static bool filter(Image image, MergeModel.FilterOptions filterOptions)
+        public bool Filter(Image image, MergeModel.FilterOptions filterOptions)
         {
             var qcOpts = filterOptions.QcOptions;
             if (qcOpts.Count > 0 && image.QuantityCheck != null)
@@ -269,7 +277,7 @@ namespace ApiServer.Core.MergeProject
             return true;
         }
 
-        private static void caculateClassTag(Project project, Image image)
+        private void CaculateClassTag(Project project, Image image)
         {
             var tagCount = image.Tags.Count();
             if (tagCount <= 0)
@@ -314,7 +322,7 @@ namespace ApiServer.Core.MergeProject
             //}
         }
 
-        private static void updateProjectParams(Project project, List<Image> images)
+        private void UpdateProjectParams(Project project, List<Image> images)
         {
             project.TotalImg = images.Count();
             var imgsNotClassed = project.TotalImg;

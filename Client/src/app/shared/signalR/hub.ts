@@ -14,6 +14,7 @@ export class hub{
             })
             .catch(err => console.log('Error while establishing connection (' + apiUrl + '/hubs/image' + ') !'));
         this._hubConnection.on("MergeNotification", data => {
+            console.log(data);
             alert(data.message);
             this._hubConnection.stop();
         });

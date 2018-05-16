@@ -1,0 +1,99 @@
+<!-- END: Subheader -->
+<div class="m-content">
+    <div class="m-portlet m-portlet--mobile">
+        <div class="m-portlet__head">
+            <div class="m-portlet__head-caption">
+                <div class="m-portlet__head-title">
+                    <h3 class="m-portlet__head-text">
+                        Import Project
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="m-portlet__body">
+            <div class="row">
+                <div class="col-lg-12" style="padding-top: 10px">
+                    <div id="upload_button">
+                        <label>
+                            <input #file type="file" (change)="appendUploadFiles(file.files)" multiple>
+                            <span class="btn btn-sm btn-primary m-btn--air">
+                                <i class="la la-folder-open"></i> Choose files</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--air" (click)="upload()" [disabled]="!uploadfiles.length">
+                        <span>
+                            <i class="la la-cloud-upload"></i>
+                            <span>
+                                Upload All
+                            </span>
+                        </span>
+                    </button>
+                    <button class="btn btn-metal btn-sm m-btn m-btn--icon m-btn--air" (click)="clear()" [disabled]="!uploadfiles.length">
+                        <span>
+                            <i class="la la-refresh"></i>
+                            <span>
+                                Clear list
+                            </span>
+                        </span>
+                    </button>
+                    <!-- <p>{{uploadProgress}}</p> -->
+                </div>
+                <div class="col-lg-12" style="padding-top: 10px">
+                    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air m-alert--outline" role="alert" *ngIf="message">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                        <strong>{{messageHeader}}</strong>
+                        {{message}}
+                    </div>
+                </div>
+                <div class="col-lg-12" style="padding-top: 10px">
+                    <span id="successMessage" style="display:none; color: #00896b">
+                        <b> All file uploaded !</b>
+                    </span>
+                </div>
+
+                <div class="col-lg-6 col-md-6" style="padding-top: 10px" *ngIf="uploadfiles.length">
+                    <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
+                        <table class="m-datatable__table">
+                            <thead class="m-datatable__head">
+                                <tr class="m-datatable__row" style="left: 0px;">
+                                    <th title="Name" class="m-datatable__cell m-datatable__cell--sort" data-field="name">
+                                        <span style="width: 400px;">Name</span>
+                                    </th>
+                                    <th title="Size" class="m-datatable__cell m-datatable__cell--sort" data-field="size">
+                                        <span style="width: 100px;">Size</span>
+                                    </th>
+                                    <th title="Action" class="m-datatable__cell m-datatable__cell--sort">
+                                        <span style="width:110px;">Action</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="m-datatable__body">
+                                <tr class="m-datatable__row" *ngFor="let file of uploadfiles">
+                                    <td class="m-datatable__cell" data-field="name">
+                                        <span style="width: 400px; color: #5867DD">
+                                            <b>{{ file.name }}</b>
+                                        </span>
+                                    </td>
+                                    <td class="m-datatable__cell" data-field="size">
+                                        <span style="width: 100px;">{{ file.size }}</span>
+                                    </td>
+                                    <td data-field="Actions" class="m-datatable__cell">
+                                        <span style="overflow: visible; width: 110px;">
+                                            <a class="m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" title="Upload" (click)="uploadFile(file)">
+                                                <i class="la la-upload"></i>
+                                            </a>
+                                            <a class="m-portlet__nav-link btn m-btn m-btn--hover-danger m-btn--icon m-btn--icon-only m-btn--pill" title="Delete" (click)="removeFile(file)">
+                                                <i class="la la-trash"></i>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

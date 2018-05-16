@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation, ViewChild, ViewChildren, QueryList, ViewContainerRef } from "@angular/core";
-import { ActivatedRoute, Router, RouterStateSnapshot } from "@angular/router";
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ViewChild, ViewChildren, QueryList, ViewContainerRef } from '@angular/core';
+import { ActivatedRoute, Router, RouterStateSnapshot } from '@angular/router';
 import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DxDataGridComponent } from 'devextreme-angular';
@@ -15,16 +15,16 @@ import { DataService } from '../data.service';
 import DataSource from 'devextreme/data/data_source';
 import { Merge, MergeProjectUser, QcOption, FilterOptions, MergeKlass } from '../../shared/models/merge.model';
 import { Class } from '../../shared/models/class.model';
-import { ProjectUser } from "../../shared/models/project-user.model";
+import { ProjectUser } from '../../shared/models/project-user.model';
 import { MergeService } from '../services/merge-project.service';
-import { FormGroup, FormBuilder, Validators, ValidationErrors, AbstractControl, FormControl } from "@angular/forms";
-import { FormService } from "../../shared/services/form.service";
-import { Observable } from "rxjs/Observable";
-import { NGX_ERRORS_SERVICE_CHILD_PROVIDERS, NgxErrorsService } from "../../shared/utils/form-errors/ngx-errors.service";
+import { FormGroup, FormBuilder, Validators, ValidationErrors, AbstractControl, FormControl } from '@angular/forms';
+import { FormService } from '../../shared/services/form.service';
+import { Observable } from 'rxjs/Observable';
+import { NGX_ERRORS_SERVICE_CHILD_PROVIDERS, NgxErrorsService } from '../../shared/utils/form-errors/ngx-errors.service';
 import { ProjectService } from '../project.service';
 import { hub } from '../../shared/signalR/hub';
 
-import { ConfigurationService } from "../../shared/services/configuration.service";
+import { ConfigurationService } from '../../shared/services/configuration.service';
 @Component({
     selector: 'app-merge-project',
     styleUrls: ['merge-project.component.css'],
@@ -33,7 +33,8 @@ import { ConfigurationService } from "../../shared/services/configuration.servic
 })
 
 export class MergeProject implements OnInit {
-    @ViewChild(DxDataGridComponent) dataGrid: DxDataGridComponent;
+    @ViewChildren(DxDataGridComponent) dataGrids: DxDataGridComponent;
+    // @ViewChild(DxDataGridComponent) dataGrid: DxDataGridComponent;
     selectedUsers: any[] = [];
     selectedClasses: any[] = [];
     classSource: any = {};
@@ -41,13 +42,13 @@ export class MergeProject implements OnInit {
     newUserSource: any = {};
     orginClassDataSource: any;
     orginUserDataSource: any;
-    projectName: string = '';
-    levelTotal: number = 5;
+    projectName = '';
+    levelTotal = 5;
     qcFilterOptions: QcOption[] = [];
     projects: string;
     mergeClasses: MergeKlass[] = [];
     form: FormGroup;
-    btnSaveDisable: boolean = true;
+    btnSaveDisable = true;
     constructor(
         private route: Router,
         private activatedRoute: ActivatedRoute,
@@ -65,7 +66,7 @@ export class MergeProject implements OnInit {
         private config: ConfigurationService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        let mother = this;
+        const mother = this;
         activatedRoute.params.subscribe(params => {
             mother.projects = params.projects;
             mother.classService.getClassProjects(params.projects)
@@ -88,11 +89,6 @@ export class MergeProject implements OnInit {
 
     ngOnInit(): void {
         this.createForm();
-    }
-
-    ngOnDestroy(): void {
-        //Called once, before the instance is destroyed.
-        //Add 'implements OnDestroy' to the class.
     }
 
     createForm() {
@@ -130,14 +126,14 @@ export class MergeProject implements OnInit {
             return;
         }
 
-        let users: MergeProjectUser[] = [];
-        let mergeData: Merge = new Merge();
-        let filterOptions: FilterOptions = new FilterOptions();
+        const users: MergeProjectUser[] = [];
+        const mergeData: Merge = new Merge();
+        const filterOptions: FilterOptions = new FilterOptions();
         filterOptions.qcOptions = this.qcFilterOptions;
 
         this.userSource.forEach(user => {
             if (!user.roleName) {
-                alert("Not all users have role !");
+                alert('Not all users have role !');
                 return;
             }
 
@@ -151,18 +147,22 @@ export class MergeProject implements OnInit {
         mergeData.projects = this.projects.split(',');
         mergeData.mergeClasses = this.mergeClasses;
         mergeData.connectionId = hub.connectionId;
-        
-        var mother = this;
+
+        const mother = this;
         Helpers.setLoading(true);
-        this.mergeService.mergeProjcet(mergeData).toPromise().then(Response => {
+        this.mergeService.mergeProjcet(mergeData).toPromise().then(() => {
             Helpers.setLoading(false);
             mother.route.navigate(['project']);
-        }).catch(err => alert(err.error.text));
+        }).catch(err => { 
+            alert(err.error.text);
+            Helpers.setLoading(false);
+        });
+        mother.route.navigate(['project']);
     }
 
     qcLevelChange(e): void {
-        var ele = e.target;
-        var qcOpt = this.qcFilterOptions.find(x => x.index == ele.name);
+        const ele = e.target;
+        const qcOpt = this.qcFilterOptions.find(x => x.index === ele.name);
         if (qcOpt) {
             qcOpt.value = ele.value;
         } else {
@@ -187,7 +187,7 @@ export class MergeProject implements OnInit {
 
         modalRef.componentInstance.projectUser = data;
         console.log(data);
-        var mother = this;
+        const mother = this;
         modalRef.result.then(function () {
             mother.dataService.currentProjectUser.subscribe(p => {
                 mother.userSource.forEach(e => {
@@ -196,7 +196,7 @@ export class MergeProject implements OnInit {
                     }
                 });
             });
-            // mother.dataGrid["first"].instance.refresh();
+            // mother.dataGrid['first'].instance.refresh();
             // mother.classSource.reload();
         })
     }
@@ -205,9 +205,10 @@ export class MergeProject implements OnInit {
         const config = {
             keyboard: false,
             beforeDismiss: () => false
-        }
+        };
+
         const modalRef = this.modalService.open(MergeClass, config);
-        if (this.classSource)
+        if ( this.classSource )
             modalRef.componentInstance.classes = this.classSource;
 
         if (this.selectedClasses)
@@ -229,13 +230,14 @@ export class MergeProject implements OnInit {
                     mother.mergeClasses.push({ oldClasses: mother.selectedClasses, newClass: p });
                 }
             });
-            // mother.dataGrid["first"].instance.refresh();
+            // mother.dataGrid['first'].instance.refresh();
             // mother.classSource.reload();
         })
     }
 
     classSelectionChanged(data: any): void {
-        var selectedKeys = this.dataGrid.instance.getSelectedRowKeys();
+        // console.log(data, this.dataGrids);
+        var selectedKeys = this.dataGrids['first'].instance.getSelectedRowKeys();
         var selectedClass = data.currentSelectedRowKeys[0];
         if (data.selectedRowsData.length > 1) {
             for (var i = 0; i < selectedKeys.length; i++) {
@@ -243,13 +245,13 @@ export class MergeProject implements OnInit {
                     selectedKeys[i].project == selectedClass.project &&
                     selectedKeys[i].name == selectedClass.name &&
                     (selectedKeys[i].project == this.projectName || selectedKeys[i].project == 'New Project')) {
-                    this.dataGrid.instance.deselectRows([selectedKeys[i]]);
+                    this.dataGrids['first'].instance.deselectRows([selectedKeys[i]]);
                 }
                 if (
                     (selectedKeys[i].project == this.projectName || selectedKeys[i].project == 'New Project') &&
                     (selectedKeys[i].project != selectedClass.project)
                 ) {
-                    this.dataGrid.instance.deselectRows([selectedKeys[i]]);
+                    this.dataGrids['first'].instance.deselectRows([selectedKeys[i]]);
                 }
             }
         }

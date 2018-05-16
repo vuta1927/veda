@@ -23,6 +23,7 @@ using VDS.BackgroundJobs.Hangfire;
 using Hangfire;
 using MediatR;
 using ApiServer.Hubs;
+using ApiServer.Core.Merge;
 
 namespace ApiServer
 {
@@ -72,6 +73,7 @@ namespace ApiServer
             services.AddTransient<ClassesController>();
             services.AddTransient<QuantityChecksController>();
             services.AddTransient<MergeController>();
+            services.AddScoped<IMergeService, MergeService>();
 
             services.AddAuthentication(options =>
             {

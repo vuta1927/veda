@@ -76,6 +76,12 @@ export class ProjectComponent {
         this.selectedProjects = data.selectedRowsData;
     }
 
+    // importClicked(){
+    // }
+
+    // exportClicked(){
+    // }
+
     deleteSelectedProject() {
         Helpers.setLoading(true);
         let ids = '';

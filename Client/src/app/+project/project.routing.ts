@@ -6,13 +6,10 @@ export const routes: Routes = [
     {
         path: '',
         component: DefaultComponent,
+        canActivate: [AuthGuard],
         children: [
             {
                 path: '',
-                component: ProjectComponent
-            },
-            {
-                path: '/',
                 component: ProjectComponent
             }
         ]

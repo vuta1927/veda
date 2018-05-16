@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Model;
-using ApiServer.Core.MergeProject;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
 using ApiServer.Hubs;
+using ApiServer.Core.Merge;
 
 namespace ApiServer.Controllers
 {
@@ -20,26 +20,22 @@ namespace ApiServer.Controllers
     public class MergeController : Controller
     {
         private readonly VdsContext _context;
-
-        private readonly IHostingEnvironment _hostingEnvironment;
+        
         private IHubContext<VdsHub> _hubContext;
 
-        public MergeController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
+        private IMergeService _mergeService;
+
+        public MergeController(VdsContext context, IHubContext<VdsHub> hubContext, IMergeService mergeService)
         {
             _context = context;
-            Merge._ctx = context;
             _hubContext = hubContext;
-            _hostingEnvironment = hostingEnvironment;
+            _mergeService = mergeService;
         }
 
         [HttpPost]
-        public IActionResult MergeProjcet([FromBody] MergeModel.Merge mergeData)
+        public async Task MergeProjcet([FromBody] MergeModel.Merge mergeData)
         {
-            Merge.webPathRoot = _hostingEnvironment.WebRootPath;
-            Merge._hubContext = _hubContext;
-            Merge.Execute(mergeData);
-
-            return Ok();
+            await _mergeService.Execute(mergeData);
         }
     }
 }
