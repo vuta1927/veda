@@ -27,8 +27,7 @@ export class ImportProjectComponent implements OnInit {
         this.message = '';
         for(var i=0; i < files.length; i++){
             var filename = files[i].name;
-            var fileExtension = filename.split('.')[1];
-            console.log(fileExtension);
+            var fileExtension = filename.substr(filename.length - 3);
             if(this.allowedExtensions.indexOf(fileExtension) == -1){
                 this.message = 'File extension not allowed!';
                 return;

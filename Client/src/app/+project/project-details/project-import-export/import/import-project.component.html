@@ -76,7 +76,7 @@
                                         </span>
                                     </td>
                                     <td class="m-datatable__cell" data-field="size">
-                                        <span style="width: 100px;">{{ file.size }}</span>
+                                        <span style="width: 100px;">{{ (file.size / 1048576) | number:'.1-1' }} Mb</span>
                                     </td>
                                     <td data-field="Actions" class="m-datatable__cell">
                                         <span style="overflow: visible; width: 110px;">

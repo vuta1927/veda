@@ -15,6 +15,8 @@ namespace ApiServer.Model
         public int TotalClass { get; set; }
         public int TagHasClass { get; set; }
         public int TagNotHasClass { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
         public DateTime? TaggedDate { get; set; }
         public string Classes { get; set; }
         public string QcStatus { get; set; }

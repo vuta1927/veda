@@ -49,6 +49,7 @@ import { SignalRService } from '../+project/services/signalr.service';
 import { QcService } from '../+project/services/qc.service';
 import { MergeService } from '../+project/services/merge-project.service';
 import { ImportExportService } from '../+project/services/import-export.service';
+import { ExportExportService } from '../+project/services/export.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -112,7 +113,8 @@ export class SharedModule {
                 SignalRService,
                 QcService,
                 MergeService,
-                ImportExportService
+                ImportExportService,
+                ExportExportService
             ]
         }
     }

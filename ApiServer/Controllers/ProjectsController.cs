@@ -51,7 +51,7 @@ namespace ApiServer.Controllers
         {
             var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
             var result = new List<VDS.Security.Role>();
-            foreach(var r in userRoles)
+            foreach (var r in userRoles)
             {
                 result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
             }
@@ -62,7 +62,7 @@ namespace ApiServer.Controllers
         [ActionName("UploadImage")]
         public async Task<IActionResult> UploadImage([FromRoute] Guid id)
         {
-            string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip"};
+            string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip" };
             try
             {
                 var currentUser = GetCurrentUser();
@@ -73,7 +73,7 @@ namespace ApiServer.Controllers
                     project = await _context.ProjectUsers
                     .Include(x => x.Project)
                     .Include(u => u.User)
-                    .Where(a=>a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
+                    .Where(a => a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
                 }
                 else
                 {
@@ -82,14 +82,14 @@ namespace ApiServer.Controllers
                     .Include(u => u.User)
                     .Where(a => a.User.Id == currentUser.Id && a.Project.Id == id).Select(b => b.Project).FirstOrDefaultAsync();
                 }
-                    
+
                 if (project == null)
                 {
                     return Content("You have no permission to upload images in this project!");
                 }
 
                 var files = Request.Form.Files;
-                foreach(var file in files)
+                foreach (var file in files)
                 {
                     if (file.Length <= 0)
                     {
@@ -101,7 +101,7 @@ namespace ApiServer.Controllers
                     string webRootPath = _hostingEnvironment.WebRootPath;
                     string projectFolder = project.Name + "\\" + folderName;
                     string newPath = Path.Combine(webRootPath, projectFolder);
-                    string pathToDatabase = "\\" +projectFolder + "\\";
+                    string pathToDatabase = "\\" + projectFolder + "\\";
                     string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
 
                     if (!AllowedFileExtensions.Contains(fileExtension.ToLower()))
@@ -139,7 +139,11 @@ namespace ApiServer.Controllers
                                 {
                                     entry.ExtractToFile(Path.Combine(newPath, name + '.' + filenames.Last()));
 
-                                    await StoreImage(name, pathToDatabase, project);
+                                    using(var entryStram = entry.Open())
+                                    using (var img = new System.Drawing.Bitmap(entryStram))
+                                    {
+                                        await StoreImage(name, pathToDatabase, project, img);
+                                    }
                                 }
                             }
                         }
@@ -152,7 +156,9 @@ namespace ApiServer.Controllers
                         using (var stream = new FileStream(fullPath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            await StoreImage(name, pathToDatabase, project);
+                            using (var img = new System.Drawing.Bitmap(stream)){
+                                await StoreImage(name, pathToDatabase, project, img);
+                            }
                         }
                     }
                 }
@@ -165,14 +171,16 @@ namespace ApiServer.Controllers
             }
         }
 
-        public async Task StoreImage(string filename, string filepath, Project proj)
+        public async Task StoreImage(string filename, string filepath, Project proj, System.Drawing.Bitmap image)
         {
             var newImg = new Image
             {
                 Id = Guid.Parse(filename),
                 Ignored = false,
                 Path = filepath,
-                Project = proj
+                Project = proj,
+                Width = image.Width,
+                Height = image.Height
             };
 
             try
@@ -204,9 +212,9 @@ namespace ApiServer.Controllers
 
             var projs = new List<Project>();
 
-            if (currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
-                projs = _context.Projects.Include(x=>x.Users).OrderBy(x=>x.Name).Skip(start).Take(stop).ToList();
+                projs = _context.Projects.Include(x => x.Users).OrderBy(x => x.Name).Skip(start).Take(stop).ToList();
             }
             else
             {
@@ -217,7 +225,7 @@ namespace ApiServer.Controllers
                 .Select(b => b.Project).Distinct().ToList().
                 Where(x => !x.IsDisabled).Skip(start).Take(stop).ToList();
             }
-            
+
             if (projs.Count() <= 0)
             {
                 return Ok(projs);
@@ -228,7 +236,7 @@ namespace ApiServer.Controllers
                 {
                     var users = _context.ProjectUsers.Where(x => x.Project.Id == p.Id).Include(u => u.User).Select(u => u.User).ToList();
                     var usernames = string.Empty;
-                    if(users!= null || users.Count() > 0)
+                    if (users != null || users.Count() > 0)
                     {
                         for (var i = 0; i < users.Count(); i++)
                         {
@@ -243,7 +251,7 @@ namespace ApiServer.Controllers
 
                         }
                     }
-                    
+
 
                     results.Add(new ProjectModel.ProjectForView()
                     {
@@ -502,7 +510,7 @@ namespace ApiServer.Controllers
 
             try
             {
-                if (!currentRoles.Any(x=>x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+                if (!currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
                 {
                     _context.ProjectUsers.RemoveRange(projectUsers);
                 }
@@ -517,7 +525,7 @@ namespace ApiServer.Controllers
             }
         }
 
-        
+
 
         private bool ProjectExists(Guid id)
         {

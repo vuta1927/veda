@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-
+import { ClassService } from '../../../services/class.service';
+import { DataService } from '../../data.service';
+import { QcOption, FilterOptions } from '../../../../shared/models/merge.model';
+import { Export } from '../../../../shared/models/export.model';
+import { ImportExportService } from '../../../services/import-export.service';
+import swal from 'sweetalert2';
 @Component({
     selector: 'app-export-project',
     templateUrl : 'export-project.component.html',
@@ -7,81 +12,73 @@ import { Component, OnInit } from '@angular/core';
 })
 
 export class ExportProjectComponent implements OnInit {
-    uploadfiles: any = [];
-    uploading = false;
-    totalFile = 0;
-    uploadedFile = 0;
-    allowedExtensions = ['rar', 'zip', 'RAR', 'ZIP', '7z', '7Z'];
     messageHeader: string;
     message: string;
-    
-    constructor(){
-
+    currentProject: any = {};
+    classSource: any = {};
+    selectedClasses: any[] = [];
+    qcFilterOptions: QcOption[] = [];
+    constructor(
+        private classService: ClassService,
+        private dataService: DataService,
+        private exportService: ImportExportService
+    ){
+        const mother = this;
+        this.dataService.currentProject.subscribe(p=>{
+            mother.currentProject = p;
+            mother.classService.getClasses(p.id).toPromise().then(response => {
+                mother.classSource = response.result;
+            });
+        });
+        
     }
 
     ngOnInit(){
 
     }
 
-    appendUploadFiles(files) {
-        this.message = '';
-        for(var i=0; i < files.length; i++){
-            var filename = files[i].name;
-            var fileExtension = filename.split('.')[1];
-            console.log(fileExtension);
-            if(this.allowedExtensions.indexOf(fileExtension) == -1){
-                this.message = 'File extension not allowed!';
-                return;
-            }        
-        }
-        this.uploadfiles = files;
+    classSelectionChanged(data:any){
+        this.selectedClasses = data.selectedRowsData;
     }
 
-    upload() {
-        // if (this.uploadfiles.length === 0)
-        //     return;
+    classSelected(data){
 
-        this.uploading = true;
-        if (!this.totalFile)
-            this.totalFile = this.uploadfiles.length;
-        // let totalFile = this.uploadfiles.length;
+    }
 
-        if (this.uploadfiles.length > 0 && this.uploadedFile <= (this.totalFile - 1)) {
-            let file = this.uploadfiles[this.uploadedFile];
-            const formData = new FormData();
-            formData.append(file.name, file);
-            
-
+    qcLevelChange(e): void {
+        const ele = e.target;
+        const qcOpt = this.qcFilterOptions.find(x => x.index === ele.name);
+        if (qcOpt) {
+            qcOpt.value = ele.value;
         } else {
-            this.uploadfiles = [];
-            this.totalFile = 0;
-            this.uploadedFile = 0;
+            this.qcFilterOptions.push({ index: ele.name, value: ele.value });
         }
-
     }
 
-    uploadFile(file) {
-        if (file.size == 0)
-            return;
-
-        const formData = new FormData();
-
-        formData.append(file.name, file);
+    Export(){
+        const exportData = new Export();
+        const mother = this;
+        this.selectedClasses.forEach(c=>{
+            exportData.classes.push(c.name);
+         });
+         
+        exportData.filterOptions.qcOptions = this.qcFilterOptions;
+        this.exportService.Export(this.currentProject.id, exportData).toPromise().then(Response=>{
+            var blob = new Blob([Response], {type: "application/zip"});
+            mother.saveAs(blob, mother.currentProject.name+".zip");
+        }).catch(resp=>{
+            swal({
+                title: '',text: resp.error.message, type: 'error'
+            })
+        });
     }
 
-    removeFile(file) {
-        let tempFiles = [];
-        for (let f of this.uploadfiles) {
-            if (f.name == file.name) continue;
-            tempFiles.push(f);
-        }
-        this.uploadfiles = [];
-        this.uploadfiles = tempFiles;
-    }
-
-    clear() {
-        this.uploadfiles = [];
-        $('#successMessage').css("display", "none");
-        $('#errorMessage').css("display", "none");
+    saveAs(blob, fileName) {
+        var url = window.URL.createObjectURL(blob);
+        var doc = document.createElement("a");
+        doc.href = url;
+        doc.download = fileName;
+        doc.click();
+        window.URL.revokeObjectURL(url);
     }
 }

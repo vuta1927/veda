@@ -384,8 +384,7 @@ namespace ApiServer.Controllers
 
             img.Tags.Remove(tag);
 
-            if (img.Tags.Count() <= 0)
-                project.TotalImgNotTagged += 1;
+            project.TotalImgNotTagged += 1;
 
             tag.Class.Tags.Remove(tag);
 

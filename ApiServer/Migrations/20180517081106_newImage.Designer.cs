@@ -14,9 +14,10 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    partial class VdsContextModelSnapshot : ModelSnapshot
+    [Migration("20180517081106_newImage")]
+    partial class newImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -12,6 +12,92 @@
         </div>
         <div class="m-portlet__body">
             <div class="row">
+                <div class="col-lg-12">
+                </div>
+
+                <div class="col-lg-12" style="padding-top: 10px">
+                    <div class="form-group m-form--group col-lg-12">
+                        <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--air" (click)="Export()">
+                            <span>
+                                <i class="la la-cloud-download"></i>
+                                <span>
+                                    Export
+                                </span>
+                            </span>
+                        </button>
+                        <br>
+                        <div class="col-lg-12" style="padding-top: 10px">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#m_tabs_class">
+                                        Class
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#m_tabs_qc">
+                                        Quantity Check
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="m_tabs_class" role="tabpanel">
+                                    <dx-data-grid id="gridClassContainer" [dataSource]="classSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                                        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="classSelectionChanged($event)"
+                                        class="m_datatable">
+                                        <dxo-selection mode="multiple"></dxo-selection>
+                                        <dxo-remote-operations [sorting]="true" [paging]="true">
+                                        </dxo-remote-operations>
+                                        <dxo-paging [pageSize]="12"></dxo-paging>
+                                        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                                        <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
+                                        <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
+                                        <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
+                                        <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
+                                        <div *dxTemplate="let data of 'cellName'">
+                                            <span class="span-cellname" (click)="classSelected(data.data)">
+                                                <b>{{(data.data.name)}}</b>
+                                            </span>
+                                        </div>
+                                        <div *dxTemplate="let data of 'cellClassColor'">
+                                            <span style="width: 132px;">
+                                                <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
+                                            </span>
+                                        </div>
+                                    </dx-data-grid>
+                                </div>
+                                <div class="tab-pane" id="m_tabs_qc" role="tabpanel">
+                                    <div class="m-form__group form-group row" style="padding-left: 60px" *ngFor="let index of [1,2,3,4,5]">
+                                        <label class="col-2 col-form-label">
+                                            <strong>Level {{index}}:</strong>
+                                        </label>
+                                        <div class="col-10">
+                                            <div class="m-radio-inline">
+                                                <label class="m-radio">
+                                                    <input type="radio" [name]="index" value="1" (change)="qcLevelChange($event)"> Passed
+                                                    <span></span>
+                                                </label>
+                                                <label class="m-radio">
+                                                    <input type="radio" [name]="index" value="2" (change)="qcLevelChange($event)"> UnPassed
+                                                    <span></span>
+                                                </label>
+                                                <label class="m-radio">
+                                                    <input type="radio" [name]="index" value="3" (change)="qcLevelChange($event)" checked> Ignore
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6" style="padding-top: 10px">
+
+                </div>
+
             </div>
         </div>
     </div>

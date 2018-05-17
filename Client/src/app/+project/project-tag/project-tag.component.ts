@@ -494,6 +494,8 @@ export class ProjecTagComponent {
                 name: 'rect-' + tag.index,
                 left: x,
                 top: y,
+                // width: width,
+                // height: height,
                 width: width - x,
                 height: height - y,
                 stroke: color,
@@ -943,6 +945,8 @@ export class ProjecTagComponent {
         tag.left = this.GetPercent(left, this.imageWidth);
         tag.width = this.GetPercent((left + width), this.imageWidth);
         tag.height = this.GetPercent((top + height), this.imageHeight);
+        // tag.width = this.GetPercent(width, this.imageWidth);
+        // tag.height = this.GetPercent(height, this.imageHeight);
 
         console.log(tag);
         if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {

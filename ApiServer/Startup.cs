@@ -73,6 +73,8 @@ namespace ApiServer
             services.AddTransient<ClassesController>();
             services.AddTransient<QuantityChecksController>();
             services.AddTransient<MergeController>();
+            services.AddTransient<ImportProjectController>();
+            services.AddTransient<ExportProjectController>();
             services.AddScoped<IMergeService, MergeService>();
             services.AddScoped<IUserService, UserService>();
 
