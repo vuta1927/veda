@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VDS.AspNetCore.Mvc.Authorization;
 using System.Drawing;
-
+using System.Security.Claims;
 
 namespace ApiServer.Controllers
 {
@@ -27,7 +27,7 @@ namespace ApiServer.Controllers
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IUserService _userService;
         private readonly string[] AllowedFileExtensions = new string[] { "rar", "RAR", "ZIP", "zip", "jpg", "JPG", "png", "PNG", "bmp", "BMP", "txt", "TXT" };
-        private readonly string[] imageExtentions = new string[] { "jpg", "JPG", "png", "PNG", "bmp", "BMP", "txt", "TXT" };
+        private readonly string[] imageExtentions = new string[] { "jpg", "JPG", "png", "PNG", "bmp", "BMP" };
         private Folder folder;
 
         public ImportProjectController(VdsContext vdsContext, IHostingEnvironment hostingEnvironment, IUserService userService)
@@ -41,7 +41,9 @@ namespace ApiServer.Controllers
         public async Task<IActionResult> Upload([FromRoute] Guid id)
         {
             var project = new Project();
-            var currentUser = _userService.GetCurrentUser();
+
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
             var currentRole = _userService.GetCurrentRole(currentUser.Id);
 
             if (currentRole.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
@@ -72,7 +74,7 @@ namespace ApiServer.Controllers
                         return Content("There are no files to upload !");
                     }
 
-                    string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
+                    string fileExtension = Path.GetExtension(file.FileName).Split('.').Last();
 
                     if (!AllowedFileExtensions.Contains(fileExtension))
                     {
@@ -86,7 +88,7 @@ namespace ApiServer.Controllers
                         await file.CopyToAsync(stream);
                     }
 
-                    if (ExtractFile(folder.FinalPath))
+                    if (ExtractFile(folder.TempPath))
                     {
                         try
                         {
@@ -128,7 +130,7 @@ namespace ApiServer.Controllers
                     }
                     else
                     {
-                        entry.ExtractToFile(Path.Combine(folderPath, entry.Name));
+                        entry.ExtractToFile(Path.Combine(folder.FinalPath, entry.Name));
                     }
                 }
             }
@@ -137,37 +139,35 @@ namespace ApiServer.Controllers
 
         private async Task ProccessFiles(string folderPath, Project project)
         {
-            var textFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x).ToLower().Equals("txt"));
-            var imageFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => imageExtentions.Contains(Path.GetExtension(x)));
-
+            var textFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x).ToLower().Equals(".txt"));
+            var imageFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => imageExtentions.Contains(Path.GetExtension(x).Split('.').Last()));
             var images = new List<Model.Image>();
-            var tags = new List<Tag>();
 
             foreach (var imagePath in imageFiles)
             {
-                var name = Path.GetFileName(imagePath);
-                var textFile = textFiles.SingleOrDefault(x => Path.GetFileName(x).Equals(name));
+                var image = new Model.Image()
+                {
+                    Project = project,
+                    Ignored = false,
+                    Path = folder.PathToStoreDb + Path.GetFileName(imagePath),
+                    TagHasClass = 0,
+                    TagNotHasClass = 0,
+                    TotalClass = 0,
+                    TaggedDate = DateTime.Now
+                };
+
+                _context.Images.Add(image);
+
+                var name = Path.GetFileName(imagePath).Split('.').First();
+                var textFile = textFiles.SingleOrDefault(x => Path.GetFileName(x).Split('.').First().Equals(name));
                 if (textFile != null)
                 {
                     try
                     {
                         using (StreamReader file = new StreamReader(textFile))
                         {
+                            var tags = new List<Tag>();
                             string line;
-                            var image = new Model.Image()
-                            {
-                                Project = project,
-                                Ignored = false,
-                                Path = folder.PathToStoreDb,
-                                TagHasClass = 0,
-                                TagNotHasClass = 0,
-                                TotalClass = 0,
-                                TaggedDate = DateTime.Now
-                            };
-
-                            _context.Images.Add(image);
-                            images.Add(image);
-
                             var count = 0;
                             while ((line = await file.ReadLineAsync()) != null)
                             {
@@ -187,8 +187,9 @@ namespace ApiServer.Controllers
                                 }
                             }
                             image.Tags = tags;
-                            
+                            images.Add(image);
                         }
+                        System.IO.File.Delete(textFile);
                     }
                     catch (Exception ex)
                     {
@@ -221,44 +222,44 @@ namespace ApiServer.Controllers
             {
                 var imgWidth = img.Width;
                 var imgHeight = img.Height;
-                centerX *= imgHeight;
-                centerY *= imgWidth;
-                width *= imgWidth;
-                height *= imgHeight;
-
-                var firstPoint = new Point()
-                {
-                    Left = centerX - width / 2,
-                    Top = centerY - height / 2
-                };
-
-                var lastPoint = new Point()
-                {
-                    Left = width + firstPoint.Left,
-                    Top = height + firstPoint.Top
-                };
 
                 var newTag = new Tag()
                 {
-                    Left = firstPoint.Top * imgHeight,
-                    Top = firstPoint.Left * imgWidth,
+                    Left = centerX * 2 - width,
+                    Top = centerY * 2 - height,
                     Index = tagIndex,
-                    height = lastPoint.Top * imgHeight,
-                    Width = lastPoint.Left * imgWidth,
+                    height = height,
+                    Width = width,
                     Image = image,
                     TaggedDate = DateTime.Now
                 };
 
                 if (classId != 0)
                 {
-                    image.TagNotHasClass += 1;
-                }
-                else
-                {
                     var klass = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
                     newTag.Image.TagHasClass += 1;
                     newTag.Class = klass ?? throw new ArgumentNullException("Class not found!");
                     newTag.ClassId = klass.Id;
+
+                    if (string.IsNullOrEmpty(image.Classes))
+                    {
+                        image.Classes = klass.Name;
+                        image.TotalClass = 1;
+                    }
+                    else
+                    {
+                        var classes = image.Classes.Split(';');
+                        if (!classes.Contains(klass.Name))
+                        {
+                            image.Classes += ";" + klass.Name;
+                        }
+
+                        image.TotalClass = classes.Count();
+                    }
+                }
+                else
+                {
+                    newTag.Image.TagNotHasClass += 1;
                 }
 
                 _context.Tags.Add(newTag);
@@ -308,18 +309,18 @@ namespace ApiServer.Controllers
             string projectFolder = project + "\\" + folderName;
             string newPath = Path.Combine(webRootPath, projectFolder);
             string pathToDatabase = "\\" + projectFolder + "\\";
-
-            if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
-            {
-                Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
-            }
-
-            if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
-            {
-                Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
-            }
-
             string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileName);
+
+            if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+            {
+                Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+            }
+
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+
 
             return new Folder() { FinalPath = newPath, TempPath = tempPath, PathToStoreDb = pathToDatabase };
         }
@@ -374,7 +375,7 @@ namespace ApiServer.Controllers
             {
                 try
                 {
-                    System.IO.File.Delete(FinalPath);
+                    System.IO.Directory.Delete(FinalPath);
                     System.IO.File.Delete(TempPath);
 
                 }

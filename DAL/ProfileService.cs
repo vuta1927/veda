@@ -47,14 +47,19 @@ namespace DAL
                 if (role == null) continue;
                 var permissions = _context.PermissionRoles.Where(p => p.RoleId == role.Id)
                     .Include(p => p.Permission).Select(p => p.Permission).Select(p => p.Name);
-                var roleClaims = new List<Claim>
-                {
+                
+                var roleClaims = new List<Claim>(){
                     new Claim("Roles", roleName)
                 };
-                foreach (var permission in permissions)
-                    roleClaims.Add(new Claim("Permission", permission));
 
-                var test = role.RoleClaims.Select(x => x.ClaimValue);
+                foreach (var permission in permissions)
+                {
+                    if(!roleClaims.Any(x=>x.Value == permission))
+                    {
+                        roleClaims.Add(new Claim("Permission", permission));
+                    }
+                }
+                
                 context.IssuedClaims.AddRange(roleClaims);
             }
             context.IssuedClaims.AddRange(new List<Claim>() { new Claim("id", user.Id.ToString()), new Claim("email", user.Email) });

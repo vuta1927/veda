@@ -31,6 +31,7 @@ import { resolve, reject } from 'q';
 import { SignalRService } from '../../services/signalr.service';
 import { MessageTypes } from '../messageType';
 import { HubConnection } from '@aspnet/signalr';
+import swal from 'sweetalert2';
 @Component({
     selector: 'app-project-images',
     templateUrl: './project-images.component.html',
@@ -64,11 +65,11 @@ export class ProjectImagesComponent implements OnInit {
     viewImage: boolean = false;
     addImage: boolean = false;
     deleteImage: boolean = false;
+    isQc: boolean = false;
     userUsing: any;
 
     constructor(
         private formBuilder: FormBuilder,
-        private toastr: ToastsManager,
         private vcr: ViewContainerRef,
         private dataService: DataService,
         private imgService: ImageService,
@@ -81,7 +82,6 @@ export class ProjectImagesComponent implements OnInit {
         private signalService: SignalRService,
         private router: Router
     ) {
-        this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
     }
 
@@ -92,6 +92,8 @@ export class ProjectImagesComponent implements OnInit {
         this.viewImage = this.securityService.IsGranted(Constants.viewImage);
         this.addImage = this.securityService.IsGranted(Constants.addImage);
         this.deleteImage = this.securityService.IsGranted(Constants.deleteImage);
+
+        this.isQc = this.securityService.isInRole(Constants.QuantityCheck);
 
         this.uploadfiles = [];
         var mother = this;
@@ -154,7 +156,7 @@ export class ProjectImagesComponent implements OnInit {
         userUsingInfoData.forEach(data => {
             // var obj = mother.rawData.find(x=>x.id == data.imageId);
             mother.rawData.forEach(dt => {
-                if(dt.id == data.imageId){
+                if (dt.id == data.imageId) {
                     dt.userUsing = data.userName;
                 }
             });
@@ -193,9 +195,13 @@ export class ProjectImagesComponent implements OnInit {
             mother.dataSource.reload();
             if (Response && Response.result) {
                 let error = Response.result.split('#')[1];
-                mother.showError(error);
+                swal({
+                    title: '', text: error, type: 'error'
+                });
             } else {
-                mother.showInfo("Images deleted");
+                swal({
+                    title: '', text: 'Images deleted', type: 'success'
+                });
             }
         });
     }
@@ -238,7 +244,9 @@ export class ProjectImagesComponent implements OnInit {
                 this.messageHeader = 'Upload Error';
                 this.message = res['error'].text;
                 $('#errorMessage').css("display", "block");
-                this.showError(res['error'].text);
+                swal({
+                    title: '', text: res['error'].text, type: 'error'
+                });
             })
         } else {
             this.uploadfiles = [];
@@ -268,14 +276,18 @@ export class ProjectImagesComponent implements OnInit {
                 this.removeFile(file);
                 $('#errorMessage').css("display", "none");
                 this.message = '';
-                this.showSuccess("Files uploaded !");
+                swal({
+                    title: '', text: "Files uploaded !", type: 'success'
+                });
                 this.dataGrid["first"].instance.refresh();
             }
         }).catch(res => {
             this.messageHeader = 'Upload Error';
             this.message = res['error'].text;
             $('#errorMessage').css("display", "block");
-            this.showError(res['error'].text);
+            swal({
+                title: '', text: res['error'].text, type: 'error'
+            });
         })
     }
 
@@ -286,18 +298,6 @@ export class ProjectImagesComponent implements OnInit {
             tempFiles.push(f);
         }
         this.uploadfiles = tempFiles;
-    }
-
-    showSuccess(message: string) {
-        this.toastr.success(message, 'Success!', { toastLife: 2000, showCloseButton: true });
-    }
-
-    showError(message: string) {
-        this.toastr.error(message, 'Oops!', { toastLife: 3000, showCloseButton: true });
-    }
-
-    showInfo(message: string) {
-        this.toastr.info(message, null, { toastLife: 3000, showCloseButton: true });
     }
 
 }

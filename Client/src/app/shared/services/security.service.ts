@@ -49,6 +49,17 @@ export class SecurityService {
         // return this.oauthService.getIdentityClaims();
     }
 
+    public isInRole(role:string){
+        if (!this.IsAuthorized) {
+            return false;
+        }
+
+        let dataAccessToken: any = this.getDataFromToken(this.oauthService.getAccessToken());
+        let roles = _.values(dataAccessToken.Roles);
+
+        return _.includes(roles, role);
+    }
+
     public get IsAuthorized(): boolean {
         return this.oauthService.hasValidAccessToken();
     }

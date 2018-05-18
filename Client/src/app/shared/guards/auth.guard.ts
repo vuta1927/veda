@@ -114,11 +114,16 @@ export class AdminGuard implements CanActivate {
     }
 
     private checkPermission(): boolean {
-        var claims = this.securityService.getClaim();
-        if(!claims) return false;
-        if(claims.indexOf(this.admin) > -1){
+        if(this.securityService.isInRole(this.admin)){
             return true;
+        }else{
+            return false;
         }
-        return false;
+        // var claims = this.securityService.getClaim();
+        // if(!claims) return false;
+        // if(claims.indexOf(this.admin) > -1){
+        //     return true;
+        // }
+        // return false;
     }
 }

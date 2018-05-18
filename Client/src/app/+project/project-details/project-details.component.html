@@ -56,7 +56,7 @@
             Images
           </a>
         </li>
-        <li class="nav-item m-tabs__item">
+        <li class="nav-item m-tabs__item" *ngIf="(addProject || editProject)">
           <a class="nav-link m-tabs__link show" data-toggle="tab" href="#import-export-tab" role="tab" aria-selected="false">
             <i class="la la-cloud" aria-hidden="true"></i>
             Import & Export
@@ -68,9 +68,9 @@
             Project Info
           </a>
         </li>
-        <li class="nav-item m-tabs__item">
+        <li class="nav-item m-tabs__item" *ngIf="addTag">
           <a class="nav-link m-tabs__link" data-toggle="tab" href="#class-tab" role="tab" aria-selected="true">
-            <i class="la la-tags" aria-hidden="true"></i>
+            <i class="la la-tags" aria-hidden="true" ></i>
             Classes
           </a>
 
@@ -86,7 +86,7 @@
         <div class="tab-pane" id="info-tab" role="tabpanel" *ngIf="editProject">
           <app-project-info></app-project-info>
         </div>
-        <div class="tab-pane" id="import-export-tab" role="tabpanel" *ngIf="addProject">
+        <div class="tab-pane" id="import-export-tab" role="tabpanel" *ngIf="(addProject || editProject)">
           <app-import-project></app-import-project>
           <app-export-project></app-export-project>
 
@@ -97,7 +97,7 @@
         <div class="tab-pane" id="user-tab" role="tabpanel" *ngIf="(editProject || addProject)">
           <app-project-users></app-project-users>
         </div>
-        <div class="tab-pane" id="class-tab" role="classpanel">
+        <div class="tab-pane" id="class-tab" role="classpanel" *ngIf="addTag">
           <app-project-class></app-project-class>
         </div>
       </div>

@@ -358,16 +358,19 @@ namespace ApiServer.Controllers
 
             var currentRole = await GetCurrentRole(currentUserLogin.Id);
 
+            Project project = new Project();
+
             var ids = id.Split('_');
             for (var i = 0; i < ids.Length; i++)
             {
-                var img = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
+                var img = await _context.Images.Include(x=>x.Project).Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
                 if (img == null)
                 {
                     return Ok("error#Image not found");
                 }
                 else
                 {
+                    project = img.Project;
                     try
                     {
                         foreach (var tag in img.Tags)
@@ -378,16 +381,67 @@ namespace ApiServer.Controllers
                         _context.Tags.RemoveRange(img.Tags);
                         _context.Images.Remove(img);
                         await _context.SaveChangesAsync();
+                        await ImageQueues.DeleteImage(project.Id, img.Id);
                         DeleteFile(img.Path);
                     }
                     catch (Exception ex)
                     {
-                        return Content("Cant delete image !");
+                        return Content("Cant delete image !" + ex.Message);
+                    }
+                }
+            }
+            try
+            {
+                await updateProject(project.Id);
+            }catch(Exception ex)
+            {
+                return Content(ex.Message);
+            }
+            
+
+            return Ok();
+        }
+
+        private async Task updateProject(Guid projectId)
+        {
+            var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == projectId);
+
+            if (project == null) return;
+
+            var images = _context.Images.Where(x => x.Project == project);
+            project.TotalImg = images==null? 0 : images.Count();
+            var imgsNotClassed = project.TotalImg;
+            var imgsNotTagged = project.TotalImg;
+            var imgsNotQc = project.TotalImg;
+            var imgsQc = 0;
+            if(images!= null && images.Count() > 0)
+            {
+                foreach (var img in images)
+                {
+                    if (img.TagHasClass > 0)
+                    {
+                        imgsNotClassed -= 1;
+                    }
+                    if (img.TagHasClass != 0 || img.TagNotHasClass != 0)
+                    {
+                        imgsNotTagged -= 1;
                     }
                 }
             }
 
-            return Ok();
+            project.TotalImgNotClassed = imgsNotClassed;
+            project.TotalImgNotTagged = imgsNotTagged;
+            project.TotalImgNotQC = imgsNotQc;
+            project.TotalImgQC = imgsQc;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private void DeleteFile(string path)

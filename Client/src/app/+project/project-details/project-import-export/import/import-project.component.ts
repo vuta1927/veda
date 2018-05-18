@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-
+import { ImportExportService } from '../../../services/import-export.service';
+import { DataService } from '../../data.service';
+import swal from 'sweetalert2';
+import { ConsoleLogger } from '@aspnet/signalr';
+import { Helpers } from '../../../../helpers';
 @Component({
     selector: 'app-import-project',
-    templateUrl : 'import-project.component.html',
+    templateUrl: 'import-project.component.html',
     styleUrls: ['import-project.component.css']
 })
 
@@ -14,24 +18,28 @@ export class ImportProjectComponent implements OnInit {
     allowedExtensions = ['rar', 'zip', 'RAR', 'ZIP', '7z', '7Z'];
     messageHeader: string;
     message: string;
-    
-    constructor(){
+    project: any = {};
+    constructor(
+        private importService: ImportExportService,
+        private dataSerivce: DataService
+    ) {
 
     }
 
-    ngOnInit(){
-
+    ngOnInit() {
+        this.dataSerivce.currentProject.subscribe(p => this.project = p);
+        console.log(this.project);
     }
 
     appendUploadFiles(files) {
         this.message = '';
-        for(var i=0; i < files.length; i++){
+        for (var i = 0; i < files.length; i++) {
             var filename = files[i].name;
             var fileExtension = filename.substr(filename.length - 3);
-            if(this.allowedExtensions.indexOf(fileExtension) == -1){
+            if (this.allowedExtensions.indexOf(fileExtension) == -1) {
                 this.message = 'File extension not allowed!';
                 return;
-            }        
+            }
         }
         this.uploadfiles = files;
     }
@@ -49,7 +57,20 @@ export class ImportProjectComponent implements OnInit {
             let file = this.uploadfiles[this.uploadedFile];
             const formData = new FormData();
             formData.append(file.name, file);
-            
+            Helpers.setLoading(true);
+            this.importService.Import(this.project.id, formData).toPromise().then(Response => {
+                Helpers.setLoading(false);
+                swal({
+                    title: '', text: 'import success', type: 'success'
+                }).then(() => {
+                    window.location.reload();
+                });
+            }).catch(resp => {
+                Helpers.setLoading(false);
+                swal({
+                    title: '', text: resp.error.text, type: 'error'
+                });
+            })
 
         } else {
             this.uploadfiles = [];
@@ -66,6 +87,25 @@ export class ImportProjectComponent implements OnInit {
         const formData = new FormData();
 
         formData.append(file.name, file);
+
+        if (this.uploadfiles.length > 0 && this.uploadedFile <= (this.totalFile - 1)) {
+            let file = this.uploadfiles[this.uploadedFile];
+            const formData = new FormData();
+            formData.append(file.name, file);
+
+            this.importService.Import(this.project.id, formData).toPromise().then(Response => {
+                swal({
+                    title: '', text: 'import success', type: 'success'
+                });
+            }).catch(resp => swal({
+                title: '', text: resp.error.message, type: 'error'
+            }))
+
+        } else {
+            this.uploadfiles = [];
+            this.totalFile = 0;
+            this.uploadedFile = 0;
+        }
     }
 
     removeFile(file) {

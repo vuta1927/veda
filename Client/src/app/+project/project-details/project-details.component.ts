@@ -33,7 +33,9 @@ export class ProjectDetailsComponent implements OnInit {
     viewProject: boolean = false;
     editProject: boolean = false;
     addProject: boolean = false;
-
+    isQc: boolean = false;
+    addTag: boolean = false;
+    
     constructor(
         private modalService: NgbModal, 
         private securityService: SecurityService, 
@@ -47,7 +49,8 @@ export class ProjectDetailsComponent implements OnInit {
         this.viewProject = this.securityService.IsGranted(Constants.viewProject);
         this.editProject = this.securityService.IsGranted(Constants.editProject);
         this.addProject = this.securityService.IsGranted(Constants.addProject);
-        
+        this.addTag = this.securityService.IsGranted(Constants.AddTag);
+        this.isQc = this.securityService.isInRole(Constants.QuantityCheck);
         let currentUserData = this.securityService.getUserRoles();
         if (currentUserData == "Administrator")
             this.isAdmin = true;

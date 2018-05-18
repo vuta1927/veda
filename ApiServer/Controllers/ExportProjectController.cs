@@ -58,18 +58,11 @@ namespace ApiServer.Controllers
                     var t = await _context.Tags.Include(x => x.Class).SingleOrDefaultAsync(x => x == tag);
                     if (exportData.Classes.Contains(t.Class.Name))
                     {
-                        var centerPoint = Utilities.Centroid(
-                            t.Left * image.Width,
-                            t.Top * image.Height,
-                            t.Width * image.Width,
-                            t.height * image.Height
-                            );
-
                         var newTag = new ExportModel.Tag()
                         {
                             ClassId = t.Class.Id,
-                            CenterX = centerPoint.Item1 / image.Width,
-                            CenterY = centerPoint.Item2 / image.Height,
+                            CenterX = (t.Left + t.Width) / 2,
+                            CenterY = (t.Top + t.height) / 2,
                             Width = t.Width,
                             Height = t.height,
                             Image = image

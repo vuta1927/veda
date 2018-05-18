@@ -185,6 +185,29 @@ namespace ApiServer.Core.Queues
             return null;
         }
 
+        public static async Task DeleteImage(Guid projectId, Guid imageId)
+        {
+            if (!_image_Taken.ContainsKey(projectId)) return;
+
+            if(_image_Taken[projectId].Any(x=>x.ImageId == imageId))
+            {
+                try
+                {
+                    await ReleaseImage(projectId, imageId);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                
+            }
+            if(_image_notTaken[projectId].Any(x=>x.ImageId == imageId))
+            {
+                var item = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == imageId);
+                _image_notTaken[projectId].Remove(item);
+            }
+        }
+
         public static async Task<bool> ReleaseImage(Guid projectId, Guid imgId)
         {
             var img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imgId);

@@ -16,9 +16,8 @@ namespace ApiServer.Core.Authorization
             _context = vdsContext;
         }
 
-        public User GetCurrentUser()
+        public User GetCurrentUser(ClaimsIdentity identity)
         {
-            var identity = (ClaimsIdentity)User.Identity;
             IEnumerable<Claim> claims = identity.Claims;
             foreach (var claim in claims)
             {

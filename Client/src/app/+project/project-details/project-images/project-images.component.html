@@ -115,9 +115,12 @@
                     <button class="btn btn-brand btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
                         <span>
                             <i class="la la-play"></i>
-                            <span>
+                            <span *ngIf="!isQc">
                                 Start Trainning
                             </span>
+                            <span *ngIf="isQc">
+                                    Start Quantity Check
+                                </span>
                         </span>
                     </button>
                     <button class="btn btn-secondary btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
@@ -145,15 +148,15 @@
                         <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
                         <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
                         <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
-                        <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
-                        <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
                         <dxi-column dataField="tagHasClass" caption="Tags have calss"></dxi-column>
                         <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
-                        <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Time"></dxi-column>
-                        <dxi-column dataField="tagTime" caption="Tagged Time"></dxi-column>
                         <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" caption="Qc Status"></dxi-column>
+                        <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
                         <dxi-column dataField="userQc" caption="Qc by"></dxi-column>
+                        <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
+                        <dxi-column dataField="tagTime" caption="Tagged Time"></dxi-column>
                         <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
+                        <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Time"></dxi-column>
                         <div *dxTemplate="let data of 'userUsingCell'">
                             <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="data.data.userUsing">
                                 {{data.data.userUsing}}

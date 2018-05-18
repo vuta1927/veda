@@ -14,6 +14,11 @@ export class Constants {
     public static USER_INFO = 'assets/api/user/login-info.json';
     public static ACTIVITIES = 'assets/api/activities/activities.json';
 
+    //Role
+    public static adminRole = 'Administrator';
+    public static ProjectManager = 'ProjectManager';
+    public static Teacher = 'Teacher';
+    public static QuantityCheck = 'QuantityCheck';
 
     //Claim
     public static admin = 'Administrator';

@@ -15,6 +15,10 @@ export const routes: Routes = [
             {
                 path: 'roles',
                 loadChildren: './roles/roles.module#RolesModule'
+            },
+            {
+                path: 'settings',
+                loadChildren: './settings/settings.module#SettingsModule'
             }
         ]
     }

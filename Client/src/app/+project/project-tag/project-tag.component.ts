@@ -494,10 +494,10 @@ export class ProjecTagComponent {
                 name: 'rect-' + tag.index,
                 left: x,
                 top: y,
-                // width: width,
-                // height: height,
-                width: width - x,
-                height: height - y,
+                width: width,
+                height: height,
+                // width: width - x,
+                // height: height - y,
                 stroke: color,
                 originColor: color,
                 strokeWidth: 2,
@@ -754,7 +754,6 @@ export class ProjecTagComponent {
 
             var pointer = mother.canvas.getPointer(evt);
             rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
-
             mother.bindingEvent(rect);
             mother.canvas.renderAll();
 
@@ -783,8 +782,10 @@ export class ProjecTagComponent {
                 0,
                 mother.GetPercent(rect.get("top"), mother.imageHeight),
                 mother.GetPercent(rect.get("left"), mother.imageWidth),
-                mother.GetPercent(rect.get("left") + (rect.get('width')), mother.imageWidth),
-                mother.GetPercent(rect.get("top") + (rect.get('height')), mother.imageHeight)
+                mother.GetPercent(rect.get('width'), mother.imageWidth),
+                mother.GetPercent(rect.get('height'), mother.imageHeight)
+                // mother.GetPercent(rect.get("left") + (rect.get('width')), mother.imageWidth),
+                // mother.GetPercent(rect.get("top") + (rect.get('height')), mother.imageHeight)
             ));
             let label = new fabric.IText(index + '.', {
                 name: 'lbl-' + index,
@@ -943,10 +944,10 @@ export class ProjecTagComponent {
 
         tag.top = this.GetPercent(top, this.imageHeight);
         tag.left = this.GetPercent(left, this.imageWidth);
-        tag.width = this.GetPercent((left + width), this.imageWidth);
-        tag.height = this.GetPercent((top + height), this.imageHeight);
-        // tag.width = this.GetPercent(width, this.imageWidth);
-        // tag.height = this.GetPercent(height, this.imageHeight);
+        // tag.width = this.GetPercent((left + width), this.imageWidth);
+        // tag.height = this.GetPercent((top + height), this.imageHeight);
+        tag.width = this.GetPercent(width, this.imageWidth);
+        tag.height = this.GetPercent(height, this.imageHeight);
 
         console.log(tag);
         if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {
