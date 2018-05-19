@@ -61,6 +61,7 @@ namespace ApiServer.Controllers
                         var newTag = new ExportModel.Tag()
                         {
                             ClassId = t.Class.Id,
+                            Class = t.Class.Name,
                             CenterX = (t.Left + t.Width) / 2,
                             CenterY = (t.Top + t.height) / 2,
                             Width = t.Width,
@@ -159,7 +160,7 @@ namespace ApiServer.Controllers
                         {
                             foreach (var tag in map.Value)
                             {
-                                var data = tag.ClassId + ";" + tag.CenterX + ";" + tag.CenterY + ";" + tag.Width + ";" + tag.Height;
+                                var data = tag.Class + ";" + tag.CenterX + ";" + tag.CenterY + ";" + tag.Width + ";" + tag.Height;
                                 sw.WriteLine(data);
                             }
                         }

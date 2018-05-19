@@ -155,11 +155,14 @@ export class ProjectImagesComponent implements OnInit {
         var mother = this;
         userUsingInfoData.forEach(data => {
             // var obj = mother.rawData.find(x=>x.id == data.imageId);
-            mother.rawData.forEach(dt => {
-                if (dt.id == data.imageId) {
-                    dt.userUsing = data.userName;
-                }
-            });
+            if(mother.rawData){
+                mother.rawData.forEach(dt => {
+                    if (dt.id == data.imageId) {
+                        dt.userUsing = data.userName;
+                    }
+                });
+            }
+            
             // if(obj){
             //     obj.userUsing = data.userName;
             // }
@@ -245,7 +248,7 @@ export class ProjectImagesComponent implements OnInit {
                 this.message = res['error'].text;
                 $('#errorMessage').css("display", "block");
                 swal({
-                    title: '', text: res['error'].text, type: 'error'
+                    title: '', text: res['error']? res['error'].text: res.message, type: 'error'
                 });
             })
         } else {
@@ -286,7 +289,7 @@ export class ProjectImagesComponent implements OnInit {
             this.message = res['error'].text;
             $('#errorMessage').css("display", "block");
             swal({
-                title: '', text: res['error'].text, type: 'error'
+                title: '', text: res['error']? res['error'].text: res.message, type: 'error'
             });
         })
     }

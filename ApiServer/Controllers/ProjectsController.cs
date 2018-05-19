@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Hosting;
 using System.Net.Http.Headers;
 using System.IO.Compression;
 using VDS.Security;
+using ApiServer.Core;
+
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]
@@ -25,37 +27,13 @@ namespace ApiServer.Controllers
     {
         private readonly VdsContext _context;
         private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IUserService _userService;
 
-        public ProjectsController(VdsContext context, IHostingEnvironment hostingEnvironment)
+        public ProjectsController(VdsContext context, IHostingEnvironment hostingEnvironment, IUserService userService)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
-        }
-        public User GetCurrentUser()
-        {
-            var identity = (ClaimsIdentity)User.Identity;
-            IEnumerable<Claim> claims = identity.Claims;
-            foreach (var claim in claims)
-            {
-                if (claim.Type == "id" && !string.IsNullOrEmpty(claim.Value))
-                {
-                    var userId = long.Parse(claim.Value);
-                    return _context.Users.SingleOrDefault(x => x.Id == userId);
-                }
-            }
-
-            return null;
-        }
-
-        public async Task<List<VDS.Security.Role>> GetCurrentRole(long UserId)
-        {
-            var userRoles = _context.UserRoles.Where(x => x.UserId == UserId);
-            var result = new List<VDS.Security.Role>();
-            foreach (var r in userRoles)
-            {
-                result.Add(await _context.Roles.SingleOrDefaultAsync(x => x.Id == r.RoleId));
-            }
-            return result;
+            _userService = userService;
         }
 
         [HttpPost("{id}"), DisableRequestSizeLimit]
@@ -65,8 +43,10 @@ namespace ApiServer.Controllers
             string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip" };
             try
             {
-                var currentUser = GetCurrentUser();
-                var _currentRoles = await GetCurrentRole(currentUser.Id);
+
+                var identity = (ClaimsIdentity)User.Identity;
+                var currentUser = _userService.GetCurrentUser(identity);
+                var _currentRoles = _userService.GetCurrentRole(currentUser.Id);
                 var project = new Project();
                 if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
                 {
@@ -206,9 +186,10 @@ namespace ApiServer.Controllers
         {
             var results = new List<ProjectModel.ProjectForView>();
 
-            var currentUserLogin = GetCurrentUser();
 
-            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
+            var currentRoles = _userService.GetCurrentRole(currentUser.Id);
 
             var projs = new List<Project>();
 
@@ -220,7 +201,7 @@ namespace ApiServer.Controllers
             {
                 projs = _context.ProjectUsers
                 .Include(p => p.User)
-                .Where(x => x.User.Id == currentUserLogin.Id)
+                .Where(x => x.User.Id == currentUser.Id)
                 .Include(a => a.Project)
                 .Select(b => b.Project).Distinct().ToList().
                 Where(x => !x.IsDisabled).Skip(start).Take(stop).ToList();
@@ -274,12 +255,20 @@ namespace ApiServer.Controllers
         }
 
         [HttpGet]
+        [ActionName("GetProjectNames")]
+        public IActionResult GetProjectNames()
+        {
+            var project = (from x in _context.Projects select new ProjectModel.ProjectSetting {Name = x.Name, Id = x.Id}).Distinct();
+            return Ok(project);
+        }
+
+        [HttpGet]
         [ActionName("GetTotal")]
         public async Task<IActionResult> GetTotal()
         {
-            var currentUserLogin = GetCurrentUser();
-
-            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
+            var currentRoles = _userService.GetCurrentRole(currentUser.Id);
 
             var result = 0;
             if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
@@ -293,7 +282,7 @@ namespace ApiServer.Controllers
             {
                 result = _context.ProjectUsers
                 .Include(p => p.User)
-                .Where(x => x.User.Id == currentUserLogin.Id)
+                .Where(x => x.User.Id == currentUser.Id)
                 .Include(a => a.Project)
                 .Select(b => b.Project).Distinct().ToList().
                 Where(x => !x.IsDisabled).Count();
@@ -421,9 +410,10 @@ namespace ApiServer.Controllers
             }
             try
             {
-                var currentUserLogin = GetCurrentUser();
 
-                var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+                var identity = (ClaimsIdentity)User.Identity;
+                var currentUser = _userService.GetCurrentUser(identity);
+                var currentRoles = _userService.GetCurrentRole(currentUser.Id);
 
                 var newProject = new Project
                 {
@@ -439,12 +429,21 @@ namespace ApiServer.Controllers
                 };
                 _context.Projects.Add(newProject);
 
+                var projectSetting = new ProjectSetting()
+                {
+                    QuantityCheckLevel = Constants.QuantityCheckDefaultLevel,
+                    Project = newProject,
+                    TaggTimeValue = Constants.TaggTimeDefaultValue
+                };
+
+                _context.ProjectSettings.Add(projectSetting);
+
                 await _context.SaveChangesAsync();
                 if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
                 {
                     _context.ProjectUsers.Add(new ProjectUser()
                     {
-                        User = GetCurrentUser(),
+                        User = currentUser,
                         Project = newProject,
                         Role = currentRoles.SingleOrDefault(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
                     });
@@ -455,7 +454,7 @@ namespace ApiServer.Controllers
 
                 _context.ProjectUsers.Add(new ProjectUser()
                 {
-                    User = GetCurrentUser(),
+                    User = currentUser,
                     Project = newProject,
                     Role = currentRoles.SingleOrDefault(x => x.ProjectRole)
                 });
@@ -483,9 +482,10 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var currentUserLogin = GetCurrentUser();
 
-            var currentRoles = await GetCurrentRole(currentUserLogin.Id);
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
+            var currentRoles = _userService.GetCurrentRole(currentUser.Id);
 
             var ids = id.Split('_');
             var projectUsers = new List<ProjectUser>();

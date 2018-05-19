@@ -48,6 +48,7 @@ export class DataUpdate{
     constructor(
         public userId: number, 
         public tags:Tag[], 
+        public taggedTime: number,
         public excluseAreas:ExcluseArea[]
     ){}
 }

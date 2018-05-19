@@ -21,6 +21,9 @@ import { MessageTypes } from '../project-details/messageType';
 import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
 import { Keepalive } from '@ng-idle/keepalive';
 import context_menu from 'devextreme/ui/context_menu';
+
+import swal from 'sweetalert2';
+
 @Component({
     selector: 'app-project-tag',
     templateUrl: 'project-tag.component.html',
@@ -65,11 +68,13 @@ export class ProjecTagComponent {
     lastPing?: Date = null;
 
     isAdmin: boolean = false;
+    isQc: boolean = false;
     viewTag: boolean = false; editTag: boolean = false; deleteTag: boolean = false; addTag: boolean = false; viewImg: boolean = false;
     viewQc: boolean = false; addQc: boolean = false; editQc: boolean = false; deleteQc: boolean = false;
     qcComment: string = '';
-    isQc: boolean = false;
+    hadQc: boolean = false;
     tagsFromSrv: any = [];
+    totalTaggedTime = 0;
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -101,7 +106,7 @@ export class ProjecTagComponent {
         this.editQc = this.securityServce.IsGranted(Constants.QcEdit);
         this.viewQc = this.securityServce.IsGranted(Constants.QcView);
         this.deleteQc = this.securityServce.IsGranted(Constants.QcDelete);
-
+        this.isQc = this.securityServce.isInRole(Constants.QuantityCheck);
 
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
@@ -125,7 +130,7 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        this.imgService.relaseImage(this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
+        this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
 
 
     }
@@ -202,11 +207,12 @@ export class ProjecTagComponent {
 
     getTags(image) {
         this.imageId = image.id;
-        this.isQc = image.quantityCheck ? true : false;
+        this.hadQc = image.quantityCheck ? true : false;
         this.qcValue = image.qcStatus;
         if (image.quantityCheck)
             this.qcComment = image.quantityCheck.comment ? image.quantityCheck.comment : '';
         this.currentImage = image;
+        this.totalTaggedTime = image.tagTime;
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
         this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
@@ -215,7 +221,6 @@ export class ProjecTagComponent {
                 this.tags = Response.result;
                 this.tagsFromSrv = Response.result;
 
-                this.timerSerive.startTimer(this.currentImage.tagTime);
                 this.initCanvas();
             }
         });
@@ -252,17 +257,20 @@ export class ProjecTagComponent {
     }
 
     switchTagMode() {
-        let origin = 'btn btn-outline-primary btn-sm m-btn m-btn--icon m-btn--wide';
         if (this.tagMode) {
-            this.tagBtnClass = origin;
             this.tagMode = false;
+            $(':focus').blur();
+            this.updateTaggedTime().toPromise().catch(Response=>{
+                swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+            });
         }
         else {
-            this.tagBtnClass += ' active'
             this.tagMode = true;
             this.excluseMode = false;
+            this.timerSerive.startTimer();
         }
     }
+
     qcValueSelectChange(e) {
         var value = e.target.value;
         this.qcValue = value;
@@ -336,15 +344,25 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        this.GetNextImage();
+        
+        this.updateTaggedTime().toPromise().then(Response=>{
+            this.GetNextImage();
+        }).catch(Response=>{
+            swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+        });
 
     }
 
     saveChange() {
+        if(this.timerSerive.timerStart){
+            this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
+            this.timerSerive.stop();
+        }
+        
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
-        if (this.addTag && this.editTag && !this.isQc) {
+        if (this.addTag && this.editTag && !this.hadQc) {
             // this.tagsForAddOrUpdate.forEach(t => {
             //     t.top = this.GetPercent(t.top, this.imageHeight);
             //     t.left = this.GetPercent(t.left, this.imageWidth);
@@ -352,7 +370,7 @@ export class ProjecTagComponent {
             //     t.height = this.GetPercent(t.height, this.imageHeight);
             // });
 
-            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.ExcluseAreas);
+            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.totalTaggedTime, this.ExcluseAreas);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
                 if (Response) {
@@ -410,11 +428,22 @@ export class ProjecTagComponent {
     ExcluseAreaClick() {
         if (this.excluseMode) {
             this.excluseMode = false;
+            $(':focus').blur();
+            this.updateTaggedTime().toPromise().catch(Response=>{
+                swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+            });
         }
         else {
             this.excluseMode = true;
             this.tagMode = false;
+            this.timerSerive.startTimer();
         }
+    }
+
+    updateTaggedTime() {
+        this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
+        this.timerSerive.stop();
+        return this.imgService.updateTaggedTime(this.currentImage.id, this.totalTaggedTime);
     }
 
     initCanvas() {
@@ -507,7 +536,7 @@ export class ProjecTagComponent {
                 hasControls: mother.addTag,
                 selectable: true
             });
-            if (mother.isQc) {
+            if (mother.hadQc) {
                 rect.hasRotatingPoint = false;
                 rect.hasControls = false;
             }
@@ -601,7 +630,12 @@ export class ProjecTagComponent {
         let rect: any = {};
         let mother = this;
         let isDragging: boolean = false;
+        let lastPosX;
+        let lastPosY;
         $('body').on('contextmenu', 'canvas', function (options: any) {
+            console.log(options);
+            lastPosX = options.clientX;
+            lastPosY = options.clientY;
             //Disabe contextmenu on right mouse, implement right mouse event
             // let target: any = mother.canvas.findTarget(options, false);
             // if (target) {
@@ -654,10 +688,10 @@ export class ProjecTagComponent {
             }
             // --- set up panning func ---
             var evt = event.e;
-            if (evt.altKey === true) {
+            if (evt.altKey === true || mother.isQc && !mother.addTag) {
                 isDragging = true;
-                this.lastPosX = evt.clientX;
-                this.lastPosY = evt.clientY;
+                lastPosX = evt.clientX;
+                lastPosY = evt.clientY;
                 return;
             }
             //--- end pan func ---
@@ -705,7 +739,7 @@ export class ProjecTagComponent {
 
 
             //--- set up tag func ---
-            if (!mother.tagMode || isDragging || !mother.addTag || !mother.editTag || this.isQc) return;
+            if (!mother.tagMode || isDragging || !mother.addTag || !mother.editTag || this.hadQc) return;
             isDown = true;
             var pointer = this.getPointer(evt);
             startPosition.x = pointer.x;
@@ -744,10 +778,10 @@ export class ProjecTagComponent {
             }
             if (isDragging) {
                 var evt = event.e;
-                this.viewportTransform[4] += evt.clientX - this.lastPosX;
-                this.viewportTransform[5] += evt.clientY - this.lastPosY;
-                this.lastPosX = evt.clientX;
-                this.lastPosY = evt.clientY;
+                this.viewportTransform[4] += evt.clientX - lastPosX;
+                this.viewportTransform[5] += evt.clientY - lastPosY;
+                lastPosX = evt.clientX;
+                lastPosY = evt.clientY;
                 this.requestRenderAll();
                 return;
             } else if (!isDown || !mother.tagMode) return;
@@ -766,7 +800,7 @@ export class ProjecTagComponent {
                 return;
             } else if (!mother.tagMode) return;
 
-            if (!mother.addTag || !mother.editTag || this.isQc) return;
+            if (!mother.addTag || !mother.editTag || this.hadQc) return;
             mother.bindingEvent(rect);
             mother.canvas.remove(rect);
             mother.canvas.add(rect);
@@ -811,24 +845,24 @@ export class ProjecTagComponent {
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
             // $("#deleteBtn").remove();
-            if (!mother.addTag || !mother.editTag || mother.isQc) return;
+            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.isQc) return;
+            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
             // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.isQc) return;
+            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.isQc) return;
+            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
-            if (!mother.tagMode || !mother.addTag || !mother.editTag || mother.isQc) return;
+            if (!mother.tagMode || !mother.addTag || !mother.editTag || mother.hadQc) return;
             mother.tagMode = true;
         });
 

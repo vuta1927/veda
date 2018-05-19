@@ -51,8 +51,8 @@ export class ImageService{
         return this.http.get<IAppCoreResponse<Iimage>>(url);
     }
 
-    public relaseImage(projId:string, imgId:string):Observable<IAppCoreResponse<any>>{
-        let url = this.configurationService.serverSettings.apiUrl +'/api/images/ReleaseImage/'+ projId +'/'+imgId;
+    public relaseImage(userId:number,projId:string, imgId:string):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl +'/api/images/ReleaseImage/'+ userId +'/'+ projId +'/'+imgId;
         return this.http.delete<IAppCoreResponse<any>>(url);
     }
 
@@ -60,6 +60,12 @@ export class ImageService{
         let url = this.configurationService.serverSettings.apiUrl + '/api/images/update';
 
         return this.http.put<IAppCoreResponse<Iimage[]>>(url,image);
+    }
+
+    public updateTaggedTime(imageId:string, taggedTime: number):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/images/UpdateTaggedTime/' + imageId;
+
+        return this.http.put<IAppCoreResponse<any>>(url,taggedTime);
     }
 
     public AddImage(image):Observable<IAppCoreResponse<Iimage[]>>{

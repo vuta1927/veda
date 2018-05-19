@@ -22,6 +22,7 @@ namespace ApiServer.Model
         public DbSet<PermissionRole> PermissionRoles { get; set; }
         public new DbSet<Permission> Permissions { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectSetting> ProjectSettings { get; set; }
         public DbSet<ProjectUser> ProjectUsers { get; set; }
         public DbSet<Class> Classes { get; set; }
         public DbSet<Image> Images { get; set; }

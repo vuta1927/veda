@@ -86,6 +86,8 @@ namespace ApiServer.Core.Queues
                 {
                     var img = _image_notTaken[projectId].FirstOrDefault();
 
+                    img.TimeStart = DateTime.Now;
+
                     image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
                     _image_Taken[projectId].Add(img);
@@ -113,8 +115,12 @@ namespace ApiServer.Core.Queues
                         _image_Taken[projectId].Remove(imgToRemoveInDict);
 
                         imageRelease = new ImageForQueue() { UserId = imgToRemoveInDict.UserId, ImageId = imgToRemoveInDict.ImageId };
+
+                        //await UpdateTaggedTime(imgToRemoveInDict.TimeStart, imgToRemoveInDict.ImageId);
                     }
                     var img = _image_notTaken[projectId].FirstOrDefault();
+
+                    //img.TimeStart = DateTime.Now;
 
                     image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
@@ -142,6 +148,26 @@ namespace ApiServer.Core.Queues
             return null;
         }
 
+        private static async Task UpdateTaggedTime(DateTime timeStart, Guid imageId)
+        {
+            var timeStop = DateTime.Now;
+            var taggedTime = (timeStop - timeStart).TotalMinutes;
+            try
+            {
+
+                if (taggedTime > 0)
+                {
+                    var image = _context.Images.SingleOrDefault(x => x.Id == imageId);
+                    image.TagTime += taggedTime;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
+        }
+
         public static async Task<Image> GetImageById(Guid projectId, Guid ImgId, long usrId)
         {
             long userId;
@@ -165,6 +191,7 @@ namespace ApiServer.Core.Queues
                     image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == ImgId);
 
                     img.LastPing = DateTime.Now;
+                    //img.TimeStart = DateTime.Now;
 
                     _image_Taken[projectId].Add(img);
 
@@ -214,6 +241,8 @@ namespace ApiServer.Core.Queues
             if (img != null && _image_Taken[projectId].Contains(img))
             {
                 var a = new UserImageForHub() { UserName = null, ImageId = imgId };
+
+                //await UpdateTaggedTime(img.TimeStart, img.ImageId);
 
                 _image_Taken[projectId].Remove(img);
                 img.LastPing = new DateTime();

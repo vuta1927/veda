@@ -57,49 +57,85 @@
                 </div>
             </div>
         </div>
-        <div class="m-portlet__body">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group m-form__group row">
-                        <label for="qcLevelBox" class="col-2 col-form-label">
-                            <strong>Quantity Check Level:</strong>
-                        </label>
-                        <div class="col-2">
-                            <select class="form-control m-input" id="qcLevelBox">
-                                <option>
-                                    1
-                                </option>
-                                <option>
-                                    2
-                                </option>
-                                <option>
-                                    3
-                                </option>
-                                <option>
-                                    4
-                                </option>
-                                <option>
-                                    5
-                                </option>
-                            </select>
+        <form name="classInfo" role="form" [formGroup]="form" class="m-form m-form--state m-form--fit m-form--label-align-right"
+            novalidate>
+            <div class="m-portlet__body">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-control-feedback" *ngxErrorTemplate="let item; maxError: 1">
+                            {{ item.message }}
                         </div>
-                    </div>
-                    <div class="form-group m-form__group row">
-                        <label for="taggedTime" class="col-2 col-form-label">
-                            <strong>Tagg time:</strong>
-                        </label>
-                        <div class="col-1">
-                            <input class="form-control m-input" type="number" value="30" id="taggedTime">
+
+
+                        <div class="form-group m-form__group row">
+                            <label for="project" class="col-2 col-form-label">
+                                <strong>Project:</strong>
+                            </label>
+                            <div class="col-8">
+                                <select class="form-control m-input" id="project" (change)="projectChanged($event.target)">
+                                    <option *ngFor="let project of projects" [value]="project.id">
+                                        {{project.name}}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-2 col-form-label">
-                            <label>
+                        <div class="form-group m-form__group row" ngxErrorsContent [class.has-danger]="quantityCheckLevelErrors.invalid">
+                            <label for="quantityCheckLevel" class="col-2 col-form-label">
+                                <strong>Quantity Check Level:</strong>
+                            </label>
+                            <div class="col-2">
+                                <select class="form-control m-input" id="quantityCheckLevel" formControlName="quantityCheckLevel" [(ngModel)]="projectSetting.quantityCheckLevel" required>
+                                    <option value="1">
+                                        1
+                                    </option>
+                                    <option value="2">
+                                        2
+                                    </option>
+                                    <option value="3">
+                                        3
+                                    </option>
+                                    <option value="4">
+                                        4
+                                    </option>
+                                    <option value="5">
+                                        5
+                                    </option>
+                                </select>
+                                <div ngxErrors="quantityCheckLevel" #quantityCheckLevelErrors></div>
+                            </div>
+                            <label class="col-form-label">
+                                Maximum level can quantity check
+                            </label>
+                        </div>
+                        <div class="form-group m-form__group row" ngxErrorsContent [class.has-danger]="taggTimeValueErrors.invalid">
+                            <label for="taggTimeValue" class="col-2 col-form-label">
+                                <strong>Tagg time:</strong>
+                            </label>
+                            <div class="col-2">
+                                <input class="form-control m-input" type="number" value="30" id="taggTimeValue" formControlName="taggTimeValue" [(ngModel)]="projectSetting.taggTimeValue"
+                                    required>
+
+                                <div ngxErrors="taggTimeValue" #taggTimeValueErrors></div>
+                            </div>
+                            <label class="col-form-label">
                                 minutes
                             </label>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
-        </div>
+            <div class="m-portlet__foot m-portlet__foot--fit">
+                <div class="m-form__actions">
+                    <button class="btn btn-success m-btn--air m-btn--wide m-btn--icon" [disabled]="btnSaveDisable" (click)="save()">
+                        <i class="la la-save"></i>
+                        Save
+                    </button>
+                    <button type="reset" class="btn btn-secondary" (click)="cancel()">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>

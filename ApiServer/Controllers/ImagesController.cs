@@ -297,37 +297,30 @@ namespace ApiServer.Controllers
         }
         // PUT: api/Images/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] Image image)
+        [ActionName("UpdateTaggedTime")]
+        public async Task<IActionResult> UpdateTaggedTime([FromRoute] Guid id, [FromBody] double taggedTime)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != image.Id)
-            {
-                return BadRequest();
-            }
+            var image = _context.Images.SingleOrDefault(x => x.Id == id);
 
-            _context.Entry(image).State = EntityState.Modified;
+            if (image == null) return Content("Image not found!");
+
+
+            image.TagTime = taggedTime;
 
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                if (!ImageExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return Content(ex.Message);
             }
-
-            return NoContent();
         }
 
         // POST: api/Images

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subscription } from 'rxjs/Rx';
+import { tick } from '@angular/core/testing';
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Injectable()
 
@@ -13,13 +15,12 @@ export class TimeService{
 
     sub: Subscription;
 
-    public startTimer(ticks) {
+    public startTimer() {
         if(!this.timerStart){
             this.timerStart = true;
         }else{
             return;
         }
-        this._ticks = ticks;
         let timer = Observable.timer(1, 1000);
         this.sub = timer.subscribe(
             t => {
@@ -27,10 +28,16 @@ export class TimeService{
                 this.secondsDisplay = this.getSeconds(this._ticks);
                 this.minutesDisplay = this.getMinutes(this._ticks);
                 this.hoursDisplay = this.getHours(this._ticks);
+                
+                // console.log(this._ticks);
             }
         );
     }
 
+    public stop(){
+        this.sub.unsubscribe();
+        this.timerStart = false;
+    }
     public getTotalTime(){
         return this._ticks;
     }

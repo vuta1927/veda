@@ -14,9 +14,10 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    partial class VdsContextModelSnapshot : ModelSnapshot
+    [Migration("20180519062614_upProjectSettings")]
+    partial class upProjectSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -38,5 +38,11 @@ namespace ApiServer.Model.views
             public string Note { get; set; }
 
         }
+
+        public class ProjectSetting
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
     }
 }

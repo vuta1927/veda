@@ -212,7 +212,8 @@ namespace ApiServer.Controllers
 
         private async Task AddDataToContext(int tagIndex, string[] data, string imagePath, Model.Image image, ICollection<Tag> tags)
         {
-            var classId = data[0].ToUpper().Equals("NULL")? 0: int.Parse(data[0]);
+            //var classId = data[0].ToUpper().Equals("NULL")? 0: int.Parse(data[0]);
+            var className = data[0];
             var centerX = double.Parse(data[1]);
             var centerY = double.Parse(data[2]);
             var width = double.Parse(data[3]);
@@ -234,9 +235,9 @@ namespace ApiServer.Controllers
                     TaggedDate = DateTime.Now
                 };
 
-                if (classId != 0)
+                if (!string.IsNullOrEmpty(className))
                 {
-                    var klass = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classId);
+                    var klass = await _context.Classes.SingleOrDefaultAsync(x => x.Name.ToUpper().Equals(className));
                     newTag.Image.TagHasClass += 1;
                     newTag.Class = klass ?? throw new ArgumentNullException("Class not found!");
                     newTag.ClassId = klass.Id;

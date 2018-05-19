@@ -22,5 +22,6 @@ namespace ApiServer.Model
         public string Description { get; set; }
         public string Note { get; set; }
         public ICollection<ProjectUser> Users { get; set; } = new List<ProjectUser>();
+        public virtual ProjectSetting ProjectSetting { get; set; }
     }
 }

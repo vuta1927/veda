@@ -27,6 +27,7 @@ namespace ApiServer.Model
         public class Tag
         {
             public int ClassId { get; set; }
+            public string Class { get; set; }
             public double CenterX { get; set; }
             public double CenterY { get; set; }
             public double Width { get; set; }

@@ -154,22 +154,19 @@
                         <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
                         <dxi-column dataField="userQc" caption="Qc by"></dxi-column>
                         <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
-                        <dxi-column dataField="tagTime" caption="Tagged Time"></dxi-column>
+                        <dxi-column dataField="tagTime" caption="Tagged Time" cellTemplate="tagTimeCell"></dxi-column>
                         <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
                         <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Time"></dxi-column>
+                        <div *dxTemplate="let data of 'tagTimeCell'">
+                            {{data.data.tagTime | number: '1.1-1' }} minutes
+                        </div>
                         <div *dxTemplate="let data of 'userUsingCell'">
                             <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="data.data.userUsing">
                                 {{data.data.userUsing}}
                             </span>
                         </div>
                         <div *dxTemplate="let data of 'qcStatusCell'">
-                            <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
-                                <input type="checkbox" disabled>
-                                <span *ngIf="data.data.qcStatus else ignoredTemplate">::after</span>
-                                <ng-template #ignoredTemplate>
-                                    <span></span>
-                                </ng-template>
-                            </label>
+                            {{data.data.qcStatus}}
                         </div>
                         <div *dxTemplate="let data of 'ignoredCell'">
                             <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
