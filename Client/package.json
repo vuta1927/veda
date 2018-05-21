@@ -52,6 +52,7 @@
     "@angular/cli": "^1.7.2",
     "@angular/compiler-cli": "^5.2.7",
     "@angular/language-service": "^5.2.7",
+    "@types/chartjs": "0.0.31",
     "@types/jasmine": "~2.8.6",
     "@types/jasminewd2": "~2.0.2",
     "@types/lodash": "^4.14.105",

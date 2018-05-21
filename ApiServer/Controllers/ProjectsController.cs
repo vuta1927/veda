@@ -486,31 +486,38 @@ namespace ApiServer.Controllers
                 await _context.SaveChangesAsync();
                 if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
                 {
-                    _context.ProjectUsers.Add(new ProjectUser()
+                    var newProjectUser = new ProjectUser()
                     {
-                        User = currentUser,
+                        //User = currentUser,
+                        UserId = currentUser.Id,
                         Project = newProject,
-                        Role = currentRoles.SingleOrDefault(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper()))
-                    });
+                        RoleId = currentRoles.SingleOrDefault(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())).Id
+                    };
+                    _context.ProjectUsers.Add(newProjectUser);
                     await _context.SaveChangesAsync();
 
                     return CreatedAtAction("GetProject", new { id = newProject.Id }, newProject);
                 }
 
-                _context.ProjectUsers.Add(new ProjectUser()
+                else
                 {
-                    User = currentUser,
-                    Project = newProject,
-                    Role = currentRoles.SingleOrDefault(x => x.ProjectRole)
-                });
+                    var newProjectUser = new ProjectUser()
+                    {
+                        //User = currentUser,
+                        UserId = currentUser.Id,
+                        Project = newProject,
+                        RoleId = currentRoles.SingleOrDefault(x => x.ProjectRole).Id
+                    };
+                    _context.ProjectUsers.Add(newProjectUser);
+                }
 
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetProject", new { id = newProject.Id }, newProject);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return Content(ex.Message);
             }
 
 

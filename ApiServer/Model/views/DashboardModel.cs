@@ -18,6 +18,8 @@ namespace ApiServer.Model.views
             public int ImagesTagged { get; set; }
             public int ImagesHadQc { get; set; }
             public string TotalTaggedTime { get; set; }
+            public int TotalTags { get; set; }
+            public int TotalTagsHaveClass { get; set; }
         }
 
         public class Project

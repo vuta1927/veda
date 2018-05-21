@@ -10,6 +10,7 @@ import { ProjectForAdd } from '../shared/models/project.model';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../shared/services/security.service';
 import { Constants } from '../constants';
+import swal from 'sweetalert2';
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',

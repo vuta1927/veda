@@ -1,8 +1,6 @@
 export class Data{
-    datasets: Datasets[];
-    labels: string[];
-}
-
-export class Datasets{
-    data: number[] = [];
+    imageTaggedPercent: number = 0;
+    imageNotTaggedPercent: number = 0;
+    tagsHaveClass: number = 0;
+    tagsNotHaveClass: number =0;
 }

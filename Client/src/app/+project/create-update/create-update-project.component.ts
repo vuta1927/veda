@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 import { SecurityService } from '../../shared/services/security.service';
 import { ProjectService } from '../project.service';
 import { Helpers } from '../../helpers';
+import swal from 'sweetalert2';
 @Component({
     selector: 'create-update-project',
     templateUrl: './create-update-project.component.html',
@@ -98,6 +99,9 @@ export class CreateUpdateProjectComponent implements OnInit {
                         this.message = "Cant Update Project!";
                         $('#errorMessage').css("display", "block");
                     }
+                }).catch(Response=>{
+                    Helpers.setLoading(false);
+                    swal({text: Response.error? Response.error.text:Response.message, type:'error'});
                 });
         } else {
             let project = <ProjectForAdd>this.form.value;
@@ -111,6 +115,9 @@ export class CreateUpdateProjectComponent implements OnInit {
                     this.message = "Can't create Project!";
                     $('#errorMessage').css("display", "block");
                 }
+            }).catch(Response=>{
+                Helpers.setLoading(false);
+                swal({text: Response.error? Response.error.text:Response.message, type:'error'});
             });
         }
 
