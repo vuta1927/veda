@@ -119,8 +119,8 @@
                                 Start Trainning
                             </span>
                             <span *ngIf="isQc">
-                                    Start Quantity Check
-                                </span>
+                                Start Quantity Check
+                            </span>
                         </span>
                     </button>
                     <button class="btn btn-secondary btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
@@ -150,13 +150,13 @@
                         <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
                         <dxi-column dataField="tagHasClass" caption="Tags have calss"></dxi-column>
                         <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
-                        <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" caption="Qc Status"></dxi-column>
+                        <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" [width]="130" caption="Qc Status"></dxi-column>
                         <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
                         <dxi-column dataField="userQc" caption="Qc by"></dxi-column>
                         <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
                         <dxi-column dataField="tagTime" caption="Tagged Time" cellTemplate="tagTimeCell"></dxi-column>
                         <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
-                        <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Time"></dxi-column>
+                        <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Date"></dxi-column>
                         <div *dxTemplate="let data of 'tagTimeCell'">
                             {{data.data.tagTime | number: '1.1-1' }} minutes
                         </div>
@@ -166,7 +166,16 @@
                             </span>
                         </div>
                         <div *dxTemplate="let data of 'qcStatusCell'">
-                            {{data.data.qcStatus}}
+                            <div *ngFor="let status of data.data.qcStatus">
+                                <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;"
+                                    *ngIf="status.value">
+                                    {{status.level}}: passed
+                                </span>
+                                <span class="m-badge m-badge--danger m-badge--wide" style="cursor: text;"
+                                    *ngIf="!status.value">
+                                    {{status.level}}: unpassed
+                                </span>
+                            </div>
                         </div>
                         <div *dxTemplate="let data of 'ignoredCell'">
                             <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">

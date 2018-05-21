@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChildren, ViewEncapsulation, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChildren, ViewEncapsulation, ViewContainerRef, Renderer2 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import CustomStore from 'devextreme/data/custom_store';
@@ -21,7 +21,9 @@ import { MessageTypes } from '../project-details/messageType';
 import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
 import { Keepalive } from '@ng-idle/keepalive';
 import context_menu from 'devextreme/ui/context_menu';
-
+import { ProjectSettingService } from '../../+administrator/settings/settings.service';
+import { ProjectSetting } from '../../shared/models/project-setting.model';
+import { QuantityCheckForView } from '../../shared/models/quantityCheck.model';
 import swal from 'sweetalert2';
 
 @Component({
@@ -62,8 +64,8 @@ export class ProjecTagComponent {
     dataToUpdate: DataUpdate;
     currentUserId: number;
     messageTypes: MessageTypes = new MessageTypes();
-    qcValues: any = [{ name: 'Passed', value: true }, { name: 'Falsed', value: false }];
-    qcValue: boolean = false;
+    qcValues: any = [{ name: 'Passed', value: true }, { name: 'Unpassed', value: false }];
+    qcValue: any;
     timedOut = false;
     lastPing?: Date = null;
 
@@ -75,6 +77,10 @@ export class ProjecTagComponent {
     hadQc: boolean = false;
     tagsFromSrv: any = [];
     totalTaggedTime = 0;
+    quantityCheckForViews: QuantityCheckForView[] = [];
+    qcDone: boolean = false;
+
+    projectSetting: ProjectSetting;
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -89,7 +95,9 @@ export class ProjecTagComponent {
         private idle: Idle,
         private keepalive: Keepalive,
         private securityServce: SecurityService,
-        private qcService: QcService
+        private qcService: QcService,
+        private settingService: ProjectSettingService,
+        private renderer: Renderer2
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.setUpIdleTimeout(600, 5); //value in second
@@ -111,17 +119,42 @@ export class ProjecTagComponent {
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
+        Helpers.setLoading(true);
         this.route.queryParams.subscribe(params => {
             this.projectId = params.project;
             if (params.id) {
                 this.imageId = params.id;
-                this.getImage(true);
+                mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
+                    mother.projectSetting = response.result;
+                    this.getImage(true);
+                }).catch(response => {
+                    swal({
+                        title: '', text: response.error ? response.error.message : response.message, type: 'error',
+                        animation: false
+                    }).then(() => {
+                        Helpers.setLoading(false);
+                        mother.router.navigate(['project-details', { id: mother.projectId }]);
+                    })
+                })
             } else {
                 this.imageId = '0';
-                this.getImage();
+                mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
+                    mother.projectSetting = response.result;
+                    this.getImage();
+                }).catch(response => {
+                    swal({
+                        title: '', text: response.error ? response.error.message : response.message, type: 'error',
+                        animation: false
+                    }).then(() => {
+                        Helpers.setLoading(false);
+                        mother.router.navigate(['project-details', { id: mother.projectId }]);
+                    })
+                });
             }
         });
     }
+
+
 
     ngOnDestroy(): void {
         //Called once, before the instance is destroyed.
@@ -208,13 +241,11 @@ export class ProjecTagComponent {
     getTags(image) {
         this.imageId = image.id;
         this.hadQc = image.quantityCheck ? true : false;
-        this.qcValue = image.qcStatus;
-        if (image.quantityCheck)
-            this.qcComment = image.quantityCheck.comment ? image.quantityCheck.comment : '';
         this.currentImage = image;
         this.totalTaggedTime = image.tagTime;
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
+        this.getQc(image);
         this.tagSerivce.getTags(this.imageId).toPromise().then(Response => {
             if (Response && Response.result) {
                 Helpers.setLoading(false);
@@ -224,6 +255,28 @@ export class ProjecTagComponent {
                 this.initCanvas();
             }
         });
+    }
+
+    getQc(image) {
+        console.log(image);
+        for (var i = 1; i <= this.projectSetting.quantityCheckLevel; i++) {
+            // const level = 'value'+i;
+            // const commentLevel = 'commentLevel' + i;
+            // var tes = image.quantityCheck[level];
+            if (image.quantityCheck && image.quantityCheck['value' + i] != null) {
+                let newQc = new QuantityCheckForView();
+                newQc.level = i;
+                newQc.value = image.quantityCheck['value' + i];
+                newQc.comment = image.quantityCheck['commentLevel' + i];
+                newQc.href = '#qcLevel-' + i;
+                newQc.collapseId = 'qcLevel-' + i;
+                this.quantityCheckForViews.push(newQc);
+
+                if (i == this.projectSetting.quantityCheckLevel) {
+                    this.qcDone = true;
+                }
+            }
+        }
     }
 
     GetNextImage() {
@@ -254,14 +307,21 @@ export class ProjecTagComponent {
         this.ExcluseAreas = [];
         this.excluseArea = new ExcluseArea();
         this.dataToUpdate = null;
+        this.quantityCheckForViews = [];
+        this.qcComment = null;
+        this.hadQc = false;
+        this.qcDone = false;
     }
 
     switchTagMode() {
         if (this.tagMode) {
             this.tagMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response=>{
-                swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+            this.updateTaggedTime().toPromise().catch(Response => {
+                swal({
+                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                    animation: false
+                });
             });
         }
         else {
@@ -344,21 +404,24 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        
-        this.updateTaggedTime().toPromise().then(Response=>{
+
+        this.updateTaggedTime().toPromise().then(Response => {
             this.GetNextImage();
-        }).catch(Response=>{
-            swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+        }).catch(Response => {
+            swal({
+                title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                animation: false
+            });
         });
 
     }
 
     saveChange() {
-        if(this.timerSerive.timerStart){
+        if (this.timerSerive.timerStart) {
             this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
             this.timerSerive.stop();
         }
-        
+
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
@@ -382,14 +445,41 @@ export class ProjecTagComponent {
                 mother.showError(errorResp.error.text);
                 mother.btnSaveEnabled = true;
             });
-        } else if (this.addQc || this.editQc) {
-            let data = { userId: this.currentUserId, imageId: this.imageId, qcValue: this.qcValue, qcComment: this.qcComment };
-            this.qcService.saveQc(data).toPromise().then(Response => {
-                if (Response) {
+        }
+
+
+    }
+
+    saveQcStage() {
+        const mother = this;
+        Helpers.setLoading(true);
+        if (this.addQc || this.editQc) {
+            if (this.qcValue == 'false' && !this.qcComment) {
+                swal({
+                    title: 'Empty Comment', text: 'Can not set quantity check to Unpassed without comment, please enter comment!', type: 'error',
+                    animation: false
+                }).then(() => {
                     Helpers.setLoading(false);
-                    mother.GetNextImage();
-                }
-            }).catch(err => { console.log(err.error.text) });
+                    document.getElementById('qcComment').focus();
+                });
+            } else {
+                let data = { userId: this.currentUserId, imageId: this.imageId, qcValue: this.qcValue, qcComment: this.qcComment };
+                this.qcService.saveQc(data).toPromise().then(Response => {
+                    if (Response) {
+                        Helpers.setLoading(false);
+                        mother.GetNextImage();
+                    }
+                }).catch(err => {
+                    swal({
+                        title: '', text: err.error ? err.error.text : err.message, type: 'error',
+                        animation: false
+                    }).then(() => {
+                        mother.btnSaveEnabled = true;
+                        Helpers.setLoading(false);
+                    })
+                });
+            }
+
         }
     }
 
@@ -429,8 +519,11 @@ export class ProjecTagComponent {
         if (this.excluseMode) {
             this.excluseMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response=>{
-                swal({title: '', text:Response.error? Response.error.text: Response.message, type:'error'});
+            this.updateTaggedTime().toPromise().catch(Response => {
+                swal({
+                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                    animation: false
+                });
             });
         }
         else {
@@ -442,7 +535,10 @@ export class ProjecTagComponent {
 
     updateTaggedTime() {
         this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
-        this.timerSerive.stop();
+        if (this.timerSerive.timerStart) {
+            this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
+            this.timerSerive.stop();
+        }
         return this.imgService.updateTaggedTime(this.currentImage.id, this.totalTaggedTime);
     }
 

@@ -14,5 +14,11 @@ namespace ApiServer.Model.views
             public bool QcValue { get; set; }
             public string QcComment { get; set; }
         }
+
+        public class Qc
+        {
+            public string Level { get; set; }
+            public bool value { get; set; }
+        }
     }
 }

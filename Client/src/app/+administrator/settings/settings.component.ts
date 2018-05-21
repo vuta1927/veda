@@ -29,6 +29,7 @@ export class SettingsComponent implements OnInit{
     ){
         this.createForm();
 
+        Helpers.setLoading(true);
         this.settingService.getProjects().toPromise().then(Response=>{
             if(Response.result){
                 this.projects = Response.result;
@@ -40,7 +41,8 @@ export class SettingsComponent implements OnInit{
                 title:'', 
                 text:Response.error? Response.error.text:Response.message,
                 type:'error'
-            });
+            }).then(()=>
+            Helpers.setLoading(false));
         })
     }
 

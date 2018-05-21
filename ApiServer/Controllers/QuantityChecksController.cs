@@ -48,49 +48,75 @@ namespace ApiServer.Controllers
             var project = img.Project;
 
             var qc = await _context.QuantityChecks.FirstOrDefaultAsync(x => x.Image == img);
-            var qcStatusText = "";
+            var qcStatusText = img.QcStatus;
 
             if(qc != null)
             {
                 if(qc.Value1 == null)
                 {
                     qc.Value1 = data.QcValue;
-                    qcStatusText += "level 1: " + data.QcValue;
+                    qc.CommentLevel1 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment;
+                    if (data.QcValue)
+                        qcStatusText += "level 1: passed;";
+                    else
+                        qcStatusText += "level 1: unpassed;";
                 }
                 else if(qc.Value2 == null)
                 {
                     qc.Value2 = data.QcValue;
-                    qcStatusText += "level 2: " + data.QcValue;
+                    qc.CommentLevel2 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment;
+                    if (data.QcValue)
+                        qcStatusText += "level 2: passed;";
+                    else
+                        qcStatusText += "level 2: unpassed;";
                 }
                 else if(qc.Value3 == null)
                 {
                     qc.Value3 = data.QcValue;
-                    qcStatusText += "level 3: " + data.QcValue;
+                    qc.CommentLevel3 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment;
+                    if (data.QcValue)
+                        qcStatusText += "level 3: passed;";
+                    else
+                        qcStatusText += "level 3: unpassed;";
                 }
                 else if(qc.Value4 == data.QcValue)
                 {
                     qc.Value4 = data.QcValue;
-                    qcStatusText += "level 4: " + data.QcValue;
+                    qc.CommentLevel4 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment;
+                    if (data.QcValue)
+                        qcStatusText += "level 4: passed;";
+                    else
+                        qcStatusText += "level 4: unpassed;";
                 }
                 else if(qc.Value5 == data.QcValue)
                 {
                     qc.Value5 = data.QcValue;
-                    qcStatusText += "level 5: " + data.QcValue;
+                    qc.CommentLevel5 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment;
+                    if (data.QcValue)
+                        qcStatusText += "level 5: passed;";
+                    else
+                        qcStatusText += "level 5: unpassed;";
                 }
                 qc.UserQc = user;
+
+
             }
             else
             {
                 qc = new QuantityCheck()
                 {
-                    Comment = string.IsNullOrEmpty(data.QcComment) ? "" : data.QcComment,
                     QCDate = DateTime.Now,
                     Image = img,
                     UserQc = user,
-                    Value1 = data.QcValue
-                };
-                qcStatusText += "level 1: " + data.QcValue;
+                    Value1 = data.QcValue,
+                    CommentLevel1 = string.IsNullOrEmpty(data.QcComment) ? null : data.QcComment,
+                    
+            };
                 img.QuantityCheck = qc;
+                qcStatusText += data.QcValue ? "level 1: passed;" : "level 1: unpassed;";
+                img.QcStatus = qcStatusText;
+                project.TotalImgQC += 1;
+                project.TotalImgNotQC -= 1;
             }
                 
             
@@ -98,8 +124,6 @@ namespace ApiServer.Controllers
             img.QcDate = DateTime.Now;
             img.UserQc = user;
 
-            project.TotalImgQC += 1;
-            project.TotalImgNotQC -= 1;
             try
             {
                 await _context.SaveChangesAsync();

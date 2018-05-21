@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using static ApiServer.Model.views.ImageModel;
 
 namespace ApiServer.Core.Queues
 {
@@ -162,7 +163,7 @@ namespace ApiServer.Core.Queues
                     await _context.SaveChangesAsync();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return;
             }
@@ -201,7 +202,7 @@ namespace ApiServer.Core.Queues
 
                     if (image != null)
                     {
-                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName};
+                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
 
                         await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { ImageTakent });
                     }
@@ -216,7 +217,7 @@ namespace ApiServer.Core.Queues
         {
             if (!_image_Taken.ContainsKey(projectId)) return;
 
-            if(_image_Taken[projectId].Any(x=>x.ImageId == imageId))
+            if (_image_Taken[projectId].Any(x => x.ImageId == imageId))
             {
                 try
                 {
@@ -226,9 +227,9 @@ namespace ApiServer.Core.Queues
                 {
                     throw ex;
                 }
-                
+
             }
-            if(_image_notTaken[projectId].Any(x=>x.ImageId == imageId))
+            if (_image_notTaken[projectId].Any(x => x.ImageId == imageId))
             {
                 var item = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == imageId);
                 _image_notTaken[projectId].Remove(item);

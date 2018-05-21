@@ -14,6 +14,11 @@ namespace ApiServer.Model
         public Boolean? Value3 { get; set; }
         public Boolean? Value4 { get; set; }
         public Boolean? Value5 { get; set; }
+        public string CommentLevel1 { get; set; }
+        public string CommentLevel2 { get; set; }
+        public string CommentLevel3 { get; set; }
+        public string CommentLevel4 { get; set; }
+        public string CommentLevel5 { get; set; }
         public virtual Image Image { get; set; }
         public virtual User UserQc { get; set; }
         public string Comment { get; set; }

@@ -98,6 +98,7 @@ export class ProjectImagesComponent implements OnInit {
         this.uploadfiles = [];
         var mother = this;
         this.setupHub();
+        Helpers.setLoading(true);
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
             this.dataSource = new DataSource({
@@ -116,6 +117,7 @@ export class ProjectImagesComponent implements OnInit {
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
                                     mother.rawData = response.result;
 
+                                    Helpers.setLoading(false);
                                     if (resp.result) {
                                         return {
                                             data: mother.rawData,
@@ -133,7 +135,9 @@ export class ProjectImagesComponent implements OnInit {
                 })
             })
         }, error => {
-            console.log(error)
+            swal({title:'', text: error.error? error.error.text: error.message}).then(()=>{
+                Helpers.setLoading(false);
+            })
         });
 
     }
@@ -168,6 +172,10 @@ export class ProjectImagesComponent implements OnInit {
             // }
         });
         this.dataSource.reload();
+    }
+    
+    customPipeQcStatus(){
+
     }
 
     appendUploadFiles(files) {

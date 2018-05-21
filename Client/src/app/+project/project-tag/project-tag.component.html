@@ -82,38 +82,54 @@
                     </span>
                 </div> -->
                 <div class="col-lg-9">
-                    <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': tagMode, '': !tagMode }" (click)="switchTagMode()">
-                        <span>
-                            <i class="la la-tag"></i>
-                            <span>
-                                Tag mode
-                            </span>
-                        </span>
-                    </button>
-                    <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': excluseMode, '': !excluseMode }" (click)="ExcluseAreaClick()">
-                        <span>
-                            <i class="la la-scissors"></i>
-                            <span>
-                                Excluse mode
-                            </span>
-                        </span>
-                    </button>
-                    <button class="btn btn-sm btn-primary m-btn--air" (click)="reload()">
-                        <span>
-                            <i class="la la-refresh"></i>
-                            <span>
-                                Reload
-                            </span>
-                        </span>
-                    </button>
-                    <button class="btn btn-sm btn-primary m-btn--air" (click)="nextImage()">
-                        <span>
-                            <i class="la la-arrow-right"></i>
-                            <span>
-                                Next Image
-                            </span>
-                        </span>
-                    </button>
+                    <div class="d-flex">
+                        <div class="mr-auto p-2">
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': tagMode, '': !tagMode }" (click)="switchTagMode()">
+                                <span>
+                                    <i class="la la-tag"></i>
+                                    <span>
+                                        Tag mode
+                                    </span>
+                                </span>
+                            </button>
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': excluseMode, '': !excluseMode }" (click)="ExcluseAreaClick()">
+                                <span>
+                                    <i class="la la-scissors"></i>
+                                    <span>
+                                        Excluse mode
+                                    </span>
+                                </span>
+                            </button>
+                            <button class="btn btn-sm btn-primary m-btn--air" (click)="reload()">
+                                <span>
+                                    <i class="la la-refresh"></i>
+                                    <span>
+                                        Reload
+                                    </span>
+                                </span>
+                            </button>
+
+                            <button class="btn btn-sm btn-primary m-btn--wide m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled" *ngIf="!qcDone">
+                                <span>
+                                    <i class="la la-save"></i>
+                                    <span>
+                                        Save change
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="p-2">
+                            <button class="btn btn-sm btn-primary m-btn--air" (click)="nextImage()">
+                                <span>
+                                    <i class="la la-arrow-right"></i>
+                                    <span>
+                                        Next Image
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+
+                    </div>
                     <!-- <h6 class="m--font-primary float-right" style="padding-top: 20px">
                         <strong>Image: {{imageId}}</strong>
                     </h6> -->
@@ -174,28 +190,47 @@
                                     </span>
                                     <div class="row" style="margin: 10px 0px 30px;padding: 10px; padding-left: 10px">
                                         <div class="col-12">
-                                            <select class="form-control m-input m-input--air" id="QuantityValue" [disabled]="(!addQc && hadQc)" [(value)]="qcValue" (change)="qcValueSelectChange($event)">
+                                            <div style="padding-bottom: 10px" *ngFor="let qc of quantityCheckForViews">
+                                                <button class="btn btn-sm btn-block m-btn m-btn--wide" [ngClass]="{'btn-danger': !qc.value, 'btn-success':qc.value}" data-toggle="collapse"
+                                                    [attr.data-target]="qc.href" tpye="button" aria-expanded="false" [attr.aria-controls]="qc.collapseId">
+                                                    <span *ngIf="qc.value else qcTemplateStatus">
+                                                        Level {{qc.level}}: Passed
+                                                    </span>
+                                                    <ng-template #qcTemplateStatus>
+                                                        <span>
+                                                            Level {{qc.level}}: Unpassed
+                                                        </span>
+                                                    </ng-template>
+                                                </button>
+                                                <div class="collapse" [id]="qc.collapseId">
+                                                    <div class="card card-body">
+                                                        {{qc.comment}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12" *ngIf="(!qcDone && addQc)">
+                                            <select class="form-control m-input m-input--air" id="QuantityValue" (change)="qcValueSelectChange($event)">
                                                 <option *ngFor="let qc of qcValues" [value]="qc.value">
                                                     <strong>{{qc.name}}</strong>
                                                 </option>
                                             </select>
                                         </div>
+                                        <div class="col-12" style="padding-top: 10px" *ngIf="(!qcDone && addQc)">
+                                            <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && addQc)" placeholder="Comment"></textarea>
+                                        </div>
                                         <div class="col-12" style="padding-top: 10px">
-                                            <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(value)]="qcComment" *ngIf="addQc" [disabled]="hadQc"
-                                                placeholder="Comment"></textarea>
+                                            <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && addQc)">
+                                                <span>
+                                                    <i class="la la-save"></i>
+                                                    <span>
+                                                        Save Quantity Check Stage
+                                                    </span>
+                                                </span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row" style="margin: 10px 0px 30px;padding: 10px; padding-left: 10px">
-                                <button class="btn btn-sm btn-success btn-block m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled" *ngIf="!hadQc">
-                                    <span>
-                                        <i class="la la-save"></i>
-                                        <span>
-                                            Save Change
-                                        </span>
-                                    </span>
-                                </button>
                             </div>
                         </div>
                     </div>

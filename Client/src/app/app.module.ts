@@ -23,6 +23,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { NgIdleKeepaliveModule } from '@ng-idle/keepalive'; // this includes the core NgIdleModule but includes keepalive providers for easy wireup
 import { SweetAlert2Module } from '@toverux/ngx-sweetalert2';
+import { Z_DEFAULT_COMPRESSION } from 'zlib';
 @NgModule({
   declarations: [
     AppComponent
@@ -42,7 +43,8 @@ import { SweetAlert2Module } from '@toverux/ngx-sweetalert2';
       confirmButtonClass: 'btn btn-success m-btn m-btn--custom',
       cancelButtonClass: 'btn btn-secondary m-btn m-btn--custom',
       confirmButtonColor: null,
-      cancelButtonColor: null
+      cancelButtonColor: null,
+      animation: false
     }),
 
     TranslateModule.forRoot({

@@ -76,6 +76,7 @@ namespace ApiServer
             services.AddTransient<ImportProjectController>();
             services.AddTransient<ExportProjectController>();
             services.AddTransient<ProjectSettingsController>();
+            services.AddTransient<DashboardController>();
 
             services.AddScoped<IMergeService, MergeService>();
             services.AddScoped<IUserService, UserService>();

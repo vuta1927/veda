@@ -24,5 +24,10 @@ namespace ApiServer.Model.views
             public double TagTime { get; set; }
             public string UserUsing { get; set; }
         }
+
+        public class ImageForView2 : ImageForView
+        {
+            public new List<QuantityCheckModel.Qc> QcStatus { get; set; }
+        }
     }
 }

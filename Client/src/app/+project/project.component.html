@@ -101,7 +101,7 @@
             <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
             <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
             <div *dxTemplate="let data of 'cellName'">
-              <span class="span-cellname" [routerLink]="['/project-details']" [queryParams]="{ id: data.data.id }">
+              <span class="span-cellname" [routerLink]="['/project-details',{ id: data.data.id }]">
                 <b>{{(data.data.name)}}</b>
               </span>
             </div>

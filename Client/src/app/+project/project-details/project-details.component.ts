@@ -58,7 +58,7 @@ export class ProjectDetailsComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.route.queryParams.filter(params => params.id).subscribe(params => {
+        this.route.params.filter(params => params.id).subscribe(params => {
             this.projectId = params.id;
             this.projectService.getProjectById(this.projectId).toPromise().then(Response=>{
                 if(Response && Response.result){

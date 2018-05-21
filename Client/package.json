@@ -34,6 +34,7 @@
     "angular-oauth2-oidc": "^3.1.4",
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^4.0.0",
+    "chart.js": "^2.7.2",
     "core-js": "^2.4.1",
     "devextreme": "^17.2.6",
     "devextreme-angular": "^17.2.6",

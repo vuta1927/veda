@@ -78,29 +78,14 @@ namespace ApiServer.Controllers
         {
             var _currentUser = GetCurrentUser();
             var _currentRoles = await GetCurrentRole(_currentUser.Id);
-            var results = new List<ImageForView>();
+            var results = new List<ImageForView2>();
             if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
                 var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Skip(start).Take(stop);
                 foreach (var img in imgs)
                 {
-                    var imgForView = new ImageForView()
-                    {
-                        Id = img.Id,
-                        Path = img.Path.Replace('\\', '/'),
-                        Classes = img.Classes,
-                        Ignored = img.Ignored,
-                        QcStatus = img.QcStatus,
-                        TagHasClass = img.TagHasClass,
-                        TagNotHasClass = img.TagNotHasClass,
-                        TagTime = img.TagTime,
-                        TotalClass = img.TotalClass,
-                        UserQc = img.UserQc != null ? img.UserQc.UserName : null,
-                        QcDate = img.QcDate,
-                        TaggedDate = img.TaggedDate,
-                        UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context)
-
-                    };
+                    var imgForView = ImgForView(img);
+                    imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
                     imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
                     results.Add(imgForView);
                 }
@@ -113,30 +98,52 @@ namespace ApiServer.Controllers
                 {
                     var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged);
                     foreach (var img in imgs)
-                    {
-                        var imgForView = new ImageForView()
-                        {
-                            Id = img.Id,
-                            Path = img.Path.Replace('\\', '/'),
-                            UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null,
-                            Classes = img.Classes,
-                            Ignored = img.Ignored,
-                            QcStatus = img.QcStatus,
-                            TagHasClass = img.TagHasClass,
-                            TagNotHasClass = img.TagNotHasClass,
-                            TagTime = img.TagTime,
-                            TotalClass = img.TotalClass,
-                            UserQc = img.UserQc != null ? img.UserQc.UserName : null,
-                            QcDate = img.QcDate,
-                            TaggedDate = img.TaggedDate,
-                            UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context)
-                        };
+                    { 
+                        var imgForView = ImgForView(img);
+                        imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
+                        imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
 
                         results.Add(imgForView);
                     }
                 }
             }
             return Ok(results);
+        }
+        private ImageForView2 ImgForView(Image image)
+        {
+            var newImg = new ImageForView2()
+            {
+                Classes = image.Classes,
+                Id = image.Id,
+                Ignored = image.Ignored,
+                Path = image.Path.Replace('\\', '/'),
+                QcDate = image.QcDate,
+                TaggedDate = image.TaggedDate,
+                TagHasClass = image.TagHasClass,
+                TagNotHasClass = image.TagNotHasClass,
+                TagTime = image.TagTime,
+                TotalClass = image.TotalClass,
+                UserQc = image.UserQc != null ? image.UserQc.UserName : null,
+                UserTagged = image.UserTagged != null ? image.UserTagged.UserName : null,
+                QcStatus = new List<Model.views.QuantityCheckModel.Qc>()
+            };
+
+            if (string.IsNullOrEmpty(image.QcStatus)) return newImg;
+
+            var status = image.QcStatus.Split(';');
+            for (var i = 0; i < status.Count(); i++)
+            {
+                if (string.IsNullOrEmpty(status[i])) continue;
+                var lv = status[i].Split(':').First();
+                var val = status[i].Split(':').Last().Trim().Equals("passed") ? true : false;
+                newImg.QcStatus.Add(new Model.views.QuantityCheckModel.Qc()
+                {
+                    Level = lv,
+                    value = val
+                });
+            }
+
+            return newImg;
         }
 
         [HttpGet("{id}")]

@@ -119,7 +119,7 @@ namespace ApiServer.Controllers
                                 {
                                     entry.ExtractToFile(Path.Combine(newPath, name + '.' + filenames.Last()));
 
-                                    using(var entryStram = entry.Open())
+                                    using (var entryStram = entry.Open())
                                     using (var img = new System.Drawing.Bitmap(entryStram))
                                     {
                                         await StoreImage(name, pathToDatabase, project, img);
@@ -136,7 +136,7 @@ namespace ApiServer.Controllers
                         using (var stream = new FileStream(fullPath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            using (var img = new System.Drawing.Bitmap(stream)){
+                            using (var img = new System.Drawing.Bitmap(stream)) {
                                 await StoreImage(name, pathToDatabase, project, img);
                             }
                         }
@@ -258,8 +258,53 @@ namespace ApiServer.Controllers
         [ActionName("GetProjectNames")]
         public IActionResult GetProjectNames()
         {
-            var project = (from x in _context.Projects select new ProjectModel.ProjectSetting {Name = x.Name, Id = x.Id}).Distinct();
+            var project = (from x in _context.Projects select new ProjectModel.ProjectSetting { Name = x.Name, Id = x.Id }).Distinct();
             return Ok(project);
+        }
+
+        [HttpGet]
+        [ActionName("GetProjectsByUser")]
+        public IActionResult GetProjectsByUser()
+        {
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
+            var currentRoles = _userService.GetCurrentRole(currentUser.Id);
+
+            var result = new List<ProjectModel.ProjectSetting>();
+
+            var projs = new List<Project>();
+
+            if (currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+            {
+                projs = _context.Projects.Include(x => x.Users).OrderBy(x => x.Name).ToList();
+            }
+            else
+            {
+                projs = _context.ProjectUsers
+                .Include(p => p.User)
+                .Where(x => x.User.Id == currentUser.Id)
+                .Include(a => a.Project)
+                .Select(b => b.Project).Distinct().ToList().
+                Where(x => !x.IsDisabled).ToList();
+            }
+
+            if (projs.Count() <= 0)
+            {
+                return Ok();
+            }
+            else
+            {
+                foreach (var p in projs)
+                {
+                    result.Add(new ProjectModel.ProjectSetting()
+                    {
+                        Name = p.Name,
+                        Id = p.Id
+                    });
+                }
+
+                return Ok(result);
+            }
         }
 
         [HttpGet]
