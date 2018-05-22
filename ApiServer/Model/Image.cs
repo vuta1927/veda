@@ -20,12 +20,13 @@ namespace ApiServer.Model
         public DateTime? TaggedDate { get; set; }
         public string Classes { get; set; }
         public string QcStatus { get; set; }
-        public virtual User UserQc { get; set; }
+        public virtual List<User> UsersQc { get; set; }
         public DateTime? QcDate { get; set; }
-        public virtual User UserTagged { get; set; }
+        public virtual List<User> UsersTagged { get; set; }
         public virtual Project Project { get; set; }
         public ICollection<Tag> Tags { get; set; }
         public virtual QuantityCheck QuantityCheck { get; set; }
         public double TagTime { get; set; }
+        public virtual List<UserTaggedTime> UserTaggedTimes { get; set; }
     }
 }

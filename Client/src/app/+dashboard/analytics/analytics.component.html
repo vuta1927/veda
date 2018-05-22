@@ -42,7 +42,48 @@
           </div>
         </div>
         <div class="m-portlet__body">
-
+          <div class="row m-row--no-padding m-row--col-separator-xl">
+            <div class="col-xl-5">
+              <!--begin:: Widgets/Stats2-1 -->
+              <div class="m-widget1">
+                <div class="m-widget1__item">
+                  <div class="row m-row--no-padding align-items-center">
+                    <div class="col">
+                      <h3 class="m-widget1__title">
+                        Projects
+                      </h3>
+                      <span class="m-widget1__desc">
+                        Total projects
+                      </span>
+                    </div>
+                    <div class="col m--align-right">
+                      <span class="m-widget1__number m--font-brand">
+                        3
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="m-widget1__item">
+                  <div class="row m-row--no-padding align-items-center">
+                    <div class="col">
+                      <h3 class="m-widget1__title">
+                        Images
+                      </h3>
+                      <span class="m-widget1__desc">
+                        Total images of all projects
+                      </span>
+                    </div>
+                    <div class="col m--align-right">
+                      <span class="m-widget1__number m--font-danger">
+                        15
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--end:: Widgets/Stats2-1 -->
+            </div>
+          </div>
         </div>
         <!--end::Portlet-->
       </div>
@@ -59,89 +100,14 @@
             </select>
           </div>
           <div class="row m-row--no-padding m-row--col-separator-xl">
-            <div class="col-xl-7">
-              <!--begin:: Widgets/Stats2-1 -->
-              <div class="m-widget1">
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Total Images
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total images in project
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-danger">
-                        {{currentProjectData.totalImages}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Images Tagged
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total images had tag
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-success">
-                        {{currentProjectData.imagesTagged}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Quantity Check Images
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total of Image had Quantity Check
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-info">
-                        {{currentProjectData.imagesHadQc}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Tagged Time
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total tagged time
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-brand">
-                        {{currentProjectData.totalTaggedTime}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!--end:: Widgets/Stats2-1 -->
-            </div>
-            <div class="col-xl-5">
-              <!--begin:: Widgets/Profit Share-->
+            <div class="col-xl-4">
               <div class="m-widget14">
                 <div class="m-widget14__header">
                   <h3 class="m-widget14__title">
-                    Images Tagged
+                    Images Tagging
                   </h3>
                   <span class="m-widget14__desc">
-                    
+                    Images tagging proccess
                   </span>
                 </div>
                 <div class="row  align-items-center">
@@ -166,61 +132,16 @@
                   </div>
                 </div>
               </div>
-              <!--end:: Widgets/Profit Share-->
             </div>
-
-          </div>
-          <div class="row m-row--no-padding m-row--col-separator-xl">
-
-            <div class="col-xl-7">
-              <!--begin:: Widgets/Stats2-1 -->
-              <div class="m-widget1">
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Total Tags
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total Tags in project
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-danger">
-                        {{currentProjectData.totalTags}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
-                        Tags have class
-                      </h3>
-                      <span class="m-widget1__desc">
-                        Total tags have class
-                      </span>
-                    </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number m--font-success">
-                        {{currentProjectData.totalTagsHaveClass}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!--end:: Widgets/Stats2-1 -->
-            </div>
-            <div class="col-xl-5">
+            <div class="col-xl-4">
               <!--begin:: Widgets/Profit Share-->
               <div class="m-widget14">
                 <div class="m-widget14__header">
                   <h3 class="m-widget14__title">
-                    Tags have class
+                    Tags
                   </h3>
                   <span class="m-widget14__desc">
-                    
+                    Number of tag have class
                   </span>
                 </div>
                 <div class="row  align-items-center">
@@ -245,11 +166,98 @@
                   </div>
                 </div>
               </div>
-              <!--end:: Widgets/Profit Share-->
+            </div>
+            <div class="col-xl-4">
+              <!--begin:: Widgets/Profit Share-->
+              <div class="m-widget14">
+                <div class="m-widget14__header">
+                  <h3 class="m-widget14__title">
+                    Quantity Check
+                  </h3>
+                  <span class="m-widget14__desc">
+                    Quantity check proccess
+                  </span>
+                </div>
+                <div class="row  align-items-center">
+                  <div class="col" *ngIf="QcChart">
+                    <canvas id="canvas-qc">{{ QcChart }}</canvas>
+                  </div>
+                  <div class="col">
+                    <div class="m-widget14__legends">
+                      <div class="m-widget14__legend">
+                        <span class="m-widget14__legend-bullet m--bg-brand"></span>
+                        <span class="m-widget14__legend-text">
+                          {{percentData.imagesHaveQcPercent}}% Images have Qc
+                        </span>
+                      </div>
+                      <div class="m-widget14__legend">
+                        <span class="m-widget14__legend-bullet m--bg-metal"></span>
+                        <span class="m-widget14__legend-text">
+                          {{percentData.imagesNotHaveQcPercent}}% Images not have Qc
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row m-row--no-padding">
+            <div class="col-xl-12">
+              <!--begin:: Widgets/Stats2-1 -->
+              <div class="m-widget1">
+                <div class="m-widget1__item">
+                  <div class="row m-row--no-padding align-items-center">
+                    <div class="col">
+                      <h3 class="m-widget1__title">
+                      </h3>
+                      <span class="m-widget1__desc">
+                      </span>
+                    </div>
+                    <div class="col m--align-right">
+                      <span class="m-widget1__number">Tagged time:</span>
+                      <span class="m-widget1__number m--font-brand">
+                        {{currentProjectData.totalTaggedTime}}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="col-xl-12" style="padding-top: 10px">
+
+              
+              <dx-data-grid id="gridUserContainer" [dataSource]="userDataSource" [showBorders]="true" [wordWrapEnabled]="true" [columnAutoWidth]=true
+                [hoverStateEnabled]="false" class="m_datatable">
+                <dxo-selection mode="single"></dxo-selection>
+                <dxo-remote-operations [sorting]="true" [paging]="true"></dxo-remote-operations>
+                <dxo-paging [pageSize]="12"></dxo-paging>
+                <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+
+                <dxi-column caption="User Name" sortOrder="asc" cellTemplate="cellUserName"></dxi-column>
+                <dxi-column dataField="email" [allowSorting]="false"></dxi-column>
+                <dxi-column cellTemplate="cellRole" caption="Roles" [allowSorting]="false"></dxi-column>
+                <dxi-column dataField="totalTags" caption="Total Tags"></dxi-column>
+                <dxi-column caption="Total Image Had Quantity Check" dataField="totalQcs"></dxi-column>
+                <dxi-column cellTemplate="tagTimeCell" caption="Tagged Time"></dxi-column>
+                <div *dxTemplate="let data of 'cellUserName'">
+                  <span class="span-cellUserName">
+                    <b>{{(data.data.userName)}}</b>
+                  </span>
+                </div>
+                <div *dxTemplate="let data of 'cellRole'">
+                  <span class="m-badge m-badge--brand m-badge--brand" *ngFor="let role of data.data.roleNames">
+                    <b>{{(role)}}</b>
+                  </span>
+                </div>
+                <div *dxTemplate="let data of 'tagTimeCell'">
+                    {{data.data.taggedTime | number: '1.0-0' }} minutes
+                </div>
+              </dx-data-grid>
             </div>
           </div>
         </div>
-        <!--end::Portlet-->
       </div>
     </div>
 

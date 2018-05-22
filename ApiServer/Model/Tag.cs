@@ -19,7 +19,7 @@ namespace ApiServer.Model
         public virtual Image Image { get; set; }
         public DateTime TaggedDate { get; set; }
         public QuantityCheck QuantityCheck { get; set; }
-        public virtual User UserTagged { get; set; }
+        public virtual List<UserTag> UsersTagged { get; set; }
         public int? ClassId { get; set; }
         public virtual Class Class { get; set; }
     }

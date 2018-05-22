@@ -148,15 +148,25 @@
                         <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
                         <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
                         <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
-                        <dxi-column dataField="tagHasClass" caption="Tags have calss"></dxi-column>
+                        <dxi-column dataField="tagHasClass" caption="Tags have class"></dxi-column>
                         <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
                         <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" [width]="130" caption="Qc Status"></dxi-column>
                         <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
-                        <dxi-column dataField="userQc" caption="Qc by"></dxi-column>
-                        <dxi-column dataField="userTagged" caption="Tagged By"></dxi-column>
+                        <dxi-column dataField="usersQc" cellTemplate="userQcCell" caption="Qc by"></dxi-column>
+                        <dxi-column dataField="usersTagged" celTemplate="usersTaggedCell" caption="Tagged By"></dxi-column>
                         <dxi-column dataField="tagTime" caption="Tagged Time" cellTemplate="tagTimeCell"></dxi-column>
                         <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
                         <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Date"></dxi-column>
+                        <div *dxTemplate="let data of 'userQcCell'">
+                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersQc">
+                                <b>{{(user)}}</b>
+                            </span>
+                        </div>
+                        <div *dxTemplate="let data of 'usersTaggedCell'">
+                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersTagged">
+                                <b>{{(user)}}</b>
+                            </span>
+                        </div>
                         <div *dxTemplate="let data of 'tagTimeCell'">
                             {{data.data.tagTime | number: '1.1-1' }} minutes
                         </div>
@@ -167,12 +177,10 @@
                         </div>
                         <div *dxTemplate="let data of 'qcStatusCell'">
                             <div *ngFor="let status of data.data.qcStatus">
-                                <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;"
-                                    *ngIf="status.value">
+                                <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="status.value">
                                     {{status.level}}: passed
                                 </span>
-                                <span class="m-badge m-badge--danger m-badge--wide" style="cursor: text;"
-                                    *ngIf="!status.value">
+                                <span class="m-badge m-badge--danger m-badge--wide" style="cursor: text;" *ngIf="!status.value">
                                     {{status.level}}: unpassed
                                 </span>
                             </div>

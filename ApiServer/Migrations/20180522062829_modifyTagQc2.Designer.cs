@@ -14,9 +14,10 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    partial class VdsContextModelSnapshot : ModelSnapshot
+    [Migration("20180522062829_modifyTagQc2")]
+    partial class modifyTagQc2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,9 +251,9 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("QuantityCheckId");
+                    b.Property<int?>("QuantityCheckId");
 
-                    b.Property<long>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.HasKey("Id");
 
@@ -268,13 +269,15 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("ImageId");
+                    b.Property<Guid?>("ImageId");
 
-                    b.Property<int>("TagId");
+                    b.Property<int?>("TagId");
 
-                    b.Property<long>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("TagId");
 
@@ -288,11 +291,11 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("ImageId");
+                    b.Property<Guid?>("ImageId");
 
                     b.Property<double>("TaggedTime");
 
-                    b.Property<long>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.HasKey("Id");
 
@@ -749,39 +752,37 @@ namespace ApiServer.Migrations
                 {
                     b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
                         .WithMany("UsersQc")
-                        .HasForeignKey("QuantityCheckId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("QuantityCheckId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ApiServer.Model.UserTag", b =>
                 {
-                    b.HasOne("ApiServer.Model.Tag", "Tag")
+                    b.HasOne("ApiServer.Model.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.HasOne("ApiServer.Model.Tag")
                         .WithMany("UsersTagged")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TagId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ApiServer.Model.UserTaggedTime", b =>
                 {
                     b.HasOne("ApiServer.Model.Image", "Image")
                         .WithMany("UserTaggedTimes")
-                        .HasForeignKey("ImageId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ImageId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("VDS.Security.Permissions.Permission", b =>

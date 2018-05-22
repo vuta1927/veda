@@ -33,14 +33,16 @@ namespace ApiServer.Controllers
 
         private readonly IHostingEnvironment _hostingEnvironment;
         private IHubContext<VdsHub> _hubContext;
+        private IUserService _userService;
 
         //private IHubContext<VdsHub> _hubContext;
 
-        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext)
+        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext, IUserService userService)
         {
             _context = context;
             _hubContext = hubContext;
             _hostingEnvironment = hostingEnvironment;
+            _userService = userService;
         }
 
 
@@ -81,12 +83,11 @@ namespace ApiServer.Controllers
             var results = new List<ImageForView2>();
             if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
-                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Skip(start).Take(stop);
+                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged).Skip(start).Take(stop);
                 foreach (var img in imgs)
                 {
                     var imgForView = ImgForView(img);
                     imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
-                    imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
                     results.Add(imgForView);
                 }
             }
@@ -96,12 +97,11 @@ namespace ApiServer.Controllers
 
                 if (userInProject)
                 {
-                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged);
+                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged);
                     foreach (var img in imgs)
-                    { 
+                    {
                         var imgForView = ImgForView(img);
                         imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
-                        imgForView.UserTagged = img.UserTagged != null ? img.UserTagged.UserName : null;
 
                         results.Add(imgForView);
                     }
@@ -123,10 +123,44 @@ namespace ApiServer.Controllers
                 TagNotHasClass = image.TagNotHasClass,
                 TagTime = image.TagTime,
                 TotalClass = image.TotalClass,
-                UserQc = image.UserQc != null ? image.UserQc.UserName : null,
-                UserTagged = image.UserTagged != null ? image.UserTagged.UserName : null,
-                QcStatus = new List<Model.views.QuantityCheckModel.Qc>()
+                QcStatus = new List<Model.views.QuantityCheckModel.Qc>(),
+                UsersTagged = new List<string>(),
+                UsersQc = new List<string>()
             };
+
+            var usersTagged = _context.UserTags.Where(x => x.ImageId == image.Id).ToList();
+            if(usersTagged.Count() > 0)
+            {
+                foreach(var userTagged in usersTagged)
+                {
+                    var user = _context.Users.SingleOrDefault(x => x.Id == userTagged.UserId);
+                    if(user != null)
+                    {
+                        if (!newImg.UsersTagged.Contains(user.UserName))
+                        {
+                            newImg.UsersTagged.Add(user.UserName);
+                        }
+                    }
+                }
+                
+            }
+
+            if(image.QuantityCheck != null)
+            {
+                var qcUsers = _context.UserQuantityChecks.Where(x => x.QuantityCheckId == image.QuantityCheck.Id);
+                if (qcUsers.Count() > 0)
+                {
+                    foreach (var qcUser in qcUsers)
+                    {
+                        var user = _context.Users.SingleOrDefault(x => x.Id == qcUser.UserId);
+                        if (user != null)
+                        {
+                            newImg.UsersQc.Add(user.UserName);
+                        }
+                    }
+                }
+
+            }
 
             if (string.IsNullOrEmpty(image.QcStatus)) return newImg;
 
@@ -169,7 +203,7 @@ namespace ApiServer.Controllers
             var results = 0;
             if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
-                results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Count();
+                results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged).Count();
             }
             else
             {
@@ -177,7 +211,7 @@ namespace ApiServer.Controllers
 
                 if (userInProject)
                 {
-                    results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UserQc).Include(c => c.UserTagged).Count();
+                    results = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged).Count();
                 }
             }
             return Ok(results);
@@ -245,7 +279,7 @@ namespace ApiServer.Controllers
             ImageQueues.Append(userId, project.Id, _context, _hubContext);
 
             var image = await ImageQueues.GetImage(projId, imgId, userId);
-            
+
             if (image == null)
             {
                 return NotFound();
@@ -260,7 +294,7 @@ namespace ApiServer.Controllers
         public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
             var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
-            
+
             ImageQueues.Append(userId, project.Id, _context, _hubContext);
 
             var image = await ImageQueues.GetImageById(projId, imgId, userId);
@@ -283,7 +317,7 @@ namespace ApiServer.Controllers
                 return NotFound();
             }
 
-            if(await ImageQueues.ReleaseImage(projId, imgId))
+            if (await ImageQueues.ReleaseImage(projId, imgId))
             {
 
                 return Ok("Ok");
@@ -312,12 +346,49 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var image = _context.Images.SingleOrDefault(x => x.Id == id);
+            var identity = (ClaimsIdentity)User.Identity;
+            var currentUser = _userService.GetCurrentUser(identity);
+
+            var image = _context.Images.Include(x=>x.UserTaggedTimes).SingleOrDefault(x => x.Id == id);
 
             if (image == null) return Content("Image not found!");
+            
+            if(image.UserTaggedTimes.Count() <= 0)
+            {
+                var newUserTaggedTime = new UserTaggedTime()
+                {
+                    ImageId = image.Id,
+                    UserId = currentUser.Id,
+                    TaggedTime = taggedTime,
+                    Image = image,
+                };
+                _context.userTaggedTimes.Add(newUserTaggedTime);
+            }
+            else
+            {
+                var currentUserTaggedTime = image.UserTaggedTimes.SingleOrDefault(x => x.UserId == currentUser.Id);
+                if(currentUserTaggedTime == null)
+                {
+                    var newUserTaggedTime = new UserTaggedTime()
+                    {
+                        ImageId = image.Id,
+                        UserId = currentUser.Id,
+                        TaggedTime = taggedTime,
+                        Image = image,
+                    };
+                    _context.userTaggedTimes.Add(newUserTaggedTime);
+                }
+                else
+                {
+                    currentUserTaggedTime.TaggedTime = taggedTime;
+                }
+            }
 
-
-            image.TagTime = taggedTime;
+            foreach(var userTaggedTime in image.UserTaggedTimes)
+            {
+                image.TagTime += userTaggedTime.TaggedTime;
+            }
+            
 
             try
             {
@@ -363,7 +434,7 @@ namespace ApiServer.Controllers
             var ids = id.Split('_');
             for (var i = 0; i < ids.Length; i++)
             {
-                var img = await _context.Images.Include(x=>x.Project).Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
+                var img = await _context.Images.Include(x => x.Project).Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
                 if (img == null)
                 {
                     return Ok("error#Image not found");
@@ -393,11 +464,12 @@ namespace ApiServer.Controllers
             try
             {
                 await updateProject(project.Id);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return Content(ex.Message);
             }
-            
+
 
             return Ok();
         }
@@ -409,12 +481,12 @@ namespace ApiServer.Controllers
             if (project == null) return;
 
             var images = _context.Images.Where(x => x.Project == project);
-            project.TotalImg = images==null? 0 : images.Count();
+            project.TotalImg = images == null ? 0 : images.Count();
             var imgsNotClassed = project.TotalImg;
             var imgsNotTagged = project.TotalImg;
             var imgsNotQc = project.TotalImg;
             var imgsQc = 0;
-            if(images!= null && images.Count() > 0)
+            if (images != null && images.Count() > 0)
             {
                 foreach (var img in images)
                 {

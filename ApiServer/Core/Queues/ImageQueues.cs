@@ -87,9 +87,9 @@ namespace ApiServer.Core.Queues
                 {
                     var img = _image_notTaken[projectId].FirstOrDefault();
 
-                    img.TimeStart = DateTime.Now;
+                    //img.TimeStart = DateTime.Now;
 
-                    image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == img.ImageId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x=>x.UsersTagged).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
                     _image_Taken[projectId].Add(img);
 
@@ -123,7 +123,7 @@ namespace ApiServer.Core.Queues
 
                     //img.TimeStart = DateTime.Now;
 
-                    image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == img.ImageId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
                     img.LastPing = DateTime.Now;
 
@@ -189,7 +189,7 @@ namespace ApiServer.Core.Queues
 
                 if (img != null && _image_notTaken[projectId].Contains(img))
                 {
-                    image = await _context.Images.Include(x => x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == ImgId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).SingleOrDefaultAsync(m => m.Id == ImgId);
 
                     img.LastPing = DateTime.Now;
                     //img.TimeStart = DateTime.Now;

@@ -18,9 +18,9 @@ namespace ApiServer.Model.views
             public DateTime? TaggedDate { get; set; }
             public string Classes { get; set; }
             public string QcStatus { get; set; }
-            public string UserQc { get; set; }
+            public ICollection<string> UsersQc { get; set; }
             public DateTime? QcDate { get; set; }
-            public string UserTagged { get; set; }
+            public ICollection<string> UsersTagged { get; set; }
             public double TagTime { get; set; }
             public string UserUsing { get; set; }
         }

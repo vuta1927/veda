@@ -209,10 +209,14 @@ namespace ApiServer.Controllers
                     originTag.Top = tag.Top;
                     originTag.Width = tag.Width;
                     originTag.height = tag.height;
-                    originTag.UserTagged = currentUser;
                     originTag.Class = newClass;
                     originTag.TaggedDate = DateTime.Now;
-
+                    if (!_context.UserTags.Any(x => x.UserId == currentUser.Id))
+                    {
+                        var newUserTag = new UserTag() { UserId = currentUser.Id, TagId = originTag.Id, Tag = originTag, ImageId = image.Id};
+                        _context.UserTags.Add(newUserTag);
+                        originTag.UsersTagged.Add(newUserTag);
+                    }
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -235,9 +239,10 @@ namespace ApiServer.Controllers
                         Top = tag.Top,
                         Width = tag.Width,
                         height = tag.height,
-                        UserTagged = currentUser,
-                        TaggedDate = DateTime.Now
+                        TaggedDate = DateTime.Now,
+                        UsersTagged = new List<UserTag>()
                     };
+                    
                     if (tag.ClassId > 0)
                     {
                         var @class = _context.Classes.FirstOrDefault(x => x.Id == tag.ClassId);
@@ -245,7 +250,15 @@ namespace ApiServer.Controllers
                     }
                     _context.Tags.Add(newTag);
 
-
+                    var newUserTag = new UserTag()
+                    {
+                        UserId = currentUser.Id,
+                        TagId = newTag.Id,
+                        Tag = newTag,
+                        ImageId = image.Id
+                    };
+                    _context.UserTags.Add(newUserTag);
+                    newTag.UsersTagged.Add(newUserTag);
 
                     try
                     {
@@ -304,7 +317,6 @@ namespace ApiServer.Controllers
             image.TagHasClass = tagHaveClass;
             image.TagNotHasClass = tagCount - tagHaveClass;
             image.TaggedDate = DateTime.Now;
-            image.UserTagged = user;
 
             try
             {

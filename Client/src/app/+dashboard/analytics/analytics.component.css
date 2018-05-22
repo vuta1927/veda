@@ -1,0 +1,37 @@
+@import '~devextreme/dist/css/dx.common.css';
+@import '~devextreme/dist/css/dx.light.css';
+.dx-menu-item-popout {
+    display: none !important;
+}
+::ng-deep #gridContainer td {
+    vertical-align: middle;
+}
+.dx-datagrid .dx-menu .dx-menu-item .dx-menu-item-content {
+    padding: 6px 10px 7px;
+}
+
+.span-cellUserName {
+    color: #716aca;
+    cursor: pointer;
+}
+
+.span-cellUserName:hover{
+    color: #4baeff;
+}
+
+a{
+    cursor: pointer;
+}
+
+a.disabled {
+    color: rgb(71, 71, 71);
+    cursor: not-allowed;
+}
+
+i.i-plus{
+    color: #716aca;
+}
+
+i.i-trash{
+    color: rgb(173, 30, 30);
+}

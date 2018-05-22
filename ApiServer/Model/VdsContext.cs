@@ -28,6 +28,9 @@ namespace ApiServer.Model
         public DbSet<Image> Images { get; set; }
         public DbSet<QuantityCheck> QuantityChecks { get; set; }
         public DbSet<ApiServer.Model.Tag> Tags { get; set; }
+        public DbSet<UserTag> UserTags { get; set; }
+        public DbSet<UserQuantityCheck> UserQuantityChecks { get; set; }
+        public DbSet<UserTaggedTime> userTaggedTimes { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    modelBuilder.Entity<ClassTag>()

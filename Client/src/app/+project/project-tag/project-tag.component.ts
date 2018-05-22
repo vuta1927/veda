@@ -179,6 +179,7 @@ export class ProjecTagComponent {
         // this.idle.onIdleEnd.subscribe(() => console.log('No longer idle.'));
         this.idle.onTimeout.subscribe(() => {
             this.timedOut = true;
+            console.log('timeout!');
             mother.router.navigate(['project-details', { id: mother.projectId }]);
         });
         // this.idle.onIdleStart.subscribe(() => console.log('You\'ve gone idle!'));
@@ -191,7 +192,11 @@ export class ProjecTagComponent {
             this.lastPing = new Date();
             this.imgService.sendPing(this.projectId, this.imageId).toPromise().then(Response => {
 
-            }).catch(err => { mother.router.navigate(['project-details', { id: mother.projectId }]) });
+            }).catch(err => { 
+                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
+                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
+                });
+                
         });
 
         this.resetIdle();
@@ -228,13 +233,21 @@ export class ProjecTagComponent {
                 if (Response && Response.result) {
                     mother.getTags(Response.result);
                 }
-            }).catch(err => mother.router.navigate(['project-details', { id: mother.projectId }]));
+            }).catch(err => {
+                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
+                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
+            });
         } else {
             this.imgService.getNextImage(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     mother.getTags(Response.result);
                 }
-            }).catch(err => mother.router.navigate(['project-details', { id: mother.projectId }]));
+            }).catch(err => {
+                
+                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
+                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
+
+            });
         }
     }
 
@@ -242,7 +255,7 @@ export class ProjecTagComponent {
         this.imageId = image.id;
         this.hadQc = image.quantityCheck ? true : false;
         this.currentImage = image;
-        this.totalTaggedTime = image.tagTime;
+        this.totalTaggedTime = image.userTaggedTimes? image.userTaggedTimes.find(x=>x.user.id == this.currentUserId).taggedTime : 0;
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
         this.getQc(image);
@@ -258,7 +271,6 @@ export class ProjecTagComponent {
     }
 
     getQc(image) {
-        console.log(image);
         for (var i = 1; i <= this.projectSetting.quantityCheckLevel; i++) {
             // const level = 'value'+i;
             // const commentLevel = 'commentLevel' + i;
@@ -729,7 +741,6 @@ export class ProjecTagComponent {
         let lastPosX;
         let lastPosY;
         $('body').on('contextmenu', 'canvas', function (options: any) {
-            console.log(options);
             lastPosX = options.clientX;
             lastPosY = options.clientY;
             //Disabe contextmenu on right mouse, implement right mouse event
@@ -1079,7 +1090,6 @@ export class ProjecTagComponent {
         tag.width = this.GetPercent(width, this.imageWidth);
         tag.height = this.GetPercent(height, this.imageHeight);
 
-        console.log(tag);
         if (!this.tagsForAddOrUpdate.find(x => x.index == target.index)) {
             this.tagsForAddOrUpdate.push(tag);
         }

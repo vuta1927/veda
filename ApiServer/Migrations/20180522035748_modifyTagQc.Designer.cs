@@ -14,9 +14,10 @@ using VDS.Notifications;
 namespace ApiServer.Migrations
 {
     [DbContext(typeof(VdsContext))]
-    partial class VdsContextModelSnapshot : ModelSnapshot
+    [Migration("20180522035748_modifyTagQc")]
+    partial class modifyTagQc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,6 +77,10 @@ namespace ApiServer.Migrations
 
                     b.Property<int>("TotalClass");
 
+                    b.Property<long?>("UserQcId");
+
+                    b.Property<long?>("UserTaggedId");
+
                     b.Property<double>("Width");
 
                     b.HasKey("Id");
@@ -85,6 +90,10 @@ namespace ApiServer.Migrations
                     b.HasIndex("QuantityCheckId")
                         .IsUnique()
                         .HasFilter("[QuantityCheckId] IS NOT NULL");
+
+                    b.HasIndex("UserQcId");
+
+                    b.HasIndex("UserTaggedId");
 
                     b.ToTable("Images");
                 });
@@ -250,9 +259,9 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("QuantityCheckId");
+                    b.Property<int?>("QuantityCheckId");
 
-                    b.Property<long>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.HasKey("Id");
 
@@ -268,39 +277,21 @@ namespace ApiServer.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid>("ImageId");
+                    b.Property<Guid?>("ImageId");
 
-                    b.Property<int>("TagId");
+                    b.Property<int?>("TagId");
 
-                    b.Property<long>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("TagId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("UserTags");
-                });
-
-            modelBuilder.Entity("ApiServer.Model.UserTaggedTime", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("ImageId");
-
-                    b.Property<double>("TaggedTime");
-
-                    b.Property<long>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ImageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("userTaggedTimes");
                 });
 
             modelBuilder.Entity("VDS.BackgroundJobs.BackgroundJobInfo", b =>
@@ -570,10 +561,6 @@ namespace ApiServer.Migrations
 
                     b.Property<bool>("EmailConfirmed");
 
-                    b.Property<Guid?>("ImageId");
-
-                    b.Property<Guid?>("ImageId1");
-
                     b.Property<bool>("IsActive");
 
                     b.Property<bool>("IsLockoutEnabled");
@@ -599,10 +586,6 @@ namespace ApiServer.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ImageId");
-
-                    b.HasIndex("ImageId1");
 
                     b.HasIndex("NormalizedEmail");
 
@@ -690,6 +673,14 @@ namespace ApiServer.Migrations
                     b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
                         .WithOne("Image")
                         .HasForeignKey("ApiServer.Model.Image", "QuantityCheckId");
+
+                    b.HasOne("VDS.Security.User", "UserQc")
+                        .WithMany()
+                        .HasForeignKey("UserQcId");
+
+                    b.HasOne("VDS.Security.User", "UserTagged")
+                        .WithMany()
+                        .HasForeignKey("UserTaggedId");
                 });
 
             modelBuilder.Entity("ApiServer.Model.PermissionRole", b =>
@@ -749,39 +740,26 @@ namespace ApiServer.Migrations
                 {
                     b.HasOne("ApiServer.Model.QuantityCheck", "QuantityCheck")
                         .WithMany("UsersQc")
-                        .HasForeignKey("QuantityCheckId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("QuantityCheckId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ApiServer.Model.UserTag", b =>
                 {
-                    b.HasOne("ApiServer.Model.Tag", "Tag")
-                        .WithMany("UsersTagged")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("VDS.Security.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ApiServer.Model.UserTaggedTime", b =>
-                {
                     b.HasOne("ApiServer.Model.Image", "Image")
-                        .WithMany("UserTaggedTimes")
-                        .HasForeignKey("ImageId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.HasOne("ApiServer.Model.Tag")
+                        .WithMany("UsersTagged")
+                        .HasForeignKey("TagId");
 
                     b.HasOne("VDS.Security.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("VDS.Security.Permissions.Permission", b =>
@@ -812,17 +790,6 @@ namespace ApiServer.Migrations
                         .WithMany("RoleClaims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("VDS.Security.User", b =>
-                {
-                    b.HasOne("ApiServer.Model.Image")
-                        .WithMany("UsersQc")
-                        .HasForeignKey("ImageId");
-
-                    b.HasOne("ApiServer.Model.Image")
-                        .WithMany("UsersTagged")
-                        .HasForeignKey("ImageId1");
                 });
 
             modelBuilder.Entity("VDS.Security.UserLogin", b =>
