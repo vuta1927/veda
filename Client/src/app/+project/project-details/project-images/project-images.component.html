@@ -159,12 +159,12 @@
                         <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Date"></dxi-column>
                         <div *dxTemplate="let data of 'userQcCell'">
                             <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersQc">
-                                <b>{{(user)}}</b>
+                                {{(user)}}
                             </span>
                         </div>
                         <div *dxTemplate="let data of 'usersTaggedCell'">
-                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersTagged">
-                                <b>{{(user)}}</b>
+                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let userTagged of data.data.usersTagged">
+                                {{(userTagged)}}
                             </span>
                         </div>
                         <div *dxTemplate="let data of 'tagTimeCell'">

@@ -14,12 +14,15 @@ namespace ApiServer.Model.views
 
         public class ProjectAnalist
         {
+            public int TotalProjects { get; set; }
+            public int TotalProjectImages { get; set; }
             public int TotalImages { get; set; }
             public int ImagesTagged { get; set; }
             public int ImagesHadQc { get; set; }
             public string TotalTaggedTime { get; set; }
             public int TotalTags { get; set; }
             public int TotalTagsHaveClass { get; set; }
+            public UserProject CurrentProgress { get; set; }
             public List<UserProject> UserProjects { get; set; }
         }
 
@@ -35,9 +38,12 @@ namespace ApiServer.Model.views
             public string UserName { get; set; }
             public string Email { get; set; }
             public string[] RoleNames { get; set; }
-            public double TaggedTime { get; set; }
+            public string TaggedTime { get; set; }
+            public int TagsHaveClass { get; set; }
             public int TotalTags { get; set; }
             public int TotalQcs { get; set; }
+            public int ImagesHaveTag { get; set; }
         }
+        
     }
 }

@@ -83,7 +83,7 @@ namespace ApiServer.Controllers
             var results = new List<ImageForView2>();
             if (_currentRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
             {
-                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged).Skip(start).Take(stop);
+                var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(x=>x.QuantityCheck).Include(b => b.UsersQc).Include(c => c.UsersTagged).Skip(start).Take(stop);
                 foreach (var img in imgs)
                 {
                     var imgForView = ImgForView(img);
@@ -97,7 +97,7 @@ namespace ApiServer.Controllers
 
                 if (userInProject)
                 {
-                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(b => b.UsersQc).Include(c => c.UsersTagged);
+                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(x => x.QuantityCheck).Include(b => b.UsersQc).Include(c => c.UsersTagged);
                     foreach (var img in imgs)
                     {
                         var imgForView = ImgForView(img);
@@ -384,11 +384,12 @@ namespace ApiServer.Controllers
                 }
             }
 
+            double totalTaggedTime = 0;
             foreach(var userTaggedTime in image.UserTaggedTimes)
             {
-                image.TagTime += userTaggedTime.TaggedTime;
+                totalTaggedTime += userTaggedTime.TaggedTime;
             }
-            
+            image.TagTime = totalTaggedTime;
 
             try
             {
@@ -434,7 +435,7 @@ namespace ApiServer.Controllers
             var ids = id.Split('_');
             for (var i = 0; i < ids.Length; i++)
             {
-                var img = await _context.Images.Include(x => x.Project).Include(x => x.Tags).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
+                var img = await _context.Images.Include(x => x.Project).Include(x => x.Tags).Include(x=>x.QuantityCheck).SingleOrDefaultAsync(m => m.Id == Guid.Parse(ids[i]));
                 if (img == null)
                 {
                     return Ok("error#Image not found");
@@ -451,6 +452,7 @@ namespace ApiServer.Controllers
                         }
                         _context.Tags.RemoveRange(img.Tags);
                         _context.Images.Remove(img);
+                        _context.QuantityChecks.Remove(img.QuantityCheck);
                         await _context.SaveChangesAsync();
                         await ImageQueues.DeleteImage(project.Id, img.Id);
                         DeleteFile(img.Path);

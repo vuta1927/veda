@@ -17,6 +17,7 @@ using System.Net.Http.Headers;
 using System.IO.Compression;
 using VDS.Security;
 using ApiServer.Core;
+using ApiServer.Core.Queues;
 
 namespace ApiServer.Controllers
 {
@@ -142,7 +143,7 @@ namespace ApiServer.Controllers
                         }
                     }
                 }
-
+                
                 return Ok("OK");
             }
             catch (Exception err)
@@ -172,10 +173,12 @@ namespace ApiServer.Controllers
                 proj.TotalImgNotQC += 1;
                 proj.TotalImgQC = 0;
                 await _context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
 
+                ImageQueues.AddImage(proj.Id, newImg.Id);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 

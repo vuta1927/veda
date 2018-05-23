@@ -213,6 +213,16 @@ namespace ApiServer.Core.Queues
             return null;
         }
 
+        public static void AddImage(Guid projectId, Guid imageId)
+        {
+            if (_image_notTaken.ContainsKey(projectId))
+            {
+                _image_notTaken[projectId].Add(new ImageForQueue()
+                {
+                    ImageId = imageId
+                });
+            }
+        }
         public static async Task DeleteImage(Guid projectId, Guid imageId)
         {
             if (!_image_Taken.ContainsKey(projectId)) return;

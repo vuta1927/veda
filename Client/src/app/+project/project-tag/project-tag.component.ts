@@ -65,7 +65,7 @@ export class ProjecTagComponent {
     currentUserId: number;
     messageTypes: MessageTypes = new MessageTypes();
     qcValues: any = [{ name: 'Passed', value: true }, { name: 'Unpassed', value: false }];
-    qcValue: any;
+    qcValue: any = true;
     timedOut = false;
     lastPing?: Date = null;
 
@@ -741,25 +741,6 @@ export class ProjecTagComponent {
         let lastPosX;
         let lastPosY;
         $('body').on('contextmenu', 'canvas', function (options: any) {
-            lastPosX = options.clientX;
-            lastPosY = options.clientY;
-            //Disabe contextmenu on right mouse, implement right mouse event
-            // let target: any = mother.canvas.findTarget(options, false);
-            // if (target) {
-            //     let type: string = target.type;
-            //     if (type === "group") {
-            //         console.log('right click on group');
-            //     } else {
-            //         // mother.canvas.setActiveObject(target);
-            //         console.log('right click on target, type: ' + type);
-            //     }
-            // } else {
-            //     // mother.canvas.discardActiveObject();
-            //     // mother.canvas.discardActiveGroup();
-            //     // mother.canvas.renderAll();
-            //     console.log('right click on canvas');
-            // }
-            // isDragging = true;
             options.preventDefault();
             return false;
         });

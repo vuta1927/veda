@@ -84,7 +84,10 @@
                 <div class="col-lg-9">
                     <div class="d-flex">
                         <div class="mr-auto p-2">
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': tagMode, '': !tagMode }" (click)="switchTagMode()">
+
+                        </div>
+                        <div class="p-2">
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': tagMode, '': !tagMode }" (click)="switchTagMode()" *ngIf="!hadQc">
                                 <span>
                                     <i class="la la-tag"></i>
                                     <span>
@@ -92,7 +95,7 @@
                                     </span>
                                 </span>
                             </button>
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': excluseMode, '': !excluseMode }" (click)="ExcluseAreaClick()">
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary" [ngClass]="{ 'active': excluseMode, '': !excluseMode }" (click)="ExcluseAreaClick()" *ngIf="!hadQc">
                                 <span>
                                     <i class="la la-scissors"></i>
                                     <span>
@@ -109,7 +112,7 @@
                                 </span>
                             </button>
 
-                            <button class="btn btn-sm btn-primary m-btn--wide m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled" *ngIf="!qcDone">
+                            <button class="btn btn-sm btn-primary m-btn--wide m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled" *ngIf="!hadQc">
                                 <span>
                                     <i class="la la-save"></i>
                                     <span>
@@ -117,8 +120,6 @@
                                     </span>
                                 </span>
                             </button>
-                        </div>
-                        <div class="p-2">
                             <button class="btn btn-sm btn-primary m-btn--air" (click)="nextImage()">
                                 <span>
                                     <i class="la la-arrow-right"></i>
@@ -185,7 +186,7 @@
 
                                     </div>
 
-                                    <span class="m-list-search__result-category m-list-search__result-category--first">
+                                    <span class="m-list-search__result-category m-list-search__result-category--first" *ngIf="(qcDone || hadQc || addQc)">
                                         Quantity Check
                                     </span>
                                     <div class="row" style="margin: 10px 0px 30px;padding: 10px; padding-left: 10px">
@@ -217,7 +218,8 @@
                                             </select>
                                         </div>
                                         <div class="col-12" style="padding-top: 10px" *ngIf="(!qcDone && addQc)">
-                                            <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && addQc)" placeholder="Comment"></textarea>
+                                            <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && addQc)"
+                                                placeholder="Comment"></textarea>
                                         </div>
                                         <div class="col-12" style="padding-top: 10px">
                                             <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && addQc)">

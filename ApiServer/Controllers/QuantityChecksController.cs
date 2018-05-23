@@ -39,7 +39,7 @@ namespace ApiServer.Controllers
                 return Content("User not found !");
             }
 
-            var img = await _context.Images.Include(x => x.Project).FirstOrDefaultAsync(x => x.Id == data.ImageId);
+            var img = await _context.Images.Include(x => x.Project).Include(x=>x.UsersQc).FirstOrDefaultAsync(x => x.Id == data.ImageId);
             if (img == null)
             {
                 return Content("Tag not found !");
@@ -47,7 +47,7 @@ namespace ApiServer.Controllers
 
             var project = img.Project;
 
-            var qc = await _context.QuantityChecks.FirstOrDefaultAsync(x => x.Image == img);
+            var qc = await _context.QuantityChecks.Include(x=>x.UsersQc).FirstOrDefaultAsync(x => x.Image == img);
             var qcStatusText = img.QcStatus;
 
             if (qc != null)

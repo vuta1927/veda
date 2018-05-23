@@ -28,12 +28,12 @@
   <div class="row">
     <div class="col-lg-12">
       <!--begin::Portlet-->
-      <div class="m-portlet m-portlet--tab">
+      <div class="m-portlet m-portlet--tab" *ngIf="isProjectManager">
         <div class="m-portlet__head">
           <div class="m-portlet__head-caption">
             <div class="m-portlet__head-title">
-              <span class="m-portlet__head-icon m--hide">
-                <i class="la la-gear"></i>
+              <span class="m-portlet__head-icon">
+                <i class="flaticon-analytics"></i>
               </span>
               <h3 class="m-portlet__head-text">
                 Summary
@@ -43,7 +43,7 @@
         </div>
         <div class="m-portlet__body">
           <div class="row m-row--no-padding m-row--col-separator-xl">
-            <div class="col-xl-5">
+            <div class="col-xl-6">
               <!--begin:: Widgets/Stats2-1 -->
               <div class="m-widget1">
                 <div class="m-widget1__item">
@@ -58,11 +58,15 @@
                     </div>
                     <div class="col m--align-right">
                       <span class="m-widget1__number m--font-brand">
-                        3
+                        {{currentProjectData.totalProjects}}
                       </span>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+            <div class="col-xl-6">
+              <div class="m-widget1">
                 <div class="m-widget1__item">
                   <div class="row m-row--no-padding align-items-center">
                     <div class="col">
@@ -75,190 +79,390 @@
                     </div>
                     <div class="col m--align-right">
                       <span class="m-widget1__number m--font-danger">
-                        15
+                        {{currentProjectData.totalProjectImages}}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <!--end:: Widgets/Stats2-1 -->
             </div>
           </div>
         </div>
         <!--end::Portlet-->
       </div>
       <div class="m-portlet m-portlet--tab">
+        <div class="m-portlet__head">
+          <div class="m-portlet__head-caption">
+            <div class="m-portlet__head-title">
+              <span class="m-portlet__head-icon">
+                <i class="flaticon-network"></i>
+              </span>
+              <h3 class="m-portlet__head-text">
+                Project
+              </h3>
+            </div>
+          </div>
+          <div class="m-portlet__head-tools">
+            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+              <div class="btn-group" role="group">
+
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="m-portlet__body">
-          <div class="form-group m-form__group">
-            <label for="projectSelect">
-              <h4 class="m-portlet__head-text">Project</h4>
-            </label>
-            <select class="form-control m-input m-input--air" id="projectSelect" (change)="projectSelectedChange($event)">
-              <option *ngFor="let project of projects" [value]="project.id">
-                <strong>{{project.name}}</strong>
-              </option>
-            </select>
-          </div>
-          <div class="row m-row--no-padding m-row--col-separator-xl">
-            <div class="col-xl-4">
-              <div class="m-widget14">
-                <div class="m-widget14__header">
-                  <h3 class="m-widget14__title">
-                    Images Tagging
-                  </h3>
-                  <span class="m-widget14__desc">
-                    Images tagging proccess
-                  </span>
-                </div>
-                <div class="row  align-items-center">
-                  <div class="col" *ngIf="imageTaggedChart">
-                    <canvas id="canvas">{{ imageTaggedChart }}</canvas>
-                  </div>
-                  <div class="col">
-                    <div class="m-widget14__legends">
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-danger"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.imageTaggedPercent}}% Images tagged
-                        </span>
-                      </div>
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-metal"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.imageNotTaggedPercent}}% Images not tagged
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-xl-4">
-              <!--begin:: Widgets/Profit Share-->
-              <div class="m-widget14">
-                <div class="m-widget14__header">
-                  <h3 class="m-widget14__title">
-                    Tags
-                  </h3>
-                  <span class="m-widget14__desc">
-                    Number of tag have class
-                  </span>
-                </div>
-                <div class="row  align-items-center">
-                  <div class="col" *ngIf="TagChart">
-                    <canvas id="canvas-tag">{{ TagChart }}</canvas>
-                  </div>
-                  <div class="col">
-                    <div class="m-widget14__legends">
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-success"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.tagsHaveClass}}% Tags have class
-                        </span>
-                      </div>
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-metal"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.tagsNotHaveClass}}% Tags not have class
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-xl-4">
-              <!--begin:: Widgets/Profit Share-->
-              <div class="m-widget14">
-                <div class="m-widget14__header">
-                  <h3 class="m-widget14__title">
-                    Quantity Check
-                  </h3>
-                  <span class="m-widget14__desc">
-                    Quantity check proccess
-                  </span>
-                </div>
-                <div class="row  align-items-center">
-                  <div class="col" *ngIf="QcChart">
-                    <canvas id="canvas-qc">{{ QcChart }}</canvas>
-                  </div>
-                  <div class="col">
-                    <div class="m-widget14__legends">
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-brand"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.imagesHaveQcPercent}}% Images have Qc
-                        </span>
-                      </div>
-                      <div class="m-widget14__legend">
-                        <span class="m-widget14__legend-bullet m--bg-metal"></span>
-                        <span class="m-widget14__legend-text">
-                          {{percentData.imagesNotHaveQcPercent}}% Images not have Qc
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
           <div class="row m-row--no-padding">
-            <div class="col-xl-12">
-              <!--begin:: Widgets/Stats2-1 -->
-              <div class="m-widget1">
-                <div class="m-widget1__item">
-                  <div class="row m-row--no-padding align-items-center">
-                    <div class="col">
-                      <h3 class="m-widget1__title">
+            <div class="row align-items-center">
+              <select class="form-control m-portlet__nav-item m-dropdown m-dropdown--large m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push"
+                 id="projectSelect" (change)="projectSelectedChange($event)">
+                <option *ngFor="let project of projects" [value]="project.id">
+                  {{project.name}}
+                </option>
+              </select>
+              <!-- <h4 class="m--font-primary" *ngIf="selectedProject">{{selectedProject.name}}</h4> -->
+            </div>
+
+          </div>
+          <ul class="nav nav-tabs  m-tabs-line" role="tablist">
+            <li class="nav-item m-tabs__item">
+              <a class="nav-link m-tabs__link active" data-toggle="tab" href="#m_tabs_progress" role="tab">
+                <i class="flaticon-pie-chart"></i>
+                Summary
+              </a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="m_tabs_progress" role="tabpanel">
+              <div class="row m-row--no-padding m-row--col-separator-xl">
+                <div class="col-xl-4">
+                  <div class="m-widget14">
+                    <div class="m-widget14__header">
+                      <h3 class="m-widget14__title">
+                        Images Tagging
                       </h3>
-                      <span class="m-widget1__desc">
+                      <span class="m-widget14__desc">
+                        Images tagging proccess
                       </span>
                     </div>
-                    <div class="col m--align-right">
-                      <span class="m-widget1__number">Tagged time:</span>
-                      <span class="m-widget1__number m--font-brand">
-                        {{currentProjectData.totalTaggedTime}}
+                    <div class="row  align-items-center">
+                      <div class="col" *ngIf="imageTaggedChart">
+                        <canvas id="canvas">{{ imageTaggedChart }}</canvas>
+                      </div>
+                      <div class="col">
+                        <div class="m-widget14__legends">
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-danger"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.imageTaggedPercent}}% Images tagged
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-metal"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.imageNotTaggedPercent}}% Images not tagged
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-text">
+                              Total images: {{currentProjectData.totalImages}}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-4">
+                  <!--begin:: Widgets/Profit Share-->
+                  <div class="m-widget14">
+                    <div class="m-widget14__header">
+                      <h3 class="m-widget14__title">
+                        Quantity Check
+                      </h3>
+                      <span class="m-widget14__desc">
+                        Quantity check proccess
                       </span>
+                    </div>
+                    <div class="row  align-items-center">
+                      <div class="col" *ngIf="QcChart">
+                        <canvas id="canvas-qc">{{ QcChart }}</canvas>
+                      </div>
+                      <div class="col">
+                        <div class="m-widget14__legends">
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-brand"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.imagesHaveQcPercent}}% Images have Qc
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-metal"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.imagesNotHaveQcPercent}}% Images not have Qc
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-text">
+                              Total images have tag: {{currentProjectData.imagesTagged}}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-4">
+                  <!--begin:: Widgets/Profit Share-->
+                  <div class="m-widget14">
+                    <div class="m-widget14__header">
+                      <h3 class="m-widget14__title">
+                        Tags
+                      </h3>
+                      <span class="m-widget14__desc">
+                        Number of tag have class
+                      </span>
+                    </div>
+                    <div class="row  align-items-center">
+                      <div class="col" *ngIf="TagChart">
+                        <canvas id="canvas-tag">{{ TagChart }}</canvas>
+                      </div>
+                      <div class="col">
+                        <div class="m-widget14__legends">
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-success"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.tagsHaveClass}}% Tags have class
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-bullet m--bg-metal"></span>
+                            <span class="m-widget14__legend-text">
+                              {{percentData.tagsNotHaveClass}}% Tags not have class
+                            </span>
+                          </div>
+                          <div class="m-widget14__legend">
+                            <span class="m-widget14__legend-text">
+                              Total tags: {{currentProjectData.totalTags}}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
             </div>
-            <div class="col-xl-12" style="padding-top: 10px">
+            <div class="row m-row--no-padding">
+              <div class="col-xl-12" style="padding-top: 10px">
+                <div class="m-separator m-separator--dashed"></div>
+                <ul class="nav nav-tabs  m-tabs-line" role="tablist">
+                  <li class="nav-item m-tabs__item">
+                    <a class="nav-link m-tabs__link active" data-toggle="tab" href="#m_tabs_progress" role="tab">
+                      <i class="flaticon-cogwheel-2"></i>
+                      Your Progress
+                    </a>
+                  </li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane active" id="m_tabs_progress" role="tabpanel">
+                    <div class="row m-row--no-padding m-row--col-separator-xl">
+                      <div class="col-xl-12">
+                        <!--begin:: Widgets/Stats2-1 -->
+                        <div class="m-widget1">
+                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
+                            <div class="row m-row--no-padding align-items-center">
+                              <div class="col">
+                                <h3 class="m-widget1__title">
+                                  Tagged
+                                </h3>
+                                <span class="m-widget1__desc">
+                                  Tags have class / total tagged
+                                </span>
+                              </div>
+                              <div class="col m--align-left">
+                                <div class="m-widget15__item">
+                                  <span class="m-widget15__stats">
+                                  </span>
+                                  <span class="m-widget15__text">
+                                    {{currentProjectData.currentProgress.tagsHaveClass}} tags
+                                  </span>
+                                  <div class="m--space-10"></div>
+                                  <div class="progress m-progress--sm">
+                                    <div class="progress-bar bg-danger" id="tagsHaveClass-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.tagsHaveClass/currentProjectData.totalTags*100) + '%'}"
+                                      [attr.aria-valuenow]="currentProjectData.currentProgress.tagsHaveClass" aria-valuemin="0"
+                                      [attr.aria-valuemax]="currentProjectData.totalTags"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
+                            <div class="row m-row--no-padding align-items-center">
+                              <div class="col">
+                                <h3 class="m-widget1__title">
+                                  Images tagged
+                                </h3>
+                                <span class="m-widget1__desc">
+                                  Images had tagged
+                                </span>
+                              </div>
+                              <div class="col m--align-left">
+                                <div class="m-widget15__item">
+                                  <span class="m-widget15__stats">
+                                  </span>
+                                  <span class="m-widget15__text">
+                                    {{currentProjectData.currentProgress.imagesHaveTag}} images
+                                  </span>
+                                  <div class="m--space-10"></div>
+                                  <div class="progress m-progress--sm">
+                                    <div class="progress-bar bg-success" id="imagesHaveTag-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
+                                      [attr.aria-valuenow]="currentProjectData.currentProgress.imagesHaveTag" aria-valuemin="0"
+                                      [attr.aria-valuemax]="currentProjectData.totalImages"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="m-widget1__item" *ngIf="isProjectManager || isQc">
+                            <div class="row m-row--no-padding align-items-center">
+                              <div class="col">
+                                <h3 class="m-widget1__title">
+                                  Qc Images
+                                </h3>
+                                <span class="m-widget1__desc">
+                                  Images had quantity check
+                                </span>
+                              </div>
+                              <div class="col m--align-left">
+                                <div class="m-widget15__item">
+                                  <span class="m-widget15__stats">
+                                  </span>
+                                  <span class="m-widget15__text">
+                                    {{currentProjectData.currentProgress.totalQcs}} images
+                                  </span>
+                                  <div class="m--space-10"></div>
+                                  <div class="progress m-progress--sm">
+                                    <div class="progress-bar bg-primary" id="totalQcs-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.totalQcs/currentProjectData.totalImages*100) + '%'}"
+                                      [attr.aria-valuenow]="currentProjectData.currentProgress.totalQcs" aria-valuemin="0"
+                                      [attr.aria-valuemax]="currentProjectData.totalImages"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
+                            <div class="row m-row--no-padding align-items-center">
+                              <div class="col">
+                                <h3 class="m-widget1__title">
+                                  Tagged time:
+                                </h3>
+                                <span class="m-widget1__desc">
+                                </span>
+                              </div>
+                              <div class="col m--align-left">
+                                <span class="m-widget1__number m--font-brand">
+                                  {{currentProjectData.currentProgress.taggedTime}}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!--end:: Widgets/Stats2-1 -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-12" style="padding-top: 10px" *ngIf="isProjectManager">
+                <div class="m-separator m-separator--dashed"></div>
+                <ul class="nav nav-tabs  m-tabs-line" role="tablist">
+                  <li class="nav-item m-tabs__item">
+                    <a class="nav-link m-tabs__link active" data-toggle="tab" href="#m_tabs_projectuser" role="tab">
+                      <i class="flaticon-users"></i>
+                      Project Users
+                    </a>
+                  </li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane active" id="m_tabs_projectuser" role="tabpanel">
+                    <dx-data-grid id="gridUserContainer" [dataSource]="userDataSource" [showBorders]="true" [wordWrapEnabled]="true" [columnAutoWidth]=true
+                      [showRowLines]="true" [hoverStateEnabled]="false" class="m_datatable">
+                      <dxo-selection mode="single"></dxo-selection>
+                      <dxo-remote-operations [sorting]="true" [paging]="true"></dxo-remote-operations>
+                      <dxo-paging [pageSize]="12"></dxo-paging>
+                      <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
 
-              
-              <dx-data-grid id="gridUserContainer" [dataSource]="userDataSource" [showBorders]="true" [wordWrapEnabled]="true" [columnAutoWidth]=true
-                [hoverStateEnabled]="false" class="m_datatable">
-                <dxo-selection mode="single"></dxo-selection>
-                <dxo-remote-operations [sorting]="true" [paging]="true"></dxo-remote-operations>
-                <dxo-paging [pageSize]="12"></dxo-paging>
-                <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                      <dxi-column caption="User Name" sortOrder="asc" cellTemplate="cellUserName"></dxi-column>
+                      <dxi-column dataField="email" [allowSorting]="false"></dxi-column>
+                      <dxi-column cellTemplate="cellRole" caption="Roles" [allowSorting]="false"></dxi-column>
+                      <dxi-column cellTemplate="tagsHaveClassCell" caption="Tagged (tags have class/ total tagged)"></dxi-column>
+                      <dxi-column cellTemplate="imagesHaveTagClass" caption="Images Had tagged"></dxi-column>
+                      <dxi-column cellTemplate="imagesHadQcCell" caption="Image Had Quantity Check"></dxi-column>
+                      <dxi-column cellTemplate="tagTimeCell" caption="Tagged Time"></dxi-column>
 
-                <dxi-column caption="User Name" sortOrder="asc" cellTemplate="cellUserName"></dxi-column>
-                <dxi-column dataField="email" [allowSorting]="false"></dxi-column>
-                <dxi-column cellTemplate="cellRole" caption="Roles" [allowSorting]="false"></dxi-column>
-                <dxi-column dataField="totalTags" caption="Total Tags"></dxi-column>
-                <dxi-column caption="Total Image Had Quantity Check" dataField="totalQcs"></dxi-column>
-                <dxi-column cellTemplate="tagTimeCell" caption="Tagged Time"></dxi-column>
-                <div *dxTemplate="let data of 'cellUserName'">
-                  <span class="span-cellUserName">
-                    <b>{{(data.data.userName)}}</b>
-                  </span>
+                      <div *dxTemplate="let data of 'imagesHadQcCell'">
+                        <div class="m-widget15__item">
+                          <span class="m-widget15__stats">
+                          </span>
+                          <span class="m-widget15__text">
+                            {{data.data.totalQcs}} images
+                          </span>
+                          <div class="m--space-10"></div>
+                          <div class="progress m-progress--sm">
+                            <div class="progress-bar bg-primary" role="progressbar" [ngStyle]="{'width':(data.data.totalQcs/currentProjectData.totalImages*100) + '%'}"
+                              [attr.aria-valuenow]="data.data.totalQcs" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalImages"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *dxTemplate="let data of 'imagesHaveTagClass'">
+                        <div class="m-widget15__item">
+                          <span class="m-widget15__stats">
+                          </span>
+                          <span class="m-widget15__text">
+                            {{data.data.imagesHaveTag}} images
+                          </span>
+                          <div class="m--space-10"></div>
+                          <div class="progress m-progress--sm">
+                            <div class="progress-bar bg-success" role="progressbar" [ngStyle]="{'width':(data.data.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
+                              [attr.aria-valuenow]="data.data.imagesHaveTag" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalImages"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *dxTemplate="let data of 'tagsHaveClassCell'">
+                        <div class="m-widget15__item">
+                          <span class="m-widget15__stats">
+                          </span>
+                          <span class="m-widget15__text">
+                            {{data.data.tagsHaveClass}} tags
+                          </span>
+                          <div class="m--space-10"></div>
+                          <div class="progress m-progress--sm">
+                            <div class="progress-bar bg-danger" role="progressbar" [ngStyle]="{'width':(data.data.tagsHaveClass/data.data.totalTags*100) + '%'}"
+                              [attr.aria-valuenow]="data.data.tagsHaveClass" aria-valuemin="0" [attr.aria-valuemax]="data.data.totalTags"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *dxTemplate="let data of 'cellUserName'">
+                        <span class="span-cellUserName">
+                          <b>{{(data.data.userName)}}</b>
+                        </span>
+                      </div>
+                      <div *dxTemplate="let data of 'cellRole'">
+                        <span class="m-badge m-badge--brand m-badge--brand m-badge--wide" *ngFor="let role of data.data.roleNames">
+                          {{(role)}}
+                        </span>
+                      </div>
+                      <div *dxTemplate="let data of 'tagTimeCell'">
+                        {{data.data.taggedTime }}
+                      </div>
+                    </dx-data-grid>
+                  </div>
                 </div>
-                <div *dxTemplate="let data of 'cellRole'">
-                  <span class="m-badge m-badge--brand m-badge--brand" *ngFor="let role of data.data.roleNames">
-                    <b>{{(role)}}</b>
-                  </span>
-                </div>
-                <div *dxTemplate="let data of 'tagTimeCell'">
-                    {{data.data.taggedTime | number: '1.0-0' }} minutes
-                </div>
-              </dx-data-grid>
+
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </div>
+    </div>
