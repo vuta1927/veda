@@ -44,12 +44,20 @@ export class Tag implements ITag{
     }
 }
 
+export class TaggedTimeUser{
+    constructor(
+        public userId:number,
+        public taggedTime: number
+    ){ }
+}
+
 export class DataUpdate{
     constructor(
         public userId: number, 
         public tags:Tag[], 
         public taggedTime: number,
-        public excluseAreas:ExcluseArea[]
+        public excluseAreas:ExcluseArea[],
+        public ignored: boolean =false
     ){}
 }
 

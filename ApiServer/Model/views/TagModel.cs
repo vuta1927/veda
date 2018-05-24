@@ -48,6 +48,8 @@ namespace ApiServer.Model.views
             public long UserId { get; set; }
             public IEnumerable<TagForUpdate> Tags { get; set; }
             public IEnumerable<ExcluseArea> ExcluseAreas { get; set; }
+            public double TaggedTime { get; set; }
+            public bool Ignored { get; set; }
         }
 
         public class ExcluseArea

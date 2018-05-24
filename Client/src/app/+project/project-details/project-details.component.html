@@ -15,7 +15,7 @@
           -
         </li>
         <li class="m-nav__item">
-          <a href="" class="m-nav__link">
+          <a [routerLink]="['/dashboard']" class="m-nav__link">
             <span class="m-nav__link-text">
               Home
             </span>
@@ -25,7 +25,7 @@
           -
         </li>
         <li class="m-nav__item">
-          <a href="" class="m-nav__link">
+          <a class="m-nav__link" [routerLink]="['/project']">
             <span class="m-nav__link-text">
               Project
             </span>
@@ -48,60 +48,86 @@
 <!-- END: Subheader -->
 <div class="m-content">
   <div class="m-portlet m-portlet--mobile">
-    <div class="m-portlet__body">
-      <ul class="nav nav-tabs  m-tabs-line m-tabs-line--2x m-tabs-line--primary" role="tablist">
-        <li class="nav-item m-tabs__item">
-          <a class="nav-link m-tabs__link active show" data-toggle="tab" href="#image-tab" role="tab" aria-selected="false">
-            <i class="la la-image" aria-hidden="true"></i>
-            Images
-          </a>
-        </li>
-        <li class="nav-item m-tabs__item" *ngIf="(addProject || editProject)">
-          <a class="nav-link m-tabs__link show" data-toggle="tab" href="#import-export-tab" role="tab" aria-selected="false">
-            <i class="la la-cloud" aria-hidden="true"></i>
-            Import & Export
-          </a>
-        </li>
-        <li class="nav-item m-tabs__item" *ngIf="editProject">
-          <a class="nav-link m-tabs__link" data-toggle="tab" href="#info-tab" role="tab" aria-selected="true">
-            <i class="la la-info" aria-hidden="true"></i>
-            Project Info
-          </a>
-        </li>
-        <li class="nav-item m-tabs__item" *ngIf="addTag">
-          <a class="nav-link m-tabs__link" data-toggle="tab" href="#class-tab" role="tab" aria-selected="true">
-            <i class="la la-tags" aria-hidden="true" ></i>
-            Classes
-          </a>
-
-        </li>
-        <li class="nav-item m-tabs__item" *ngIf="(editProject || addProject)">
-          <a class="nav-link m-tabs__link" data-toggle="tab" href="#user-tab" role="tab" aria-selected="false">
-            <i class="la la-users" aria-hidden="true"></i>
-            Users
-          </a>
-        </li>
-      </ul>
-      <div class="tab-content">
-        <div class="tab-pane" id="info-tab" role="tabpanel" *ngIf="editProject">
-          <app-project-info></app-project-info>
-        </div>
-        <div class="tab-pane" id="import-export-tab" role="tabpanel" *ngIf="(addProject || editProject)">
-          <app-import-project></app-import-project>
-          <app-export-project></app-export-project>
-
-        </div>
-        <div class="tab-pane active" id="image-tab" role="tabpanel">
-          <app-project-images></app-project-images>
-        </div>
-        <div class="tab-pane" id="user-tab" role="tabpanel" *ngIf="(editProject || addProject)">
-          <app-project-users></app-project-users>
-        </div>
-        <div class="tab-pane" id="class-tab" role="classpanel" *ngIf="addTag">
-          <app-project-class></app-project-class>
+    <div class="m-portlet__head">
+      <div class="m-portlet__head-caption">
+        <div class="m-portlet__head-title">
+          <span class="m-portlet__head-icon">
+            <i class="flaticon-technology"></i>
+          </span>
+          <h3 class="m-portlet__head-text">
+            {{currentProject.name}}
+          </h3>
         </div>
       </div>
-
+      <div class="m-portlet__head-tools">
+        <ul class="m-portlet__nav">
+          <li class="m-portlet__nav-item m-dropdown m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push"
+            data-dropdown-toggle="hover" aria-expanded="true">
+            <a class="m-portlet__nav-link m-portlet__nav-link--icon m-dropdown__toggle">
+              <i class="la la-ellipsis-h"></i>
+            </a>
+            <div class="m-dropdown__wrapper">
+              <span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust" style="left: auto; right: 17px;"></span>
+              <div class="m-dropdown__inner">
+                <div class="m-dropdown__body">
+                  <div class="m-dropdown__content">
+                    <ul class="m-nav">
+                      <li class="m-nav__section m-nav__section--first">
+                        <span class="m-nav__section-text">
+                          Action
+                        </span>
+                      </li>
+                      <li class="m-nav__item" *ngIf="editProject">
+                          <a class="m-nav__link" [routerLink]="['/project-info']" [queryParams]="{ project: currentProject.id }">
+                            <i class="m-nav__link-icon flaticon-info"></i>
+                            <span class="m-nav__link-text">
+                              Edit info
+                            </span>
+                          </a>
+                        </li>
+                      <li class="m-nav__item" *ngIf="addTag">
+                        <a class="m-nav__link" [routerLink]="['/project-class']" [queryParams]="{ project: currentProject.id }">
+                          <i class="m-nav__link-icon la la-tags"></i>
+                          <span class="m-nav__link-text">
+                            Classes
+                          </span>
+                        </a>
+                      </li>
+                      <li class="m-nav__item" *ngIf="(editProject || addProject)">
+                        <a class="m-nav__link" [routerLink]="['/project-users']" [queryParams]="{ project: currentProject.id }">
+                          <i class="m-nav__link-icon flaticon-users"></i>
+                          <span class="m-nav__link-text">
+                            Users
+                          </span>
+                        </a>
+                      </li>
+                      <li class="m-nav__item" *ngIf="(addProject || editProject)">
+                        <a class="m-nav__link" [routerLink]="['/project-import']" [queryParams]="{ project: currentProject.id }">
+                          <i class="m-nav__link-icon la la-cloud-upload"></i>
+                          <span class="m-nav__link-text">
+                            Import
+                          </span>
+                        </a>
+                      </li>
+                      <li class="m-nav__item" *ngIf="(addProject || editProject)">
+                        <a class="m-nav__link" [routerLink]="['/project-export']" [queryParams]="{ project: currentProject.id }">
+                          <i class="m-nav__link-icon la la-cloud-download"></i>
+                          <span class="m-nav__link-text">
+                            Export
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="m-portlet__body">
+        <app-project-images></app-project-images>
     </div>
   </div>
 

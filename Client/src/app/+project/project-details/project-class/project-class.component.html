@@ -1,44 +1,98 @@
-<div class="col-lg-12">
-    <div class="dropdown">
-        <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-            aria-expanded="false">
-            Actions
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
-            <a class="dropdown-item" (click)="addClass()">
-                <i class="la la-plus i-plus"></i>
-                Add new class
-            </a>
-            <a *ngIf="selectedClasses.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
-                <i class="la la-trash i-trash"></i> Delete selected classes</a>
-            <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
-                <i class="la la-trash i-trash"></i> Delete selected classes</a>
+<!-- BEGIN: Subheader -->
+<div class="m-subheader">
+    <div class="d-flex align-items-center">
+        <div class="mr-auto">
+            <h3 class="m-subheader__title m-subheader__title--separator">
+                Project Class
+            </h3>
+            <ul class="m-subheader__breadcrumbs m-nav m-nav--inline">
+                <li class="m-nav__item m-nav__item--home">
+                    <a href="#" class="m-nav__link m-nav__link--icon">
+                        <i class="m-nav__link-icon la la-home"></i>
+                    </a>
+                </li>
+                <li class="m-nav__separator">
+                    -
+                </li>
+                <li class="m-nav__item">
+                    <a href="" class="m-nav__link">
+                        <span class="m-nav__link-text">
+                            Home
+                        </span>
+                    </a>
+                </li>
+                <li class="m-nav__separator">
+                    -
+                </li>
+                <li class="m-nav__item">
+                    <a href="" class="m-nav__link">
+                        <span class="m-nav__link-text">
+                            Project
+                        </span>
+                    </a>
+                </li>
+                <li class="m-nav__separator">
+                    -
+                </li>
+                <li class="m-nav__item">
+                    <a href="" class="m-nav__link">
+                        <span class="m-nav__link-text">
+                            Project Class
+                        </span>
+                    </a>
+                </li>
+            </ul>
         </div>
     </div>
 </div>
+<!-- END: Subheader -->
+<div class="m-content">
+    <div class="m-portlet m-portlet--mobile">
+        <div class="m-portlet__body">
+            <div class="col-lg-12">
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        Actions
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <a class="dropdown-item" (click)="addClass()">
+                            <i class="la la-plus i-plus"></i>
+                            Add new class
+                        </a>
+                        <a *ngIf="selectedClasses.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
+                            <i class="la la-trash i-trash"></i> Delete selected classes</a>
+                        <a *ngIf="!selectedClasses.length" class="dropdown-item disabled">
+                            <i class="la la-trash i-trash"></i> Delete selected classes</a>
+                    </div>
+                </div>
+            </div>
 
-<div class="col-lg-7" style="padding-top: 10px">
-    <dx-data-grid id="gridClassContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
-        [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)"
-        class="m_datatable">
-        <dxo-selection mode="multiple"></dxo-selection>
-        <dxo-remote-operations [sorting]="true" [paging]="true">
-        </dxo-remote-operations>
-        <dxo-paging [pageSize]="12"></dxo-paging>
-        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-        <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
-        <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
-        <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
-        <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
-        <div *dxTemplate="let data of 'cellName'">
-            <span class="span-cellname" (click)="classSelected(data.data)">
-                <b>{{(data.data.name)}}</b>
-            </span>
+            <div class="col-lg-12" style="padding-top: 10px">
+                <dx-data-grid id="gridClassContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+                    [columnAutoWidth]=true [hoverStateEnabled]="false" [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)"
+                    class="m_datatable">
+                    <dxo-selection mode="multiple"></dxo-selection>
+                    <dxo-remote-operations [sorting]="true" [paging]="true">
+                    </dxo-remote-operations>
+                    <dxo-paging [pageSize]="12"></dxo-paging>
+                    <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
+                    <dxi-column caption="Class Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
+                    <dxi-column dataField="classColor" caption="Color" alignment="center" [allowSorting]="false" cellTemplate="cellClassColor"></dxi-column>
+                    <dxi-column dataField="totalTag" caption="Total Tag" [allowSorting]="false" alignment="center"></dxi-column>
+                    <dxi-column dataField="description" sortOrder="asc" alignment="left"></dxi-column>
+                    <div *dxTemplate="let data of 'cellName'">
+                        <span class="span-cellname" (click)="classSelected(data.data)">
+                            <b>{{(data.data.name)}}</b>
+                        </span>
+                    </div>
+                    <div *dxTemplate="let data of 'cellClassColor'">
+                        <span style="width: 132px;">
+                            <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
+                        </span>
+                    </div>
+                </dx-data-grid>
+            </div>
         </div>
-        <div *dxTemplate="let data of 'cellClassColor'">
-            <span style="width: 132px;">
-                <span class="m-badge m-badge--brand m-badge--wide" [style.background]="data.data.classColor">{{data.data.classColor}}</span>
-            </span>
-        </div>
-    </dx-data-grid>
+    </div>
 </div>

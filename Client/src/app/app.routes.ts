@@ -34,6 +34,26 @@ export const ROUTES: Routes = [
         loadChildren: 'app/+project/project-tag/project-tag.module#ProjectTagModule'
       },
       {
+        path: 'project-info',
+        loadChildren: 'app/+project/project-details/project-info/project-info.module#ProjectInfoModule'
+      },
+      {
+        path: 'project-export',
+        loadChildren: 'app/+project/project-details/project-import-export/export/export-project.module#ExportProjectModule'
+      },
+      {
+        path: 'project-import',
+        loadChildren: 'app/+project/project-details/project-import-export/import/import-project.module#ImportProjectModule'
+      },
+      {
+        path: 'project-class',
+        loadChildren: 'app/+project/project-details/project-class/project-class.module#ProjectClassModule'
+      },
+      {
+        path: 'project-users',
+        loadChildren: 'app/+project/project-details/project-users/project-users.module#ProjectUsersModule'
+      },
+      {
         path: 'merge-project',
         loadChildren: 'app/+project/merge-project/merge-project.module#MergeProjectModule',
       },

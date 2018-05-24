@@ -106,7 +106,7 @@ namespace ApiServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var image = await _context.Images.Include(x => x.Tags).SingleOrDefaultAsync(x => x.Id == id);
+            var image = await _context.Images.Include(x => x.Tags).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(x => x.Id == id);
             if (image == null)
             {
                 return Content("Image not found !");
@@ -118,8 +118,30 @@ namespace ApiServer.Controllers
                 return Content("User not found !");
             }
 
+            image.Ignored = data.Ignored;
+            var userTaggedTime = image.UserTaggedTimes.SingleOrDefault(x => x.UserId == currentUser.Id);
+            if (userTaggedTime != null)
+            {
+                userTaggedTime.TaggedTime = data.TaggedTime;
+            }
+            else
+            {
+                var newUserTaggedTime = new UserTaggedTime() { Image = image, ImageId = image.Id, TaggedTime = data.TaggedTime, User = currentUser, UserId = currentUser.Id };
+                _context.userTaggedTimes.Add(newUserTaggedTime);
+            }
+
+
             string webRootPath = _hostingEnvironment.WebRootPath;
             var imgPath = webRootPath + image.Path;
+            var temp = webRootPath + "\\temp";
+
+            if (!Directory.Exists(temp))
+            {
+                Directory.CreateDirectory(temp);
+            }
+
+            var filename = Path.GetFileName(imgPath);
+            temp += "\\" + filename;
             if (data.ExcluseAreas.Count() > 0)
             {
                 foreach (var area in data.ExcluseAreas)
@@ -131,32 +153,50 @@ namespace ApiServer.Controllers
                     //{
                     //    points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
                     //}
-                    Point[] curvePoints = { };
+                    List<Point> curvePoints = new List<Point>();
                     foreach (var p in area.Paths)
                     {
                         var x = (int)p.X;
                         var y = (int)p.Y;
-                        curvePoints.Append(new Point(x, y));
+                        curvePoints.Add(new Point(x, y));
                     }
 
                     try
                     {
-                        using (var img = new Bitmap(System.Drawing.Image.FromFile(imgPath)))
+                        Bitmap bitmap = null;
+                        using (var fs = new FileStream(imgPath, FileMode.Open))
                         {
-                            using (var graphics = Graphics.FromImage(img))
-                            {
-                                using(var brush = new SolidBrush(Color.Black))
-                                {
-                                    graphics.FillPolygon(brush, curvePoints);
-                                    img.Save(imgPath);
-                                }
-                            }
+                            var img = System.Drawing.Image.FromStream(fs);
+                            bitmap = new Bitmap(img);
                         }
-                    }catch(Exception ex)
-                    {
-                        return Content(ex.ToString());
+
+                        using (var graphics = Graphics.FromImage(bitmap))
+                        {
+                            graphics.FillPolygon(new SolidBrush(Color.Black), curvePoints.ToArray());
+                        }
+                        bitmap.Save(imgPath);
+                        bitmap.Dispose();
+
+                        //if (System.IO.File.Exists(temp))
+                        //{
+                        //    try
+                        //    {
+                        //        System.IO.File.Copy(temp, imgPath, true);
+                        //        System.IO.File.Delete(temp);
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        System.IO.File.Delete(temp);
+                        //        throw ex;
+                        //    }
+
+                        //}
                     }
-                    
+                    catch (Exception ex)
+                    {
+                        return Content(ex.Message);
+                    }
+
 
                     //using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
                     //{
@@ -197,7 +237,7 @@ namespace ApiServer.Controllers
                     }
 
                     var newClass = _context.Classes.SingleOrDefault(x => x.Id == tag.ClassId);
-                    if (originTag.Class != newClass)
+                    if (originTag.Class != null && originTag.Class != newClass)
                     {
                         originTag.Class.Tags.Remove(originTag);
 
@@ -213,10 +253,11 @@ namespace ApiServer.Controllers
                     originTag.TaggedDate = DateTime.Now;
                     if (!_context.UserTags.Any(x => x.UserId == currentUser.Id))
                     {
-                        var newUserTag = new UserTag() { UserId = currentUser.Id, TagId = originTag.Id, Tag = originTag, ImageId = image.Id};
+                        var newUserTag = new UserTag() { UserId = currentUser.Id, TagId = originTag.Id, Tag = originTag, ImageId = image.Id };
                         _context.UserTags.Add(newUserTag);
                         originTag.UsersTagged.Add(newUserTag);
                     }
+
                     try
                     {
                         await _context.SaveChangesAsync();
@@ -242,7 +283,7 @@ namespace ApiServer.Controllers
                         TaggedDate = DateTime.Now,
                         UsersTagged = new List<UserTag>()
                     };
-                    
+
                     if (tag.ClassId > 0)
                     {
                         var @class = _context.Classes.FirstOrDefault(x => x.Id == tag.ClassId);
@@ -271,9 +312,34 @@ namespace ApiServer.Controllers
                         return Content(ex.ToString());
                     }
                 }
+
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
             }
             return Ok("OK");
 
+        }
+
+        private System.Drawing.Imaging.ImageFormat GetImageFormat(string extention)
+        {
+            switch (extention)
+            {
+                case "jpg":
+                    return System.Drawing.Imaging.ImageFormat.Jpeg;
+                case "png":
+                    return System.Drawing.Imaging.ImageFormat.Png;
+                case "bmp":
+                    return System.Drawing.Imaging.ImageFormat.Bmp;
+                default:
+                    return System.Drawing.Imaging.ImageFormat.Jpeg;
+            }
         }
 
         private async Task caculateClass(Guid imageId, User user)

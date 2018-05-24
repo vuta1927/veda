@@ -7,7 +7,6 @@ import { Helpers } from '../helpers';
 import { ProjectService } from './project.service';
 import { CreateUpdateProjectComponent } from './create-update/create-update-project.component';
 import { ProjectForAdd } from '../shared/models/project.model';
-import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { SecurityService } from '../shared/services/security.service';
 import { Constants } from '../constants';
 import swal from 'sweetalert2';
@@ -33,12 +32,10 @@ export class ProjectComponent {
         private modalService: NgbModal, 
         private securityService: SecurityService, 
         private projectService: ProjectService, 
-        public toastr: ToastsManager, 
         private vcr: ViewContainerRef,
         private route: Router,
         private acRoute: ActivatedRoute
     ) {
-        this.toastr.setRootViewContainerRef(vcr);
         this.isAdmin = this.securityService.IsGranted(Constants.admin);
         this.addProject = this.securityService.IsGranted(Constants.addProject);
         this.editProject = this.securityService.IsGranted(Constants.editProject);
@@ -100,9 +97,9 @@ export class ProjectComponent {
             mother.dataGrid["first"].instance.refresh();
             if (Response && Response.result) {
                 let error = Response.result.split('#')[1];
-                mother.showError(error);
+                swal({text:error, type: 'error'});
             } else {
-                mother.showInfo("Projects deleted");
+                swal({text:"Projects deleted", type:'success'});
             }
         });
     }
@@ -116,7 +113,7 @@ export class ProjectComponent {
     }
 
     cellNameClicked(data) {
-        console.log(data);
+        // console.log(data);
     }
 
     addProjectClicked() {
@@ -138,17 +135,5 @@ export class ProjectComponent {
         modalRef.result.then(function () {
             mother.dataGrid["first"].instance.refresh();
         })
-    }
-
-    showSuccess(message: string) {
-        this.toastr.success(message, 'Success!');
-    }
-
-    showError(message: string) {
-        this.toastr.error(message, 'Oops!');
-    }
-
-    showInfo(message: string) {
-        this.toastr.info(message);
     }
 }

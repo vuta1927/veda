@@ -52,6 +52,7 @@ import { ImportExportService } from '../+project/services/import-export.service'
 import { ExportExportService } from '../+project/services/export.service';
 import { ProjectSettingService } from '../+administrator/settings/settings.service';
 import { DashBoardService } from '../+dashboard/analytics/analytics.service';
+import {DataService} from '../+project/project-details/data.service';
 export function httpTranslateLoader(http: HttpClient) {
     return new TranslateHttpClientLoader(http);
 }
@@ -118,7 +119,8 @@ export class SharedModule {
                 ImportExportService,
                 ExportExportService,
                 ProjectSettingService,
-                DashBoardService
+                DashBoardService,
+                DataService
             ]
         }
     }

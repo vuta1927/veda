@@ -7,7 +7,7 @@ import { Helpers } from '../../helpers';
 import { ImageService } from '../services/image.service';
 import { ClassService } from '../services/class.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
-import { Tag, ExcluseArea, Coordinate, DataUpdate } from '../../shared/models/tag.model';
+import { Tag, ExcluseArea, Coordinate, DataUpdate, TaggedTimeUser } from '../../shared/models/tag.model';
 import { TagService } from '../services/tag.service';
 import { QcService } from '../services/qc.service';
 import { ClassList } from '../../shared/models/class.model';
@@ -76,6 +76,7 @@ export class ProjecTagComponent {
     qcComment: string = '';
     hadQc: boolean = false;
     tagsFromSrv: any = [];
+    taggedTimeUsers: TaggedTimeUser[] = [];
     totalTaggedTime = 0;
     quantityCheckForViews: QuantityCheckForView[] = [];
     qcDone: boolean = false;
@@ -186,7 +187,7 @@ export class ProjecTagComponent {
         // this.idle.onTimeoutWarning.subscribe((countdown) => console.log('You will time out in ' + countdown + ' seconds!'));
 
         // sets the ping interval to 15 seconds
-        this.keepalive.interval(5);
+        this.keepalive.interval(10);
 
         this.keepalive.onPing.subscribe(() => {
             this.lastPing = new Date();
@@ -205,6 +206,10 @@ export class ProjecTagComponent {
     resetIdle() {
         this.idle.watch();
         this.timedOut = false;
+    }
+
+    backImagePage(){
+        this.router.navigate(['project-details', { id: this.projectId }]);
     }
 
     setupHub() {
@@ -255,7 +260,13 @@ export class ProjecTagComponent {
         this.imageId = image.id;
         this.hadQc = image.quantityCheck ? true : false;
         this.currentImage = image;
-        this.totalTaggedTime = image.userTaggedTimes? image.userTaggedTimes.find(x=>x.user.id == this.currentUserId).taggedTime : 0;
+        try {
+            this.totalTaggedTime = image.userTaggedTimes? image.userTaggedTimes.find(x=>x.user.id == this.currentUserId).taggedTime : 0;    
+        } catch (error) {
+            this.totalTaggedTime = 0;
+        }
+        
+        console.log(this.totalTaggedTime);
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
         this.getQc(image);
@@ -416,36 +427,38 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-
-        this.updateTaggedTime().toPromise().then(Response => {
-            this.GetNextImage();
-        }).catch(Response => {
-            swal({
-                title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                animation: false
+        if(this.tagMode){
+            this.updateTaggedTime().toPromise().then(Response => {
+                this.GetNextImage();
+            }).catch(Response => {
+                swal({
+                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                    animation: false
+                });
             });
-        });
+            this.tagMode = false;
+        }else{
+            this.GetNextImage();
+        }
+        
 
     }
 
     saveChange() {
-        if (this.timerSerive.timerStart) {
-            this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
-            this.timerSerive.stop();
+        if (this.tagMode) {
+            if(this.timerSerive.timerStart){
+                this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
+                this.timerSerive.stop();
+            }
         }
 
+        this.tagMode = false;
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
+        console.log(this.currentImage.ignored);
         if (this.addTag && this.editTag && !this.hadQc) {
-            // this.tagsForAddOrUpdate.forEach(t => {
-            //     t.top = this.GetPercent(t.top, this.imageHeight);
-            //     t.left = this.GetPercent(t.left, this.imageWidth);
-            //     t.width = this.GetPercent(t.width, this.imageWidth);
-            //     t.height = this.GetPercent(t.height, this.imageHeight);
-            // });
-
-            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.totalTaggedTime, this.ExcluseAreas);
+            this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.totalTaggedTime, this.ExcluseAreas, this.currentImage.ignored);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
                 if (Response) {
@@ -454,7 +467,7 @@ export class ProjecTagComponent {
                 }
             }).catch(errorResp => {
                 Helpers.setLoading(false);
-                mother.showError(errorResp.error.text);
+                swal({text:errorResp.error? errorResp.error.text:errorResp.message, type: 'error'});
                 mother.btnSaveEnabled = true;
             });
         }
@@ -546,7 +559,6 @@ export class ProjecTagComponent {
     }
 
     updateTaggedTime() {
-        this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
         if (this.timerSerive.timerStart) {
             this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
             this.timerSerive.stop();
@@ -773,6 +785,9 @@ export class ProjecTagComponent {
 
                 mother.selectedTag = tag;
                 mother.selectedObject = obj;
+            }else{
+                mother.selectedTag = null;
+                mother.selectedObject = null;
             }
             // --- set up panning func ---
             var evt = event.e;

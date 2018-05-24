@@ -115,8 +115,6 @@ export class ProjectImagesComponent implements OnInit {
                             .toPromise().then(response => {
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
                                     mother.rawData = response.result;
-                                    console.log(response.result);
-
                                     Helpers.setLoading(false);
                                     if (resp.result) {
                                         return {
@@ -184,13 +182,10 @@ export class ProjectImagesComponent implements OnInit {
     selectionChanged(data: any) {
         this.selectedImages = data.selectedRowsData;
     }
-    ignoredChange(data) {
-        console.log(data);
-    }
+
     deleteSelectedImages() {
         Helpers.setLoading(true);
         let ids = '';
-        console.log(this.selectedImages);
         for (let i = 0; i < this.selectedImages.length; i++) {
             if (i != (this.selectedImages.length - 1))
                 ids += this.selectedImages[i].id + '_';
@@ -198,7 +193,6 @@ export class ProjectImagesComponent implements OnInit {
                 ids += this.selectedImages[i].id;
         }
 
-        // console.log(ids);
         var mother = this;
         this.imgService.DeleteImage(ids).toPromise().then(Response => {
             Helpers.setLoading(false);

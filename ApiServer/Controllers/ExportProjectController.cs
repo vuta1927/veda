@@ -56,6 +56,8 @@ namespace ApiServer.Controllers
                 foreach (var tag in tags)
                 {
                     var t = await _context.Tags.Include(x => x.Class).SingleOrDefaultAsync(x => x == tag);
+                    if (t.Class == null) continue;
+
                     if (exportData.Classes.Contains(t.Class.Name))
                     {
                         var newTag = new ExportModel.Tag()
