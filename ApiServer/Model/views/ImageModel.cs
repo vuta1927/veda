@@ -28,6 +28,7 @@ namespace ApiServer.Model.views
         public class ImageForView2 : ImageForView
         {
             public new List<QuantityCheckModel.Qc> QcStatus { get; set; }
+            public new string TagTime {get;set;}
         }
     }
 }

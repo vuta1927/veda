@@ -97,7 +97,7 @@ namespace ApiServer.Controllers
 
                 if (userInProject)
                 {
-                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(x => x.QuantityCheck).Include(b => b.UsersQc).Include(c => c.UsersTagged);
+                    var imgs = _context.Images.Include(x => x.Project).Where(a => a.Project.Id == id).Include(x => x.QuantityCheck).Include(b => b.UsersQc).Include(c => c.UsersTagged).Skip(start).Take(stop);
                     foreach (var img in imgs)
                     {
                         var imgForView = ImgForView(img);
@@ -121,7 +121,7 @@ namespace ApiServer.Controllers
                 TaggedDate = image.TaggedDate,
                 TagHasClass = image.TagHasClass,
                 TagNotHasClass = image.TagNotHasClass,
-                TagTime = image.TagTime,
+                TagTime = Utilities.ConvertTime(TimeSpan.FromMinutes(image.TagTime)),
                 TotalClass = image.TotalClass,
                 QcStatus = new List<Model.views.QuantityCheckModel.Qc>(),
                 UsersTagged = new List<string>(),
@@ -451,8 +451,12 @@ namespace ApiServer.Controllers
                             await _context.SaveChangesAsync();
                         }
                         _context.Tags.RemoveRange(img.Tags);
+
+                        if(img.QuantityCheck != null)
+                            _context.QuantityChecks.Remove(img.QuantityCheck);
+
                         _context.Images.Remove(img);
-                        _context.QuantityChecks.Remove(img.QuantityCheck);
+
                         await _context.SaveChangesAsync();
                         await ImageQueues.DeleteImage(project.Id, img.Id);
                         DeleteFile(img.Path);

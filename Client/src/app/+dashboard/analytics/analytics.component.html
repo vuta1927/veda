@@ -114,7 +114,7 @@
           <div class="row m-row--no-padding">
             <div class="row align-items-center">
               <select class="form-control m-portlet__nav-item m-dropdown m-dropdown--large m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push"
-                 id="projectSelect" (change)="projectSelectedChange($event)">
+                id="projectSelect" (change)="projectSelectedChange($event)">
                 <option *ngFor="let project of projects" [value]="project.id">
                   {{project.name}}
                 </option>
@@ -252,6 +252,7 @@
                 </div>
               </div>
             </div>
+
             <div class="row m-row--no-padding">
               <div class="col-xl-12" style="padding-top: 10px">
                 <div class="m-separator m-separator--dashed"></div>
@@ -266,108 +267,105 @@
                 <div class="tab-content">
                   <div class="tab-pane active" id="m_tabs_progress" role="tabpanel">
                     <div class="row m-row--no-padding m-row--col-separator-xl">
-                      <div class="col-xl-12">
-                        <!--begin:: Widgets/Stats2-1 -->
-                        <div class="m-widget1">
-                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
-                            <div class="row m-row--no-padding align-items-center">
-                              <div class="col">
-                                <h3 class="m-widget1__title">
-                                  Tagged
-                                </h3>
-                                <span class="m-widget1__desc">
-                                  Tags have class / total tagged
-                                </span>
+                        <div class="col-md-12 col-lg-6 col-xl-4">
+                          <!--begin::New Feedbacks-->
+                          <div class="m-widget24">
+                            <div class="m-widget24__item">
+                              <h4 class="m-widget24__title">
+                                Images had tagged
+                              </h4>
+                              <br>
+                              <span class="m-widget24__desc">
+                                Images had tagged / Total images in project
+                              </span>
+                              <span class="m-widget24__stats m--font-danger">
+                                {{currentProjectData.currentProgress.imagesHaveTag}}
+                              </span>
+                              <div class="m--space-10"></div>
+                              <div class="progress m-progress--sm">
+                                <div class="progress-bar bg-danger" id="imagesHaveTag-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
+                                  [attr.aria-valuenow]="currentProjectData.currentProgress.imagesHaveTag" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalImages"></div>
                               </div>
-                              <div class="col m--align-left">
-                                <div class="m-widget15__item">
-                                  <span class="m-widget15__stats">
-                                  </span>
-                                  <span class="m-widget15__text">
-                                    {{currentProjectData.currentProgress.tagsHaveClass}} tags
-                                  </span>
-                                  <div class="m--space-10"></div>
-                                  <div class="progress m-progress--sm">
-                                    <div class="progress-bar bg-danger" id="tagsHaveClass-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.tagsHaveClass/currentProjectData.totalTags*100) + '%'}"
-                                      [attr.aria-valuenow]="currentProjectData.currentProgress.tagsHaveClass" aria-valuemin="0"
-                                      [attr.aria-valuemax]="currentProjectData.totalTags"></div>
-                                  </div>
-                                </div>
-                              </div>
+                              <span class="m-widget24__change">
+  
+                              </span>
+                              <span class="m-widget24__number">
+                                {{(currentProjectData.currentProgress.imagesHaveTag/currentProjectData.totalImages*100| number:'1.0-0')}}%
+                              </span>
                             </div>
                           </div>
-                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
-                            <div class="row m-row--no-padding align-items-center">
-                              <div class="col">
-                                <h3 class="m-widget1__title">
-                                  Images tagged
-                                </h3>
-                                <span class="m-widget1__desc">
-                                  Images had tagged
-                                </span>
-                              </div>
-                              <div class="col m--align-left">
-                                <div class="m-widget15__item">
-                                  <span class="m-widget15__stats">
-                                  </span>
-                                  <span class="m-widget15__text">
-                                    {{currentProjectData.currentProgress.imagesHaveTag}} images
-                                  </span>
-                                  <div class="m--space-10"></div>
-                                  <div class="progress m-progress--sm">
-                                    <div class="progress-bar bg-success" id="imagesHaveTag-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
-                                      [attr.aria-valuenow]="currentProjectData.currentProgress.imagesHaveTag" aria-valuemin="0"
-                                      [attr.aria-valuemax]="currentProjectData.totalImages"></div>
-                                  </div>
-                                </div>
-                              </div>
+                          <!--end::New Feedbacks-->
+                        </div>
+                      <div class="col-md-12 col-lg-6 col-xl-4">
+                        <!--begin::Total Profit-->
+                        <div class="m-widget24">
+                          <div class="m-widget24__item">
+                            <h4 class="m-widget24__title">
+                              Tagged
+                            </h4>
+                            <br>
+                            <span class="m-widget24__desc">
+                              Tags have class / total tag had tagged
+                            </span>
+                            <span class="m-widget24__stats m--font-success">
+                              {{currentProjectData.currentProgress.tagsHaveClass}}
+                            </span>
+                            <div class="m--space-10"></div>
+                            <div class="progress m-progress--sm">
+                              <div class="progress-bar bg-success" id="tagsHaveClass-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.tagsHaveClass/currentProjectData.totalTags*100) + '%'}"
+                                [attr.aria-valuenow]="currentProjectData.currentProgress.tagsHaveClass" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalTags"></div>
                             </div>
-                          </div>
-                          <div class="m-widget1__item" *ngIf="isProjectManager || isQc">
-                            <div class="row m-row--no-padding align-items-center">
-                              <div class="col">
-                                <h3 class="m-widget1__title">
-                                  Qc Images
-                                </h3>
-                                <span class="m-widget1__desc">
-                                  Images had quantity check
-                                </span>
-                              </div>
-                              <div class="col m--align-left">
-                                <div class="m-widget15__item">
-                                  <span class="m-widget15__stats">
-                                  </span>
-                                  <span class="m-widget15__text">
-                                    {{currentProjectData.currentProgress.totalQcs}} images
-                                  </span>
-                                  <div class="m--space-10"></div>
-                                  <div class="progress m-progress--sm">
-                                    <div class="progress-bar bg-primary" id="totalQcs-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.totalQcs/currentProjectData.totalImages*100) + '%'}"
-                                      [attr.aria-valuenow]="currentProjectData.currentProgress.totalQcs" aria-valuemin="0"
-                                      [attr.aria-valuemax]="currentProjectData.totalImages"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="m-widget1__item" *ngIf="isProjectManager || isTeacher">
-                            <div class="row m-row--no-padding align-items-center">
-                              <div class="col">
-                                <h3 class="m-widget1__title">
-                                  Tagged time:
-                                </h3>
-                                <span class="m-widget1__desc">
-                                </span>
-                              </div>
-                              <div class="col m--align-left">
-                                <span class="m-widget1__number m--font-brand">
-                                  {{currentProjectData.currentProgress.taggedTime}}
-                                </span>
-                              </div>
-                            </div>
+                            <span class="m-widget24__change">
+
+                            </span>
+                            <span class="m-widget24__number">
+                              {{currentProjectData.currentProgress.tagsHaveClass/currentProjectData.totalTags*100| number:'1.0-0'}}%
+                            </span>
                           </div>
                         </div>
-                        <!--end:: Widgets/Stats2-1 -->
+                        <!--end::Total Profit-->
+                      </div>
+                      <div class="col-md-12 col-lg-6 col-xl-4">
+                        <!--begin::New Orders-->
+                        <div class="m-widget24">
+                          <div class="m-widget24__item">
+                            <h4 class="m-widget24__title">
+                              Qc Images
+                            </h4>
+                            <br>
+                            <span class="m-widget24__desc">
+                              Images had quantity check
+                            </span>
+                            <span class="m-widget24__stats m--font-primary">
+                              {{currentProjectData.currentProgress.totalQcs}}
+                            </span>
+                            <div class="m--space-10"></div>
+                            <div class="progress m-progress--sm">
+                              <div class="progress-bar bg-primary" id="totalQcs-pg" role="progressbar" [ngStyle]="{'width':(currentProjectData.currentProgress.totalQcs/currentProjectData.totalImages*100) + '%'}"
+                                [attr.aria-valuenow]="currentProjectData.currentProgress.totalQcs" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalImages"></div>
+                            </div>
+                            <span class="m-widget24__change">
+
+                            </span>
+                            <span class="m-widget24__number">
+                              {{currentProjectData.currentProgress.totalQcs/currentProjectData.totalImages*100 | number:'1.0-0'}}%
+                            </span>
+                          </div>
+                        </div>
+                        <!--end::New Orders-->
+                      </div>
+                    </div>
+                    <div class="col-md-12 col-lg-12 col-xl-4">
+                      <div class="m-widget12">
+                        <div class="m-widget12__item" *ngIf="isProjectManager || isTeacher">
+                          <span class="m-widget12__text1">
+                            Tagged time
+                            <br>
+                            <span>
+                              {{currentProjectData.currentProgress.taggedTime}}
+                            </span>
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -395,8 +393,8 @@
                       <dxi-column caption="User Name" sortOrder="asc" cellTemplate="cellUserName"></dxi-column>
                       <dxi-column dataField="email" [allowSorting]="false"></dxi-column>
                       <dxi-column cellTemplate="cellRole" caption="Roles" [allowSorting]="false"></dxi-column>
-                      <dxi-column cellTemplate="tagsHaveClassCell" caption="Tagged (tags have class/ total tagged)"></dxi-column>
                       <dxi-column cellTemplate="imagesHaveTagClass" caption="Images Had tagged"></dxi-column>
+                      <dxi-column cellTemplate="tagsHaveClassCell" caption="Tagged (tags have class/ total tagged)"></dxi-column>
                       <dxi-column cellTemplate="imagesHadQcCell" caption="Image Had Quantity Check"></dxi-column>
                       <dxi-column cellTemplate="tagTimeCell" caption="Tagged Time"></dxi-column>
 
@@ -423,7 +421,7 @@
                           </span>
                           <div class="m--space-10"></div>
                           <div class="progress m-progress--sm">
-                            <div class="progress-bar bg-success" role="progressbar" [ngStyle]="{'width':(data.data.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
+                            <div class="progress-bar bg-danger" role="progressbar" [ngStyle]="{'width':(data.data.imagesHaveTag/currentProjectData.totalImages*100) + '%'}"
                               [attr.aria-valuenow]="data.data.imagesHaveTag" aria-valuemin="0" [attr.aria-valuemax]="currentProjectData.totalImages"></div>
                           </div>
                         </div>
@@ -437,7 +435,7 @@
                           </span>
                           <div class="m--space-10"></div>
                           <div class="progress m-progress--sm">
-                            <div class="progress-bar bg-danger" role="progressbar" [ngStyle]="{'width':(data.data.tagsHaveClass/data.data.totalTags*100) + '%'}"
+                            <div class="progress-bar bg-success" role="progressbar" [ngStyle]="{'width':(data.data.tagsHaveClass/data.data.totalTags*100) + '%'}"
                               [attr.aria-valuenow]="data.data.tagsHaveClass" aria-valuemin="0" [attr.aria-valuemax]="data.data.totalTags"></div>
                           </div>
                         </div>

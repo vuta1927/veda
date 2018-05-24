@@ -67,7 +67,6 @@ export class ProjectImagesComponent implements OnInit {
     deleteImage: boolean = false;
     isQc: boolean = false;
     userUsing: any;
-
     constructor(
         private formBuilder: FormBuilder,
         private vcr: ViewContainerRef,
@@ -98,7 +97,6 @@ export class ProjectImagesComponent implements OnInit {
         this.uploadfiles = [];
         var mother = this;
         this.setupHub();
-        Helpers.setLoading(true);
         this.dataService.currentProject.subscribe(p => {
             this.currentProject = p;
             this.dataSource = new DataSource({
@@ -115,7 +113,6 @@ export class ProjectImagesComponent implements OnInit {
                             .toPromise().then(response => {
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
                                     mother.rawData = response.result;
-                                    Helpers.setLoading(false);
                                     if (resp.result) {
                                         return {
                                             data: mother.rawData,
@@ -134,7 +131,6 @@ export class ProjectImagesComponent implements OnInit {
             })
         }, error => {
             swal({title:'', text: error.error? error.error.text: error.message}).then(()=>{
-                Helpers.setLoading(false);
             })
         });
 
@@ -208,6 +204,11 @@ export class ProjectImagesComponent implements OnInit {
                     title: '', text: 'Images deleted', type: 'success'
                 });
             }
+        }).catch(Response=>{
+            Helpers.setLoading(false);
+            swal({
+                text: Response.error? Response.error.text: Response.message, type: 'error'
+            });
         });
     }
 
@@ -228,8 +229,11 @@ export class ProjectImagesComponent implements OnInit {
             let file = this.uploadfiles[this.uploadedFile];
             const formData = new FormData();
             formData.append(file.name, file);
+            Helpers.setLoading(true);
             this.projectService.UploadImg(this.currentProject.id, formData).toPromise().then(Response => {
                 if (Response && Response.result) {
+                    Helpers.setLoading(false);
+                    this.uploading = false;
                     this.message = '';
                     $('#errorMessage').css("display", "none");
                     // this.showSuccess("Files uploaded !");
@@ -245,6 +249,8 @@ export class ProjectImagesComponent implements OnInit {
                     this.upload();
                 }
             }).catch(res => {
+                this.uploading = false;
+                Helpers.setLoading(false);
                 $('#successMessage').css("display", "none");
                 this.messageHeader = 'Upload Error';
                 this.message = res['error'].text;
@@ -275,18 +281,23 @@ export class ProjectImagesComponent implements OnInit {
         const formData = new FormData();
 
         formData.append(file.name, file);
-
+        Helpers.setLoading(true);
+        this.uploading = true;
         this.projectService.UploadImg(this.currentProject.id, formData).toPromise().then(Response => {
             if (Response && Response.result) {
+                this.uploading = false;
                 this.removeFile(file);
                 $('#errorMessage').css("display", "none");
                 this.message = '';
-                swal({
-                    title: '', text: "Files uploaded !", type: 'success'
-                });
+                Helpers.setLoading(false);
+                // swal({
+                //     title: '', text: "Files uploaded !", type: 'success'
+                // });
                 this.dataGrid["first"].instance.refresh();
             }
         }).catch(res => {
+            Helpers.setLoading(false);
+            this.uploading = false;
             this.messageHeader = 'Upload Error';
             this.message = res['error'].text;
             $('#errorMessage').css("display", "block");

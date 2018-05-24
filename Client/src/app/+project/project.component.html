@@ -51,10 +51,14 @@
                 <i class="la la-plus i-plus"></i>
                 Add new project
               </a>
-              <a class="dropdown-item" (click)="mergeProject()">
+              <a class="dropdown-item" (click)="mergeProject()" *ngIf="selectedProjects.length">
                 <i class="la 	la-magnet i-magnet"></i>
                 Merge
               </a>
+              <a class="dropdown-item disabled" *ngIf="!selectedProjects.length">
+                  <i class="la la-magnet i-magnet"></i>
+                  Merge
+                </a>
               <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
               <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
@@ -93,13 +97,16 @@
             <dxi-column caption="Projec Name" sortOrder="asc" cellTemplate="cellName" [width]="300"></dxi-column>
             <dxi-column dataField="description" [allowSorting]="false" [width]="200"></dxi-column>
             <dxi-column dataField="note" [allowSorting]="false"></dxi-column>
-            <dxi-column dataField="usernames" caption="User" sortOrder="asc"></dxi-column>
+            <dxi-column cellTemplate="usersCell"  caption="User" sortOrder="asc"></dxi-column>
             <dxi-column caption="Status" dataField="isDisabled" [visible]="isAdmin" cellTemplate="statusCellTemplate"></dxi-column>
             <dxi-column dataField="totalImg" caption="Total Image"></dxi-column>
             <dxi-column dataField="totalImgNotTagged" caption="Total image not tagged"></dxi-column>
             <dxi-column dataField="totalImgNotClassed" caption="Total image not have class"></dxi-column>
             <dxi-column dataField="totalImgQC" caption="Total Image have Qc"></dxi-column>
             <dxi-column dataField="totalImgNotQC" caption="Total Image not Qc"></dxi-column>
+            <div *dxTemplate="let data of 'usersCell'">
+              <span class="m-badge m-badge--brand m-badge--wide" *ngFor="let user of data.data.usernames.split(';')">{{user}}</span>
+            </div>
             <div *dxTemplate="let data of 'cellName'">
               <span class="span-cellname" [routerLink]="['/project-details',{ id: data.data.id }]">
                 <b>{{(data.data.name)}}</b>

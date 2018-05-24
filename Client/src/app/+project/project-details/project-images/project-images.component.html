@@ -1,216 +1,196 @@
 <div class="row">
-    <div class="col-lg-12" *ngIf="addImage">
-        <div class="m-portlet">
-            <div class="m-portlet__head">
-                <div class="m-portlet__head-caption">
-                    <div class="m-portlet__head-title">
-                        <h3 class="m-portlet__head-text">
-                            Upload Images
-                        </h3>
-                    </div>
-                </div>
-            </div>
-            <div class="m-portlet__body">
-                <div class="row">
-                    <div class="col-lg-12" style="padding-top: 10px">
-                        <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" style="display: none;">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
-                            <strong>{{messageHeader}}</strong>
-                            {{message}}
-                        </div>
-                    </div>
-                    <div class="col-lg-12" style="padding-top: 10px">
-                        <div id="upload_button">
-                            <label>
-                                <input #file type="file" (change)="appendUploadFiles(file.files)" multiple>
-                                <span class="btn btn-sm btn-primary m-btn--air">
-                                    <i class="la la-folder-open"></i> Choose files</span>
-                            </label>
-                        </div>
-
-                        <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--air" (click)="upload()" [disabled]="!uploadfiles.length">
-                            <span>
-                                <i class="la la-cloud-upload"></i>
-                                <span>
-                                    Upload All
-                                </span>
-                            </span>
-                        </button>
-                        <button class="btn btn-metal btn-sm m-btn m-btn--icon m-btn--air" (click)="clear()" [disabled]="!uploadfiles.length">
-                            <span>
-                                <i class="la la-refresh"></i>
-                                <span>
-                                    Clear list
-                                </span>
-                            </span>
-                        </button>
-                        <!-- <p>{{uploadProgress}}</p> -->
-                    </div>
-                    <!-- <div class="col-lg-9"  style="padding-top: 17px">
-                        <div class="progress" *ngIf="uploading">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated  bg-success" role="progressbar" 
-                            [attr.aria-valuenow]="uploadProgress" 
-                            [attr.aria-valuetext]="uploadProgress + '%'"
-                            [style.width]="uploadProgress" 
-                            aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div> -->
-                    <div class="col-lg-12" style="padding-top: 10px">
-                        <span id="successMessage" style="display:none; color: #00896b">
-                            <b> All file uploaded !</b>
-                        </span>
-                    </div>
-
-                    <div class="col-lg-6 col-md-6" style="padding-top: 10px" *ngIf="uploadfiles.length">
-                        <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
-                            <table class="m-datatable__table">
-                                <thead class="m-datatable__head">
-                                    <tr class="m-datatable__row" style="left: 0px;">
-                                        <th title="Name" class="m-datatable__cell m-datatable__cell--sort" data-field="name">
-                                            <span style="width: 400px;">Name</span>
-                                        </th>
-                                        <th title="Size" class="m-datatable__cell m-datatable__cell--sort" data-field="size">
-                                            <span style="width: 100px;">Size</span>
-                                        </th>
-                                        <th title="Action" class="m-datatable__cell m-datatable__cell--sort">
-                                            <span style="width:110px;">Action</span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="m-datatable__body">
-                                    <tr class="m-datatable__row" *ngFor="let file of uploadfiles">
-                                        <td class="m-datatable__cell" data-field="name">
-                                            <span style="width: 400px; color: #5867DD">
-                                                <b>{{ file.name }}</b>
-                                            </span>
-                                        </td>
-                                        <td class="m-datatable__cell" data-field="size">
-                                            <span style="width: 100px;">{{ file.size }}</span>
-                                        </td>
-                                        <td data-field="Actions" class="m-datatable__cell">
-                                            <span style="overflow: visible; width: 110px;">
-                                                <a class="m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" title="Upload" (click)="uploadFile(file)">
-                                                    <i class="la la-upload"></i>
-                                                </a>
-                                                <a class="m-portlet__nav-link btn m-btn m-btn--hover-danger m-btn--icon m-btn--icon-only m-btn--pill" title="Delete" (click)="removeFile(file)">
-                                                    <i class="la la-trash"></i>
-                                                </a>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!--end::Section-->
-            </div>
+    <div class="col-lg-12">
+        <h6 class="m--font-brand"><strong>Upload Images</strong></h6>
+    </div>
+    <div class="col-lg-12" style="padding-top: 10px" *ngIf="addImage">
+        <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air" role="alert" style="display: none;">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+            <strong>{{messageHeader}}</strong>
+            {{message}}
         </div>
     </div>
-    <div class="col-lg-12">
-        <div class="m-portlet">
-            <div class="m-portlet__body">
-                <div class="col-lg-12">
-                    <button class="btn btn-brand btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
-                        <span>
-                            <i class="la la-play"></i>
-                            <span *ngIf="!isQc">
-                                Start Trainning
-                            </span>
-                            <span *ngIf="isQc">
-                                Start Quantity Check
-                            </span>
-                        </span>
-                    </button>
-                    <button class="btn btn-secondary btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
-                        *ngIf="deleteImage">
-                        <span>
-                            <i class="la la-trash"></i>
-                            <span>
-                                Delect selected images
-                            </span>
-                        </span>
-                    </button>
-                </div>
-                <div class="col-lg-12" style="padding-top: 10px">
-                    <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="false" [showRowLines]="true"
-                        [columnAutoWidth]=true [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)" class="m_datatable">
-                        <dxo-selection mode="multiple"></dxo-selection>
-                        <dxo-remote-operations [sorting]="true" [paging]="true">
-                        </dxo-remote-operations>
-                        <dxo-paging [pageSize]="12"></dxo-paging>
-                        <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-                        <dxo-load-panel [enabled]="true"></dxo-load-panel>
-                        <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
-                        <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
-                        <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
-                        <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
-                        <dxi-column dataField="tagHasClass" caption="Tags have class"></dxi-column>
-                        <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
-                        <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" [width]="130" caption="Qc Status"></dxi-column>
-                        <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
-                        <dxi-column dataField="usersQc" cellTemplate="userQcCell" caption="Qc by"></dxi-column>
-                        <dxi-column dataField="usersTagged" celTemplate="usersTaggedCell" caption="Tagged By"></dxi-column>
-                        <dxi-column dataField="tagTime" caption="Tagged Time" cellTemplate="tagTimeCell"></dxi-column>
-                        <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
-                        <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Date"></dxi-column>
-                        <div *dxTemplate="let data of 'userQcCell'">
-                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersQc">
-                                {{(user)}}
-                            </span>
-                        </div>
-                        <div *dxTemplate="let data of 'usersTaggedCell'">
-                            <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let userTagged of data.data.usersTagged">
-                                {{(userTagged)}}
-                            </span>
-                        </div>
-                        <div *dxTemplate="let data of 'tagTimeCell'">
-                            {{data.data.tagTime | number: '1.1-1' }} minutes
-                        </div>
-                        <div *dxTemplate="let data of 'userUsingCell'">
-                            <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="data.data.userUsing">
-                                {{data.data.userUsing}}
-                            </span>
-                        </div>
-                        <div *dxTemplate="let data of 'qcStatusCell'">
-                            <div *ngFor="let status of data.data.qcStatus">
-                                <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="status.value">
-                                    {{status.level}}: passed
-                                </span>
-                                <span class="m-badge m-badge--danger m-badge--wide" style="cursor: text;" *ngIf="!status.value">
-                                    {{status.level}}: unpassed
-                                </span>
-                            </div>
-                        </div>
-                        <div *dxTemplate="let data of 'ignoredCell'">
-                            <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
-                                <input type="checkbox" disabled [checked]="data.data.ignored">
-                                <span></span>
-                            </label>
-                        </div>
-                        <div *dxTemplate="let data of 'cellImgs'">
-                            <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
-                        </div>
-                        <div *dxTemplate="let data of 'classesCell'">
-                            <div *ngIf="data.data.classes">
-                                <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let class of data.data.classes.split(';')">
-                                    <b>{{(class)}}</b>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div *dxTemplate="let data of 'tagDetail'">
-                            <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">
-                                <b>Tag details</b>
-                            </span>
-                        </div>
-                    </dx-data-grid>
-                </div>
-
-            </div>
+    <div class="col-lg-12" style="padding-top: 10px" *ngIf="addImage">
+        <div id="upload_button">
+            <label>
+                <input #file type="file" (change)="appendUploadFiles(file.files)" multiple>
+                <span class="btn btn-sm btn-primary m-btn--air">
+                    <i class="la la-folder-open"></i> Choose files</span>
+            </label>
         </div>
+
+        <button class="btn btn-success btn-sm m-btn m-btn--icon m-btn--air" (click)="upload()" [disabled]="!uploadfiles.length">
+            <span>
+                <i class="la la-cloud-upload"></i>
+                <span>
+                    Upload All
+                </span>
+            </span>
+        </button>
+        <button class="btn btn-metal btn-sm m-btn m-btn--icon m-btn--air" (click)="clear()" [disabled]="!uploadfiles.length">
+            <span>
+                <i class="la la-refresh"></i>
+                <span>
+                    Clear list
+                </span>
+            </span>
+        </button>
+        <!-- <p>{{uploadProgress}}</p> -->
+    </div>
+    <!-- <div class="col-lg-9"  style="padding-top: 17px">
+                <div class="progress" *ngIf="uploading">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated  bg-success" role="progressbar" 
+                    [attr.aria-valuenow]="uploadProgress" 
+                    [attr.aria-valuetext]="uploadProgress + '%'"
+                    [style.width]="uploadProgress" 
+                    aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div> -->
+    <div class="col-lg-12" style="padding-top: 10px" *ngIf="addImage">
+        <span id="successMessage" style="display:none; color: #00896b">
+            <b> All file uploaded !</b>
+        </span>
+    </div>
+
+    <div class="col-lg-12 col-md-12" style="padding-top: 10px" *ngIf="uploadfiles.length && addImage" >
+        <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
+            <table class="m-datatable__table">
+                <thead class="m-datatable__head">
+                    <tr class="m-datatable__row" style="left: 0px;">
+                        <th title="Name" class="m-datatable__cell m-datatable__cell--sort" data-field="name">
+                            <span style="width: 400px;">Name</span>
+                        </th>
+                        <th title="Size" class="m-datatable__cell m-datatable__cell--sort" data-field="size">
+                            <span style="width: 100px;">Size</span>
+                        </th>
+                        <th title="Action" class="m-datatable__cell m-datatable__cell--sort">
+                            <span style="width:110px;">Action</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="m-datatable__body">
+                    <tr class="m-datatable__row" *ngFor="let file of uploadfiles">
+                        <td class="m-datatable__cell" data-field="name">
+                            <span style="width: 400px; color: #5867DD">
+                                <b>{{ file.name }}</b>
+                            </span>
+                        </td>
+                        <td class="m-datatable__cell" data-field="size">
+                            <span style="width: 100px;">{{ (file.size / 1048576) | number:'.1-1' }} Mb</span>
+                        </td>
+                        <td data-field="Actions" class="m-datatable__cell">
+                            <span style="overflow: visible; width: 110px;">
+                                <a class="m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" title="Upload" [class.disabled]="uploading"
+                                    (click)="uploadFile(file)">
+                                    <i class="la la-upload"></i>
+                                </a>
+                                <a class="m-portlet__nav-link btn m-btn m-btn--hover-danger m-btn--icon m-btn--icon-only m-btn--pill" title="Delete" [class.disabled]="uploading"
+                                    (click)="removeFile(file)">
+                                    <i class="la la-trash"></i>
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="m-separator m-separator--dashed"></div>
+    <div class="col-lg-12">
+        <button class="btn btn-brand btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" (click)="startTrainning()">
+            <span>
+                <i class="la la-play"></i>
+                <span *ngIf="!isQc">
+                    Start Trainning
+                </span>
+                <span *ngIf="isQc">
+                    Start Quantity Check
+                </span>
+            </span>
+        </button>
+        <button class="btn btn-secondary btn-sm m-btn m-btn--icon m-btn--wide m-btn--air" [disabled]="!selectedImages.length" (click)="deleteSelectedImages()"
+            *ngIf="deleteImage">
+            <span>
+                <i class="la la-trash"></i>
+                <span>
+                    Delect selected images
+                </span>
+            </span>
+        </button>
+    </div>
+    <div class="col-lg-12" style="padding-top: 10px">
+        <dx-data-grid id="gridImageContainer" [dataSource]="dataSource" [showBorders]="true" [wordWrapEnabled]="true" [showRowLines]="true"
+            [columnAutoWidth]=true [allowColumnResizing]="true" (onSelectionChanged)="selectionChanged($event)" class="m_datatable">
+            <dxo-selection mode="multiple"></dxo-selection>
+            <dxo-remote-operations [sorting]="true" [paging]="true">
+            </dxo-remote-operations>
+            <dxo-paging [pageSize]="12"></dxo-paging>
+            <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]" [showInfo]="true"></dxo-pager>
+            <dxo-load-panel [enabled]="true"></dxo-load-panel>
+            <dxi-column dataField="id" [visible]="false" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+            <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+            <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
+            <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
+            <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
+            <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
+            <dxi-column dataField="tagHasClass" caption="Tags have class"></dxi-column>
+            <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
+            <dxi-column dataField="qcStatus" cellTemplate="qcStatusCell" [width]="130" caption="Qc Status"></dxi-column>
+            <dxi-column caption="Using by" cellTemplate="userUsingCell"></dxi-column>
+            <dxi-column dataField="usersQc" cellTemplate="userQcCell" caption="Qc by"></dxi-column>
+            <dxi-column dataField="usersTagged" celTemplate="usersTaggedCell" caption="Tagged By"></dxi-column>
+            <dxi-column dataField="tagTime" caption="Tagged Time" cellTemplate="tagTimeCell"></dxi-column>
+            <dxi-column dataField="qcDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Qc Date"></dxi-column>
+            <dxi-column dataField="taggedDate" dataType="date" format="MM/dd/yyyy HH:mm:ss" caption="Tagged Date"></dxi-column>
+            <div *dxTemplate="let data of 'userQcCell'">
+                <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let user of data.data.usersQc">
+                    {{(user)}}
+                </span>
+            </div>
+            <div *dxTemplate="let data of 'usersTaggedCell'">
+                <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let userTagged of data.data.usersTagged">
+                    {{(userTagged)}}
+                </span>
+            </div>
+            <div *dxTemplate="let data of 'tagTimeCell'">
+                {{data.data.tagTime }}
+            </div>
+            <div *dxTemplate="let data of 'userUsingCell'">
+                <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="data.data.userUsing">
+                    {{data.data.userUsing}}
+                </span>
+            </div>
+            <div *dxTemplate="let data of 'qcStatusCell'">
+                <div *ngFor="let status of data.data.qcStatus">
+                    <span class="m-badge m-badge--success m-badge--wide" style="cursor: text;" *ngIf="status.value">
+                        {{status.level}}: passed
+                    </span>
+                    <span class="m-badge m-badge--danger m-badge--wide" style="cursor: text;" *ngIf="!status.value">
+                        {{status.level}}: unpassed
+                    </span>
+                </div>
+            </div>
+            <div *dxTemplate="let data of 'ignoredCell'">
+                <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
+                    <input type="checkbox" disabled [checked]="data.data.ignored">
+                    <span></span>
+                </label>
+            </div>
+            <div *dxTemplate="let data of 'cellImgs'">
+                <img [title]="data.data.id" [src]="apiUrl + data.data.path" width="180" height="100">
+            </div>
+            <div *dxTemplate="let data of 'classesCell'">
+                <div *ngIf="data.data.classes">
+                    <span class="m-badge m-badge--brand m-badge--wide" style="cursor: text;" *ngFor="let class of data.data.classes.split(';')">
+                        <b>{{(class)}}</b>
+                    </span>
+                </div>
+            </div>
+
+            <div *dxTemplate="let data of 'tagDetail'">
+                <span class="span-tagdetall" [routerLink]="['/project-tag']" [queryParams]="{ id: data.data.id, project: currentProject.id }">
+                    <b>Tag details</b>
+                </span>
+            </div>
+        </dx-data-grid>
     </div>
 </div>

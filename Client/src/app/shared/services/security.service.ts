@@ -55,6 +55,9 @@ export class SecurityService {
         }
 
         let dataAccessToken: any = this.getDataFromToken(this.oauthService.getAccessToken());
+        if(!dataAccessToken.Roles){
+            return false;
+        }
         if(dataAccessToken.Roles.constructor === Array){
             return _.includes(dataAccessToken.Roles, role);
         }else{

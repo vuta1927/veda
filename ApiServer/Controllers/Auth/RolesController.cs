@@ -37,7 +37,7 @@ namespace ApiServer.Controllers.Auth
         public IActionResult GetRole()
         {
             var roles = new List<RoleModel.RoleBase>();
-            foreach (var r in _context.Roles)
+            foreach (var r in _context.Roles.Where(x => x.NormalizedRoleName != "PROJECTMANAGER" && x.NormalizedRoleName != "Teacher" && x.NormalizedRoleName != "QuantityCheck"))
             {
                 var role = new RoleModel.RoleBase()
                 {
@@ -49,7 +49,8 @@ namespace ApiServer.Controllers.Auth
             }
             return Ok(roles);
         }
-        
+
+        [HttpGet]
         public IActionResult GetProjectRoles()
         {
             var roles = new List<RoleModel.RoleBase>();

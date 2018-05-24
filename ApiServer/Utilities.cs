@@ -14,5 +14,35 @@ namespace ApiServer
 
             return Tuple.Create(x, y);
         }
+
+        public static string ConvertTime(TimeSpan timeSpan)
+        {
+            var result = "";
+
+            if (timeSpan.Hours > 0)
+            {
+                result += timeSpan.Hours + " hours " + timeSpan.Minutes + " minutes ";
+                if (timeSpan.Seconds > 0)
+                {
+                    result += timeSpan.Seconds + " seconds";
+                }
+            }
+            else
+            {
+                if (timeSpan.Minutes > 0)
+                {
+                    result += timeSpan.Minutes + " minutes ";
+                    if (timeSpan.Seconds > 0)
+                    {
+                        result += timeSpan.Seconds + " seconds";
+                    }
+                }
+                else
+                {
+                    result += timeSpan.Seconds + " seconds";
+                }
+            }
+            return result;
+        }
     }
 }

@@ -23,6 +23,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { NgIdleKeepaliveModule } from '@ng-idle/keepalive'; // this includes the core NgIdleModule but includes keepalive providers for easy wireup
 import { SweetAlert2Module } from '@toverux/ngx-sweetalert2';
+import { BlockUIModule } from 'ng-block-ui';
 import { Z_DEFAULT_COMPRESSION } from 'zlib';
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { Z_DEFAULT_COMPRESSION } from 'zlib';
     NgIdleKeepaliveModule.forRoot(),
     BrowserAnimationsModule,
     ColorPickerModule,
+    BlockUIModule.forRoot(),
 
     SweetAlert2Module.forRoot({
       width: 400,

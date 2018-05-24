@@ -8,6 +8,7 @@ import { NgbActiveModal } from "@ng-bootstrap/ng-bootstrap";
 import { NGX_ERRORS_SERVICE_CHILD_PROVIDERS, NgxErrorsService } from "../../shared/utils/form-errors/ngx-errors.service";
 import { Observable } from "rxjs/Observable";
 import * as _ from 'lodash';
+import swal from 'sweetalert2';
 
 declare let mApp: any;
 @Component({
@@ -28,15 +29,15 @@ export class CreateOrUpdateUserComponent implements OnInit {
         public formService: FormService,
         private ngxErrorsService: NgxErrorsService
     ) {
-        
+
     }
 
     ngOnInit() {
         this.createForm();
         this.assignedRoleNames = this.userForCreateOrEdit.roles.filter(r => r.isAssigned).map(r => { return r.roleName; });
         this.isSetRandomPassword = !this.userForCreateOrEdit.isEditMode;
-        this.ngxErrorsService.setDefaultMessage('usernameTaken', { message: 'The username already taken.'});
-        this.ngxErrorsService.setDefaultMessage('emailTaken', { message: 'The email already taken.'})
+        this.ngxErrorsService.setDefaultMessage('usernameTaken', { message: 'The username already taken.' });
+        this.ngxErrorsService.setDefaultMessage('emailTaken', { message: 'The email already taken.' })
     }
 
     createForm() {
@@ -50,7 +51,7 @@ export class CreateOrUpdateUserComponent implements OnInit {
                     [Validators.required, Validators.maxLength(20)]
                 ],
                 surname: [
-                    this.userForCreateOrEdit.user.surname ,
+                    this.userForCreateOrEdit.user.surname,
                     [Validators.required, Validators.maxLength(20)]
                 ],
                 emailAddress: [
@@ -114,7 +115,7 @@ export class CreateOrUpdateUserComponent implements OnInit {
         if (data.target.checked === true) {
             this.assignedRoleNames.push(data.target.value);
         } else {
-            _.remove(this.assignedRoleNames, function(n) {
+            _.remove(this.assignedRoleNames, function (n) {
                 return n === data.target.value;
             });
         }
@@ -127,25 +128,19 @@ export class CreateOrUpdateUserComponent implements OnInit {
         }
 
         let user = <IUserEdit>this.form.value;
-        // let userCreateOrEdit = new CreateOrUpdateUser();
-        // userCreateOrEdit.user = user;
-        user["sendActivationEmail"] = this.form.get('sendActivationEmail').value;
-        user["assignedRoleNames"] = this.assignedRoleNames;
+        let userCreateOrEdit = new CreateOrUpdateUser();
+        userCreateOrEdit.user = user;
+        userCreateOrEdit.sendActivationEmail = this.form.get('sendActivationEmail').value;
+        userCreateOrEdit.assignedRoleNames = this.assignedRoleNames;
+        this.userService.AddUser(userCreateOrEdit).toPromise().then(Response => {
+            if (Response.result) {
+                // console.log(Response.result);
+                this.activeModal.close();
+            }
+        }).catch(Response=>{
+            swal({text:Response.error? Response.error.text: Response.message, type:"error"});
+        });
 
-        if(!this.userForCreateOrEdit.isEditMode){
-            this.userService.AddUser(user).toPromise().then(Response=>{
-                if(Response.result){
-                    // console.log(Response.result);
-                    this.activeModal.close();
-                }
-            });
-        }else{
-            this.userService.UpdateUser(user).toPromise().then(Response=>{
-                if(Response.result){
-                    this.activeModal.close();
-                }
-            });
-        }
 
         console.log(user);
     }

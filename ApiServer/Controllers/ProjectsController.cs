@@ -94,17 +94,16 @@ namespace ApiServer.Controllers
                     {
                         Directory.CreateDirectory(newPath);
                     }
-                    string name = Guid.NewGuid().ToString();
-                    string fileName = Guid.NewGuid().ToString() + "." + fileExtension;
-                    pathToDatabase += fileName;
-                    if (fileExtension.ToLower().Equals("zip"))
+                    if (fileExtension.ToLower().Equals("zip") || fileExtension.ToLower().Equals("rar"))
                     {
                         if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
                         {
                             Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
                         }
 
-                        string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileName);
+                        string fileZipName = Guid.NewGuid().ToString() + "." + fileExtension;
+
+                        string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileZipName);
 
                         using (var stream = new FileStream(tempPath, FileMode.Create))
                         {
@@ -115,7 +114,9 @@ namespace ApiServer.Controllers
                         {
                             foreach (ZipArchiveEntry entry in archive.Entries)
                             {
+                                string name = Guid.NewGuid().ToString();
                                 string[] filenames = entry.FullName.Split('.');
+                                var newPathToDatabase = pathToDatabase + name + "." +filenames.Last();
                                 if (AllowedFileExtensions.Contains(filenames.Last().ToLower()))
                                 {
                                     entry.ExtractToFile(Path.Combine(newPath, name + '.' + filenames.Last()));
@@ -123,7 +124,7 @@ namespace ApiServer.Controllers
                                     using (var entryStram = entry.Open())
                                     using (var img = new System.Drawing.Bitmap(entryStram))
                                     {
-                                        await StoreImage(name, pathToDatabase, project, img);
+                                        await StoreImage(name, newPathToDatabase, project, img);
                                     }
                                 }
                             }
@@ -132,6 +133,9 @@ namespace ApiServer.Controllers
                     }
                     else
                     {
+                        string name = Guid.NewGuid().ToString();
+                        string fileName = Guid.NewGuid().ToString() + "." + fileExtension;
+                        pathToDatabase += fileName;
                         string fullPath = Path.Combine(newPath, fileName);
 
                         using (var stream = new FileStream(fullPath, FileMode.Create))

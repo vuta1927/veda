@@ -15,7 +15,7 @@
                     -
                 </li>
                 <li class="m-nav__item">
-                    <a href="" class="m-nav__link">
+                    <a class="m-nav__link" [routerLink]="['/dashboard']">
                         <span class="m-nav__link-text">
                             Home
                         </span>
@@ -25,7 +25,7 @@
                     -
                 </li>
                 <li class="m-nav__item">
-                    <a href="" class="m-nav__link">
+                    <a [routerLink]="['/project-details']" [queryParams]="{ id: currentProject.id }" class="m-nav__link">
                         <span class="m-nav__link-text">
                             Project
                         </span>

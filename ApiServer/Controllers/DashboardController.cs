@@ -49,6 +49,11 @@ namespace ApiServer.Controllers
                 {
                     foreach (var pu in pus)
                     {
+                        var userRoles = _userService.GetCurrentRole(pu.UserId);
+                        if (userRoles.Any(x => x.NormalizedRoleName.Equals(VdsPermissions.Administrator.ToUpper())))
+                        {
+                            continue;
+                        }
                         var totalTags = _context.Tags.
                             Include(x => x.Image).
                             Include(x => x.UsersTagged).
@@ -81,7 +86,7 @@ namespace ApiServer.Controllers
 
                         }
 
-                        newPu.TaggedTime = ConvertTime(TimeSpan.FromMinutes(TaggedTime));
+                        newPu.TaggedTime = Utilities.ConvertTime(TimeSpan.FromMinutes(TaggedTime));
 
                         projectUsers.Add(newPu);
                     }
@@ -188,40 +193,12 @@ namespace ApiServer.Controllers
                 }
 
             }
-            result.TaggedTime = ConvertTime(TimeSpan.FromMinutes(taggedTime));
+            result.TaggedTime = Utilities.ConvertTime(TimeSpan.FromMinutes(taggedTime));
 
             return result;
         }
 
-        private string ConvertTime(TimeSpan timeSpan)
-        {
-            var result = "";
-
-            if (timeSpan.Hours > 0)
-            {
-                result += timeSpan.Hours + " hours " + timeSpan.Minutes + " minutes ";
-                if (timeSpan.Seconds > 0)
-                {
-                    result += timeSpan.Seconds + " seconds";
-                }
-            }
-            else
-            {
-                if (timeSpan.Minutes > 0)
-                {
-                    result += timeSpan.Minutes + " minutes ";
-                    if (timeSpan.Seconds > 0)
-                    {
-                        result += timeSpan.Seconds + " seconds";
-                    }
-                }
-                else
-                {
-                    result += timeSpan.Seconds + " seconds";
-                }
-            }
-            return result;
-        }
+        
 
         private int GetTagsHaveClass(IQueryable<Tag> tags)
         {

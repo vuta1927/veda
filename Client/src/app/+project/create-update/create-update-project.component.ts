@@ -12,12 +12,14 @@ import { SecurityService } from '../../shared/services/security.service';
 import { ProjectService } from '../project.service';
 import { Helpers } from '../../helpers';
 import swal from 'sweetalert2';
+import { BlockUI, NgBlockUI } from 'ng-block-ui';
 @Component({
     selector: 'create-update-project',
     templateUrl: './create-update-project.component.html',
     providers: [NGX_ERRORS_SERVICE_CHILD_PROVIDERS]
 })
 export class CreateUpdateProjectComponent implements OnInit {
+    @BlockUI() blockUI: NgBlockUI;
     form: FormGroup;
     project: any = null;
     title: string;
@@ -86,12 +88,12 @@ export class CreateUpdateProjectComponent implements OnInit {
             this.formService.validateAllFormFields(this.form);
             return;
         }
-        Helpers.setLoading(true);
+        this.blockUI.start();
         if (this.isEditMode) {
             let project = <ProjectForUpdate>this.form.value;
             this.projectService.UpdateProject(project).toPromise()
                 .then(Response => {
-                    Helpers.setLoading(false);
+                    this.blockUI.stop();
                     if (Response.result) {
                         this.activeModal.close();
                     } else {
@@ -100,14 +102,14 @@ export class CreateUpdateProjectComponent implements OnInit {
                         $('#errorMessage').css("display", "block");
                     }
                 }).catch(Response=>{
-                    Helpers.setLoading(false);
+                    this.blockUI.stop();
                     swal({text: Response.error? Response.error.text:Response.message, type:'error'});
                 });
         } else {
             let project = <ProjectForAdd>this.form.value;
             project.id = "0";
             this.projectService.AddProject(project).toPromise().then(Response => {
-                Helpers.setLoading(false);
+                this.blockUI.stop();
                 if (Response.result) {
                     this.activeModal.close();
                 } else {
@@ -116,7 +118,7 @@ export class CreateUpdateProjectComponent implements OnInit {
                     $('#errorMessage').css("display", "block");
                 }
             }).catch(Response=>{
-                Helpers.setLoading(false);
+                this.blockUI.stop();
                 swal({text: Response.error? Response.error.text:Response.message, type:'error'});
             });
         }

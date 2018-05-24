@@ -42,13 +42,14 @@ export class AnalyticsComponent implements OnInit {
         Helpers.setLoading(true);
         this.dashboardSerive.getProjectsByUser().toPromise().then(Response => {
             if (Response && Response.result) {
+                Helpers.setLoading(false);
                 this.projects = Response.result;
                 this.selectedProject = Response.result[0];
                 this.getProjectData(Response.result[0].id);
             }
         }).catch(Response => {
             Helpers.setLoading(false);
-            swal({ text: Response.error ? Response.error.text : Response.message, type: 'error' });
+            // swal({ text: Response.error ? Response.error.text : Response.message, type: 'error' });
         })
     }
 
