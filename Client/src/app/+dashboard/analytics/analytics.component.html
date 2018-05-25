@@ -114,7 +114,7 @@
           <div class="row m-row--no-padding">
             <div class="row align-items-center">
               <select class="form-control m-portlet__nav-item m-dropdown m-dropdown--large m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push"
-                id="projectSelect" (change)="projectSelectedChange($event)">
+                id="projectSelect" (change)="projectSelectedChange($event)" *ngIf="projects.length && projects.length > 0">
                 <option *ngFor="let project of projects" [value]="project.id">
                   {{project.name}}
                 </option>
@@ -138,7 +138,7 @@
                   <div class="m-widget14">
                     <div class="m-widget14__header">
                       <h3 class="m-widget14__title">
-                        Images Tagging
+                        Images
                       </h3>
                       <span class="m-widget14__desc">
                         Images tagging proccess
@@ -164,7 +164,7 @@
                           </div>
                           <div class="m-widget14__legend">
                             <span class="m-widget14__legend-text">
-                              Total images: {{currentProjectData.totalImages}}
+                              <!-- Total images: {{currentProjectData.totalImages}} -->
                             </span>
                           </div>
                         </div>
@@ -203,7 +203,7 @@
                           </div>
                           <div class="m-widget14__legend">
                             <span class="m-widget14__legend-text">
-                              Total images have tag: {{currentProjectData.imagesTagged}}
+                              <!-- Total images have tag: {{currentProjectData.imagesTagged}} -->
                             </span>
                           </div>
                         </div>
@@ -242,7 +242,7 @@
                           </div>
                           <div class="m-widget14__legend">
                             <span class="m-widget14__legend-text">
-                              Total tags: {{currentProjectData.totalTags}}
+                              <!-- Total tags: {{currentProjectData.totalTags}} -->
                             </span>
                           </div>
                         </div>

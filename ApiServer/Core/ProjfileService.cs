@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using DAL.Models;
+using ApiServer.Model;
 using IdentityServer4.AspNetIdentity;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VDS.Security;
 
-namespace DAL
+namespace ApiServer.Core
 {
     public class ProfileService : ProfileService<User>
     {
@@ -37,8 +37,6 @@ namespace DAL
 
             var user = await _userManager.GetUserAsync(context.Subject);
 
-            context.IssuedClaims.AddRange(new List<Claim>() { new Claim("id", user.Id.ToString()), new Claim("email", user.Email), new Claim("active", user.IsActive.ToString()) });
-
             var roleNames = await _userManager.GetRolesAsync(user);
             if (roleNames.IsNullOrEmpty()) return;
 
@@ -49,21 +47,22 @@ namespace DAL
                 if (role == null) continue;
                 var permissions = _context.PermissionRoles.Where(p => p.RoleId == role.Id)
                     .Include(p => p.Permission).Select(p => p.Permission).Select(p => p.Name);
-                
+
                 var roleClaims = new List<Claim>(){
                     new Claim("Roles", roleName)
                 };
 
                 foreach (var permission in permissions)
                 {
-                    if(!roleClaims.Any(x=>x.Value == permission))
+                    if (!roleClaims.Any(x => x.Value == permission))
                     {
                         roleClaims.Add(new Claim("Permission", permission));
                     }
                 }
-                
+
                 context.IssuedClaims.AddRange(roleClaims);
             }
+            context.IssuedClaims.AddRange(new List<Claim>() { new Claim("id", user.Id.ToString()), new Claim("email", user.Email), new Claim("active", user.IsActive.ToString()) });
         }
     }
 }

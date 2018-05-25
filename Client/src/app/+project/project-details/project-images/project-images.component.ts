@@ -111,6 +111,7 @@ export class ProjectImagesComponent implements OnInit {
 
                         return mother.imgService.getImages(p.id, params)
                             .toPromise().then(response => {
+                                // console.log(response.result);
                                 return mother.imgService.getTotal(p.id).toPromise().then(resp => {
                                     mother.rawData = response.result;
                                     if (resp.result) {

@@ -41,7 +41,7 @@ namespace ApiServer.Controllers
         [ActionName("UploadImage")]
         public async Task<IActionResult> UploadImage([FromRoute] Guid id)
         {
-            string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip" };
+            string[] AllowedFileExtensions = new string[] { "jpg", "png", "bmp", "zip", "rar" };
             try
             {
 

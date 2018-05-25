@@ -80,7 +80,7 @@ export class ProjecTagComponent {
     totalTaggedTime = 0;
     quantityCheckForViews: QuantityCheckForView[] = [];
     qcDone: boolean = false;
-
+    selectedTags: any = [];
     projectSetting: ProjectSetting;
     constructor(
         private route: ActivatedRoute,
@@ -164,7 +164,7 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error.text));
+        this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error? err.error.text: err.message));
 
 
     }
@@ -778,7 +778,7 @@ export class ProjecTagComponent {
         this.canvas.on('mouse:down', function (event) {
             var obj = event.target;
 
-            if (obj.get('type') != 'image') {
+            if (obj && obj.get('type') != 'image') {
                 var tag = mother.tagsForAddOrUpdate.find(x => x.index == obj.get('index'));
                 if (!tag)
                     tag = mother.tags.find(x => x.index == obj.get('index'));

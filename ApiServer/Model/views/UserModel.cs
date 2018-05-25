@@ -36,6 +36,7 @@ namespace ApiServer.Model.views
 
         public class CreateOrUpdateUser
         {
+            public bool RandomPassword { get; set; }
             public bool SendActivationEmail { get; set; }
             public UserEdit User { get; set; }
             public List<string> AssignedRoleNames { get; set; }

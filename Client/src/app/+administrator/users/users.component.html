@@ -1,144 +1,149 @@
 <!-- BEGIN: Subheader -->
 <div class="m-subheader" appunwraptag="">
-	<div class="d-flex align-items-center">
-		<div class="mr-auto">
-			<h3 class="m-subheader__title m-subheader__title--separator">
-				Record Selection
-			</h3>
-			<ul class="m-subheader__breadcrumbs m-nav m-nav--inline">
-				<li class="m-nav__item m-nav__item--home">
-					<a href="#" class="m-nav__link m-nav__link--icon">
-						<i class="m-nav__link-icon la la-home"></i>
-					</a>
-				</li>
-				<li class="m-nav__separator">
-					-
-				</li>
-				<li class="m-nav__item">
-					<a href="" class="m-nav__link">
-						<span class="m-nav__link-text">
-							Datatables
-						</span>
-					</a>
-				</li>
-				<li class="m-nav__separator">
-					-
-				</li>
-				<li class="m-nav__item">
-					<a href="" class="m-nav__link">
-						<span class="m-nav__link-text">
-							Base
-						</span>
-					</a>
-				</li>
-				<li class="m-nav__separator">
-					-
-				</li>
-				<li class="m-nav__item">
-					<a href="" class="m-nav__link">
-						<span class="m-nav__link-text">
-							Record Selection
-						</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-	</div>
+  <div class="d-flex align-items-center">
+    <div class="mr-auto">
+      <h3 class="m-subheader__title m-subheader__title--separator">
+        Record Selection
+      </h3>
+      <ul class="m-subheader__breadcrumbs m-nav m-nav--inline">
+        <li class="m-nav__item m-nav__item--home">
+          <a href="#" class="m-nav__link m-nav__link--icon">
+            <i class="m-nav__link-icon la la-home"></i>
+          </a>
+        </li>
+        <li class="m-nav__separator">
+          -
+        </li>
+        <li class="m-nav__item">
+          <a href="" class="m-nav__link">
+            <span class="m-nav__link-text">
+              Datatables
+            </span>
+          </a>
+        </li>
+        <li class="m-nav__separator">
+          -
+        </li>
+        <li class="m-nav__item">
+          <a href="" class="m-nav__link">
+            <span class="m-nav__link-text">
+              Base
+            </span>
+          </a>
+        </li>
+        <li class="m-nav__separator">
+          -
+        </li>
+        <li class="m-nav__item">
+          <a href="" class="m-nav__link">
+            <span class="m-nav__link-text">
+              Record Selection
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
 <!-- END: Subheader -->
 <div class="m-content">
-	<div class="m-portlet m-portlet--mobile">
-		<div class="m-portlet__head">
-			<div class="m-portlet__head-caption">
-				<div class="m-portlet__head-title">
-					<h3 class="m-portlet__head-text">
-              Manage users and permissions
-					</h3>
-				</div>
+  <div class="m-portlet m-portlet--mobile">
+    <div class="m-portlet__head">
+      <div class="m-portlet__head-caption">
+        <div class="m-portlet__head-title">
+          <h3 class="m-portlet__head-text">
+            Manage users
+          </h3>
+        </div>
       </div>
-      <div class="m-portlet__head-tools">
-        <ul class="m-portlet__nav">
-          <li class="m-portlet__nav-item">
-            <div class="m-dropdown m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push" data-dropdown-toggle="hover" aria-expanded="true">
-              <a href="#" class="m-portlet__nav-link btn btn-lg btn-secondary  m-btn m-btn--icon m-btn--icon-only m-btn--pill  m-dropdown__toggle">
-                <i class="la la-ellipsis-h m--font-brand"></i>
-              </a>
-              <div class="m-dropdown__wrapper">
-                <span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust"></span>
-                <div class="m-dropdown__inner">
-                  <div class="m-dropdown__body">
-                    <div class="m-dropdown__content">
-                      <ul class="m-nav">
-                        <li class="m-nav__section m-nav__section--first">
-                          <span class="m-nav__section-text">
-                            Quick Actions
-                          </span>
-                        </li>
-                        <li class="m-nav__item">
-                          <a href="" class="m-nav__link" (click)="openCreateOrUpdateModal()">
-                            <i class="m-nav__link-icon flaticon-plus"></i>
-                            <span class="m-nav__link-text">
-                              New User
-                            </span>
-                          </a>
-                        </li>
-                        <li class="m-nav__section">
-                          <span class="m-nav__section-text">
-                            Tools
-                          </span>
-                        </li>
-                        <li class="m-nav__item">
-                          <a href="" class="m-nav__link" (click)="exportToExcel()">
-                            <i class="m-nav__link-icon flaticon-graphic"></i>
-                            <span class="m-nav__link-text">
-                              Export to excel
-                            </span>
-                          </a>
-                        </li>
-                        <li class="m-nav__separator m-nav__separator--fit m--hide"></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    </div>
+    <div class="m-portlet__body">
+      <div class="col-lg-12">
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm dropdown-toggle m-btn--air" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            Actions
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
+            <a class="dropdown-item" (click)="openCreateOrUpdateModal()">
+              <i class="la la-plus i-plus"></i>
+              Add User
+            </a>
+            <a *ngIf="selectedUsers.length>0" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteUser">
+              <i class="la la-trash i-trash"></i> Delete selected users</a>
+            <a *ngIf="selectedUsers.length<=0" class="dropdown-item disabled">
+              <i class="la la-trash i-trash"></i> Delete selected users</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-12" style="padding-top: 10px">
+        <!--begin: Datatable -->
+        <div class="m_datatable">
+          <dx-data-grid id="gridUsers" [dataSource]="dataSource" [showBorders]="true" [showRowLines]="false" [showColumnLines]="true"
+            [columnAutoWidth]="true" keyExpr="id" class="m_datatable" (onSelectionChanged)="selectionChanged($event)">
+            <dxo-selection mode="multiple"></dxo-selection>
+            <dxo-scrolling mode="standard"></dxo-scrolling>
+            <dxo-remote-operations [sorting]="true" [paging]="true"></dxo-remote-operations>
+            <dxo-paging [pageSize]="12"></dxo-paging>
+            <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]" [showInfo]="true"></dxo-pager>
+
+            <dxi-column [allowFiltering]="false" [width]="35" [allowSorting]="false" cellTemplate="actionCellTemplate"></dxi-column>
+            <dxi-column dataField="userName"></dxi-column>
+            <dxi-column dataField="name"></dxi-column>
+            <dxi-column dataField="surname"></dxi-column>
+            <dxi-column dataField="roleNames" [allowSorting]="false"></dxi-column>
+            <dxi-column dataField="email"></dxi-column>
+            <dxi-column dataField="emailConfirmed"></dxi-column>
+            <dxi-column dataField="isActive"></dxi-column>
+            <dxi-column dataField="lastLoginTime" dataType="date" format="MM/dd/yyyy"></dxi-column>
+            <dxi-column dataField="creationTime" dataType="date" format="MM/dd/yyyy"></dxi-column>
+
+            <!-- <div *dxTemplate="let data of 'actionCellTemplate'" class="actions-menu">
+            <dx-menu [items]="menuItems" showFirstSubmenuMode="onClick" (onItemClick)="itemClick($event, data)"></dx-menu>
+          </div> -->
+            <div *dxTemplate="let data of 'actionCellTemplate'">
+              <span (click)="itemClick($event, data)" class="role-edit la la-edit"></span>
+              <!-- <dx-menu [items]="menuItems" showFirstSubmenuMode="onClick" (onItemClick)="itemClick($event, data)"></dx-menu> -->
             </div>
+          </dx-data-grid>
+        </div>
+      </div>
+      <!--end: Datatable -->
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modalDeleteUser" tabindex="-1" role="dialog" aria-labelledby="modalDeleteUserTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDeleteUserTitle">
+          Delete Users
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">
+            ×
+          </span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure want to delete there users:</p>
+        <ul>
+          <li *ngFor="let item of selectedUsers">
+            <strong>{{ item.userName }}</strong>
           </li>
         </ul>
       </div>
-		</div>
-		<div class="m-portlet__body">
-			<!--begin: Datatable -->
-			<div class="m_datatable">
-        <dx-data-grid id="gridUsers" [dataSource]="dataSource" [showBorders]="true" [showRowLines]="false" [showColumnLines]="true"
-          [columnAutoWidth]="true" keyExpr="id" class="m_datatable">
-
-          <dxo-scrolling mode="standard"></dxo-scrolling>
-          <dxo-remote-operations [sorting]="true" [paging]="true"></dxo-remote-operations>
-          <dxo-paging [pageSize]="12"></dxo-paging>
-          <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
-
-          <dxi-column [allowFiltering]="false" [width]="60" [allowSorting]="false" cellTemplate="actionCellTemplate"></dxi-column>
-          <dxi-column dataField="userName"></dxi-column>
-          <dxi-column dataField="name"></dxi-column>
-          <dxi-column dataField="surname"></dxi-column>
-          <dxi-column dataField="roleNames" [allowSorting]="false"></dxi-column>
-          <dxi-column dataField="email"></dxi-column>
-          <dxi-column dataField="emailConfirmed"></dxi-column>
-          <dxi-column dataField="isActive"></dxi-column>
-          <dxi-column dataField="lastLoginTime" dataType="date" format="MM/dd/yyyy"></dxi-column>
-          <dxi-column dataField="creationTime" dataType="date" format="MM/dd/yyyy"></dxi-column>
-
-          <!-- <div *dxTemplate="let data of 'actionCellTemplate'" class="actions-menu">
-            <dx-menu [items]="menuItems" showFirstSubmenuMode="onClick" (onItemClick)="itemClick($event, data)"></dx-menu>
-          </div> -->
-          <div *dxTemplate="let data of 'actionCellTemplate'">
-              <span (click)="itemClick($event, data)" class="role-edit la la-edit"></span>
-              <span (click)="itemClick($event, data)" class="role-delete la la-trash"></span>
-              <!-- <dx-menu [items]="menuItems" showFirstSubmenuMode="onClick" (onItemClick)="itemClick($event, data)"></dx-menu> -->
-            </div>
-        </dx-data-grid>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="deleteSelectedUser()" data-dismiss="modal">
+          Delete
+        </button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Cancel
+        </button>
       </div>
-			<!--end: Datatable -->
-		</div>
-	</div>
+    </div>
+  </div>
 </div>

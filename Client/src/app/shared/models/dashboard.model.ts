@@ -26,9 +26,9 @@ export class UserProject{
     email: string;
     roleNames: string[];
     taggedTime: string;
-    totalTags: number;
-    totalQcs: number;
-    tagsHaveClass: number;
-    imagesHaveTag: number;
-    imagesHaveTagClass: number;
+    totalTags: number = 0;
+    totalQcs: number = 0;
+    tagsHaveClass: number = 0;
+    imagesHaveTag: number = 0;
+    imagesHaveTagClass: number = 0;
 }

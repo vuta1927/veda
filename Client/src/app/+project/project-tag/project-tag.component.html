@@ -94,8 +94,8 @@
                             </button>
                         </div>
                         <div class="p-2">
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': tagMode, '': !tagMode }" (click)="switchTagMode()"
-                                *ngIf="!hadQc">
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': tagMode, '': !tagMode }"
+                                (click)="switchTagMode()" *ngIf="!hadQc && addTag">
                                 <span>
                                     <i class="la la-tag"></i>
                                     <span>
@@ -103,8 +103,8 @@
                                     </span>
                                 </span>
                             </button>
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': excluseMode, '': !excluseMode }" (click)="ExcluseAreaClick()"
-                                *ngIf="!hadQc">
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': excluseMode, '': !excluseMode }"
+                                (click)="ExcluseAreaClick()" *ngIf="!hadQc && addTag">
                                 <span>
                                     <i class="la la-scissors"></i>
                                     <span>
@@ -155,13 +155,6 @@
                 <div class="col-lg-3" style="padding-top: 10px">
                     <div class="card">
                         <div class="card-body">
-                            <div class="col-xl-12">
-                                <span class="m--font-brand" *ngIf="selectedTag">
-                                    <h6>
-                                        <b>Tag: {{selectedTag.index}}</b>
-                                    </h6>
-                                </span>
-                            </div>
                             <div class="col-xl-12" style="padding-top: 10px">
                                 <h6 class="m--font-brand">
                                     Image
@@ -171,7 +164,7 @@
                                 <div class="m-checkbox-list" style="overflow: visible;" data-scrollable="true">
                                     <div style="padding: 10px; margin: 10px 0px 10px; border: 1px solid rgb(239, 239, 239);">
                                         <label class="m-checkbox m-checkbox--state-brand">
-                                            <input type="checkbox" [(ngModel)]="currentImage.ignored" [disabled]="hadQc"> Ignore image
+                                            <input type="checkbox" [(ngModel)]="currentImage.ignored" [disabled]="hadQc && !addTag"> Ignore image
                                             <span></span>
                                         </label>
                                     </div>
@@ -182,6 +175,23 @@
                                 <h6 class="m--font-brand">
                                     Classes
                                 </h6>
+                                <table>
+                                    <tr>
+                                        <td style="text-align: center; vertical-align: middle">
+                                            <h6>
+                                                Selected tag:
+                                            </h6>
+                                        </td>
+                                        <td>
+                                            <span class="m-badge m-badge--brand m-badge--success m-badge--wide" *ngIf="selectedTag">
+                                                Tag: {{selectedTag.index}}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+
                             </div>
                             <div class="col-xl-12">
                                 <div class="m-radio-list" style="overflow: visible;" data-scrollable="true">
@@ -210,7 +220,7 @@
                             </div>
                             <div class="col-xl-12">
                                 <button class="btn btn-sm btn-primary m-btn--wide btn-block m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled"
-                                    *ngIf="!hadQc">
+                                    *ngIf="!hadQc && addTag">
                                     <span>
                                         <i class="la la-save"></i>
                                         <span>

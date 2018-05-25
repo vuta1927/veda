@@ -11,6 +11,7 @@ using ApiServer.Model;
 using System.Security.Claims;
 using VDS.Security;
 using Microsoft.AspNetCore.Identity;
+using ApiServer.Core.Email;
 
 namespace ApiServer.Controllers.Auth
 {
@@ -22,10 +23,12 @@ namespace ApiServer.Controllers.Auth
     {
         private readonly VdsContext _context;
         private readonly IUserService _userService;
-        public UsersController(VdsContext context, IUserService userService)
+        private readonly IEmailHelper _emailHelper;
+        public UsersController(VdsContext context, IUserService userService, IEmailHelper emailHelper)
         {
             _context = context;
             _userService = userService;
+            _emailHelper = emailHelper;
         }
         public User GetCurrentUser()
         {
@@ -131,6 +134,7 @@ namespace ApiServer.Controllers.Auth
         }
 
         [HttpGet("{email}")]
+        [ActionName("withemail")]
         public IActionResult WithEmail([FromRoute] string email)
         {
             var user = _context.Users.SingleOrDefault(u => u.Email == email);
@@ -143,6 +147,7 @@ namespace ApiServer.Controllers.Auth
         }
 
         [HttpGet("{username}")]
+        [ActionName("withusername")]
         public IActionResult WithUserName([FromRoute] string username)
         {
             var user = _context.Users.SingleOrDefault(u => u.UserName == username);
@@ -219,7 +224,7 @@ namespace ApiServer.Controllers.Auth
             }
             User user = null;
             var passHasher = new PasswordHasher<User>();
-
+            string password = "";
             if (userData.User.Id <= 0)
             {
                 user = new User()
@@ -232,14 +237,26 @@ namespace ApiServer.Controllers.Auth
                     UserName = userData.User.Username,
                     NormalizedEmail = userData.User.EmailAddress.ToUpper(),
                     NormalizedUserName = userData.User.Username.ToUpper(),
-                    PasswordHash = passHasher.HashPassword(user, userData.User.Password),
                     Roles = new List<UserRole>()
             };
+                if (!string.IsNullOrEmpty(userData.User.Password))
+                {
+                    user.PasswordHash = passHasher.HashPassword(user, userData.User.Password);
+                }
+
+                if (userData.RandomPassword)
+                {
+                    password = Utilities.GeneratePassword();
+                    user.PasswordHash = passHasher.HashPassword(user, password);
+                }
+                
                 _context.Users.Add(user);
             }
             else
             {
                 user = _context.Users.SingleOrDefault(x => x.Id == userData.User.Id);
+                password = user.PasswordHash;
+
                 if (user == null) return Content("User not found!");
                 user.Id = userData.User.Id;
                 user.Email = userData.User.EmailAddress;
@@ -250,12 +267,20 @@ namespace ApiServer.Controllers.Auth
                 user.UserName = userData.User.Username;
                 user.NormalizedEmail = userData.User.EmailAddress.ToUpper();
                 user.NormalizedUserName = userData.User.Username.ToUpper();
-                user.PasswordHash = passHasher.HashPassword(user, userData.User.Password);
+                if (!string.IsNullOrEmpty(userData.User.Password))
+                {
+                    user.PasswordHash = passHasher.HashPassword(user, userData.User.Password);
+                }
+                    
                 user.Roles = new List<UserRole>();
             }
             var identity = (ClaimsIdentity)User.Identity;
             var currentUser = _userService.GetCurrentUser(identity);
 
+            foreach(var role in _context.UserRoles.Where(x=>x.UserId == userData.User.Id))
+            {
+                _context.UserRoles.Remove(role);
+            }
             foreach (var rolename in userData.AssignedRoleNames)
             {
                 var role = _context.Roles.SingleOrDefault(x => x.NormalizedRoleName.Equals(rolename.ToUpper()));
@@ -274,7 +299,29 @@ namespace ApiServer.Controllers.Auth
             try
             {
                 await _context.SaveChangesAsync();
-                return CreatedAtAction("GetUser", new { id = user.Id }, user);
+                if(userData.User.Id <= 0)
+                {
+                    if (userData.RandomPassword)
+                    {
+                        var body = @"<p>You Veda Account info:</p><br /> <p>- username: <b>" + user.UserName + "</b></p> <br /><p>- password: <b>" + password +"</b><p>";
+                        _emailHelper.Send(user.Email, "VEDA - Account Info", body);
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(userData.User.Password))
+                    {
+                        var passwordCompair = passHasher.VerifyHashedPassword(user, password, userData.User.Password);
+
+                        if (passwordCompair != PasswordVerificationResult.Success)
+                        {
+                            var body = "<p>Your password have been changed, you new password is: <b>" + userData.User.Password + "</b></p>";
+                            _emailHelper.Send(user.Email, "VEDA - Account update", body);
+                        }
+                    }
+                    
+                }
+                return Ok();
             }
             catch(Exception ex)
             {
@@ -285,24 +332,39 @@ namespace ApiServer.Controllers.Auth
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser([FromRoute] long id)
+        [HttpDelete("{ids}")]
+        [ActionName("DeleteUser")]
+        public async Task<IActionResult> DeleteUser([FromRoute] string ids)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
-            if (user == null)
+            var userIds = ids.Split(';');
+
+            foreach(var id in userIds)
             {
-                return NotFound();
+                var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == long.Parse(id));
+                if (user == null)
+                {
+                    continue;
+                }
+
+                _context.Users.Remove(user);
             }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
 
-            return Ok(user);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }catch(Exception ex)
+            {
+                return Content(ex.Message);
+            }
+            
+
+            return Ok();
         }
 
         private bool UserExists(long id)

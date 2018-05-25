@@ -5,7 +5,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { FormService } from '../../shared/services/form.service';
 import { ScriptLoaderService } from '../../shared/services/script-loader.service';
 import { Helpers } from '../../helpers';
-
+import swal from 'sweetalert2';
 @Component({
     selector: '.m-grid.m-grid--hor.m-grid--root.m-page',
     templateUrl: './login.component.html',
@@ -65,7 +65,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.service.Login(this.loginForm.value.username, this.loginForm.value.password)
             .subscribe(() => {
                 this.isLoggingin = false;
-                this.utilityService.navigateToReturnUrl();
+                console.log('a');
+                if(!this.service.isActive()){
+                    this.service.Logoff();
+                    swal({title:"Account Locked" ,text:"Your account had been locked, please contact your administrator for help!", type:"error"});
+                }else{
+                    this.utilityService.navigateToReturnUrl();
+                }
+                
             }, err => {
                 this.isLoggingin = false;
                 this.isLoginFail = true;

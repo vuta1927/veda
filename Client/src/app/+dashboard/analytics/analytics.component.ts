@@ -5,7 +5,7 @@ import { Chart } from 'chart.js';
 import { DashBoardService } from './analytics.service';
 import swal from 'sweetalert2';
 import responsive_box from 'devextreme/ui/responsive_box';
-import { projectAnalist } from '../../shared/models/dashboard.model';
+import { projectAnalist,UserProject } from '../../shared/models/dashboard.model';
 import { Data } from '../../shared/models/chart.model';
 import { Helpers } from '../../helpers';
 import { DxDataGridComponent } from 'devextreme-angular';
@@ -57,8 +57,12 @@ export class AnalyticsComponent implements OnInit {
         Helpers.setLoading(true);
         this.dashboardSerive.getDataProject(projectId).toPromise().then(Response => {
             if (Response && Response.result) {
+                // console.log(Response.result);
                 this.selectedProject = this.projects.find(x => x.id == projectId);
                 this.currentProjectData = Response.result;
+                if(!this.currentProjectData.currentProgress){
+                    this.currentProjectData.currentProgress = new UserProject();
+                }
                 this.userDataSource = Response.result.userProjects;
                 this.customChart();
                 this.createImageChart();
@@ -167,7 +171,7 @@ export class AnalyticsComponent implements OnInit {
                 },
                 elements: {
                     center: {
-                        text: mother.currentProjectData.totalImages,
+                        text: mother.currentProjectData.imagesTagged,
                         color: '#FF6384', // Default is #000000
                         fontStyle: 'Arial', // Default is Arial
                         sidePadding: 20 // Defualt is 20 (as a percentage)
@@ -209,7 +213,7 @@ export class AnalyticsComponent implements OnInit {
                 },
                 elements: {
                     center: {
-                        text: mother.currentProjectData.totalTags,
+                        text: mother.currentProjectData.totalTagsHaveClass,
                         color: '#34BFA3', // Default is #000000
                         fontStyle: 'Arial', // Default is Arial
                         sidePadding: 20 // Defualt is 20 (as a percentage)
@@ -249,7 +253,7 @@ export class AnalyticsComponent implements OnInit {
                 },
                 elements: {
                     center: {
-                        text: mother.currentProjectData.totalImages,
+                        text: mother.currentProjectData.imagesHadQc,
                         color: '#716ACA', // Default is #000000
                         fontStyle: 'Arial', // Default is Arial
                         sidePadding: 20 // Defualt is 20 (as a percentage)

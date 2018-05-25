@@ -60,7 +60,11 @@ export const ROUTES: Routes = [
       {
         path: '404',
         loadChildren: 'app/shared/components/pages/default/not-found/not-found.module#NotFoundModule'
-      }
+      },
+      {
+        path: 'user-profile',
+        loadChildren: 'app/+account/userProfile/userProfile.module#UserProfileModule',
+      },
     ]
   },
 
@@ -68,7 +72,6 @@ export const ROUTES: Routes = [
     path: 'account',
     loadChildren: 'app/+account/account.module#AccountModule'
   },
-
   { 
     path: '**',
     redirectTo: '404',

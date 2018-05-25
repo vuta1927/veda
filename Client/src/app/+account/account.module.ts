@@ -8,7 +8,6 @@ import { LoginComponent } from './login/login.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { LogoutComponent } from './logout/logout.component';
-
 @NgModule({
     imports: [
         CommonModule,
@@ -19,7 +18,7 @@ import { LogoutComponent } from './logout/logout.component';
     declarations: [
         AccountComponent,
         LoginComponent,
-        LogoutComponent
+        LogoutComponent,
     ]
 })
 export class AccountModule {

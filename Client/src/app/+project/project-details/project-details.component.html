@@ -64,7 +64,7 @@
           <li class="m-portlet__nav-item m-dropdown m-dropdown--inline m-dropdown--arrow m-dropdown--align-right m-dropdown--align-push"
             data-dropdown-toggle="hover" aria-expanded="true">
             <a href="#" class="m-portlet__nav-link m-dropdown__toggle dropdown-toggle btn btn-sm  btn-brand m-btn m-btn--pill">
-              All
+              Go to
             </a>
             <div class="m-dropdown__wrapper">
               <span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust" style="left: auto; right: 32px;"></span>
@@ -75,14 +75,14 @@
                     <ul class="m-nav">
                       <li class="m-nav__section m-nav__section--first">
                         <span class="m-nav__section-text">
-                          Action
+                          
                         </span>
                       </li>
                       <li class="m-nav__item" *ngIf="editProject">
                         <a class="m-nav__link" [routerLink]="['/project-info']" [queryParams]="{ project: currentProject.id }">
                           <i class="m-nav__link-icon flaticon-info"></i>
                           <span class="m-nav__link-text">
-                            Edit info
+                            Info
                           </span>
                         </a>
                       </li>

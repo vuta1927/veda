@@ -24,6 +24,8 @@ using Hangfire;
 using MediatR;
 using ApiServer.Hubs;
 using ApiServer.Core.Merge;
+using ApiServer.Core.Email;
+using ApiServer.Core;
 
 namespace ApiServer
 {
@@ -77,9 +79,11 @@ namespace ApiServer
             services.AddTransient<ExportProjectController>();
             services.AddTransient<ProjectSettingsController>();
             services.AddTransient<DashboardController>();
+            services.AddTransient<UserProfileController>();
 
             services.AddScoped<IMergeService, MergeService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEmailHelper, EmailHelper>();
 
             services.AddAuthentication(options =>
             {

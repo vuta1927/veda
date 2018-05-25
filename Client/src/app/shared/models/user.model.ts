@@ -43,7 +43,22 @@ export interface IUserForCreateOrEdit {
 }
 
 export class CreateOrUpdateUser {
+    randomPassword:boolean = true;
     user: IUserEdit;
     assignedRoleNames: string[];
     sendActivationEmail: boolean;
+}
+
+export interface IUserProfile{
+    id: number;
+    name: string;
+    surname: string;
+    username: string;
+    email: string;
+}
+
+export class UserProfile implements IUserProfile{
+    constructor(public id:number = 0, public name:string = '', public surname: string = '', public username:string = '', public email:string=''){
+
+    }
 }

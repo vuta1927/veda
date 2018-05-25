@@ -176,21 +176,6 @@ namespace ApiServer.Controllers
                         }
                         bitmap.Save(imgPath);
                         bitmap.Dispose();
-
-                        //if (System.IO.File.Exists(temp))
-                        //{
-                        //    try
-                        //    {
-                        //        System.IO.File.Copy(temp, imgPath, true);
-                        //        System.IO.File.Delete(temp);
-                        //    }
-                        //    catch (Exception ex)
-                        //    {
-                        //        System.IO.File.Delete(temp);
-                        //        throw ex;
-                        //    }
-
-                        //}
                     }
                     catch (Exception ex)
                     {

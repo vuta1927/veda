@@ -108,6 +108,14 @@ export class SecurityService {
         return _.includes(roles, role);
     }
 
+    public isActive(): boolean{
+        if(!this.IsAuthorized) return false;
+        let dataAccessToken: any = this.getDataFromToken(this.oauthService.getAccessToken());
+        let isActive = Boolean(dataAccessToken.active);
+
+        return isActive;
+    }
+
     private urlBase64Decode(str: string) {
         let output = str.replace('-', '+').replace('_', '/');
         switch (output.length % 4) {

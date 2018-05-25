@@ -51,4 +51,9 @@ export class UsersService {
         let url = this.configurationService.serverSettings.apiUrl + '/api/Users/UpdateUser/' + user.id;
         return this.http.put<IAppCoreResponse<IUser>>(url, user);
     }
+
+    public deleteUse(userIds: string): Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/Users/DeleteUser/' + userIds;
+        return this.http.delete<IAppCoreResponse<any>>(url);
+    }
 }

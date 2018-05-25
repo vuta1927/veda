@@ -10,7 +10,7 @@ import { DxDataGridComponent } from 'devextreme-angular';
 import { CreateOrUpdateUserComponent } from './create-or-update-user.component';
 import { TranslateExtService } from '../../shared/services/translate-ext.service';
 import { Helpers } from '../../helpers';
-
+import swal from 'sweetalert2';
 @Component({
     selector: 'app-users',
     templateUrl: './users.component.html',
@@ -20,7 +20,7 @@ import { Helpers } from '../../helpers';
     encapsulation: ViewEncapsulation.None
 })
 export class UsersComponent {
-
+    @ViewChild(DxDataGridComponent) dataGrid: DxDataGridComponent;
     menuItems = [
         {
             icon: 'preferences',
@@ -32,8 +32,7 @@ export class UsersComponent {
     ]
 
     dataSource: any = {};
-    @ViewChild(DxDataGridComponent) dataGrid: DxDataGridComponent;
-
+    selectedUsers: any = [];
     constructor(private usersService: UsersService, private modalService: NgbModal, private translate: TranslateExtService) {
 
         this.dataSource.store = new CustomStore({
@@ -58,13 +57,17 @@ export class UsersComponent {
                             totalCount: response.result.length
                         };
                     })
-                    .catch(error => { throw 'Data loading error' });
+                    .catch(error => { });
             }
         });
     }
 
     exportToExcel() {
         this.dataGrid.instance.exportToExcel(false);
+    }
+
+    selectionChanged(data:any){
+        this.selectedUsers = data.selectedRowsData;
     }
 
     openCreateOrUpdateModal(id?: number) {
@@ -92,7 +95,28 @@ export class UsersComponent {
     }
 
     itemClick($event, data) {
-        console.log($event, data);
-            this.openCreateOrUpdateModal(data.data.id);
+        this.openCreateOrUpdateModal(data.data.id);
+    }
+    
+    deleteSelectedUser(){
+        var userids = '';
+        for(var i=0; i < this.selectedUsers.length; i++){
+            if(i == this.selectedUsers.length - 1){
+                userids += this.selectedUsers[i].id;
+            }else{
+                userids += this.selectedUsers[i].id + ";";
+            }
+        };
+        
+        Helpers.setLoading(true);
+        this.usersService.deleteUse(userids).toPromise().then(Response=>{
+            Helpers.setLoading(false);
+            swal({text:"Users removed!", type:"success"}).then(()=>{
+                this.refreshGrids();
+            });
+        }).catch(Response=>{
+            Helpers.setLoading(false);
+            swal({text:Response.error? Response.error.text: Response.message, type:"error"});
+        });
     }
 }

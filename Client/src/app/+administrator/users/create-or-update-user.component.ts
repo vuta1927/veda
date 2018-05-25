@@ -130,13 +130,11 @@ export class CreateOrUpdateUserComponent implements OnInit {
         let user = <IUserEdit>this.form.value;
         let userCreateOrEdit = new CreateOrUpdateUser();
         userCreateOrEdit.user = user;
+        userCreateOrEdit.randomPassword = this.isSetRandomPassword;
         userCreateOrEdit.sendActivationEmail = this.form.get('sendActivationEmail').value;
         userCreateOrEdit.assignedRoleNames = this.assignedRoleNames;
         this.userService.AddUser(userCreateOrEdit).toPromise().then(Response => {
-            if (Response.result) {
-                // console.log(Response.result);
-                this.activeModal.close();
-            }
+            this.activeModal.close();
         }).catch(Response=>{
             swal({text:Response.error? Response.error.text: Response.message, type:"error"});
         });
