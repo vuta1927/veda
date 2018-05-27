@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -21,7 +23,6 @@
     <ProjectReference Include="..\Core\VDS.IdentityServer4\VDS.IdentityServer4.csproj" />
     <ProjectReference Include="..\Core\VDS.Storage.EntityFrameworkCore\VDS.Storage.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Core\VDS\VDS.csproj" />
-    <ProjectReference Include="..\DAL\DAL.csproj" />
   </ItemGroup>
 
 </Project>

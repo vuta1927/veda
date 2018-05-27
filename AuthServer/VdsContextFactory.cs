@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DAL
+namespace AuthServer
 {
     class VdsContextFactory: IDesignTimeDbContextFactory<VdsContext>
     {
