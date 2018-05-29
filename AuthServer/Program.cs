@@ -21,6 +21,7 @@ namespace AuthServer
             WebHost.CreateDefaultBuilder(args)
                 .UseKestrel()
                 .UseStartup<Startup>()
+                .UseUrls("http://191.168.0.108:51927")
                 .Build();
     }
 }

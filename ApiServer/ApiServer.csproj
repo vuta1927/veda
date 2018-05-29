@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire" Version="1.6.19" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-final" />
@@ -38,7 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\VDS.AspNetCore\VDS.AspNetCore.csproj" />
-    <ProjectReference Include="..\Core\VDS.BackgroundJobs.Hangfire\VDS.BackgroundJobs.Hangfire.csproj" />
     <ProjectReference Include="..\Core\VDS.Common\VDS.Common.csproj" />
     <ProjectReference Include="..\Core\VDS.IdentityServer4.EntityFrameworkCore\VDS.IdentityServer4.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Core\VDS.IdentityServer4\VDS.IdentityServer4.csproj" />

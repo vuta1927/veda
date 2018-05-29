@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\VDS.AspNetCore\VDS.AspNetCore.csproj" />
-    <ProjectReference Include="..\Core\VDS.BackgroundJobs.Hangfire\VDS.BackgroundJobs.Hangfire.csproj" />
     <ProjectReference Include="..\Core\VDS.Common\VDS.Common.csproj" />
     <ProjectReference Include="..\Core\VDS.IdentityServer4.EntityFrameworkCore\VDS.IdentityServer4.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Core\VDS.IdentityServer4\VDS.IdentityServer4.csproj" />

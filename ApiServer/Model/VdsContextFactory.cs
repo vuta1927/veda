@@ -13,7 +13,7 @@ namespace ApiServer.Model
             var builder = new DbContextOptionsBuilder<VdsContext>();
             //var configuration = AppConfigurations.Get(WebContentDirectoryFinder.CalculateContentRootFolder());
 
-            builder.UseSqlServer("server=192.168.100.29;Database=Vds;User ID=sa;Password=Echo@1927;Integrated Security=false;MultipleActiveResultSets=true");
+            builder.UseSqlServer("server=192.168.0.108;Database=Vds;User ID=sa;Password=Echo@1927;Integrated Security=false;MultipleActiveResultSets=true");
             return new VdsContext(builder.Options, null, null);
         }
     }

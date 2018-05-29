@@ -12,20 +12,12 @@ using VDS.Storage.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ApiServer.Model;
-using IdentityServer4.Services;
 using ApiServer.Core.Authorization;
 using ApiServer.Controllers;
 using ApiServer.Controllers.Auth;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
-using VDS.BackgroundJobs;
-using VDS.BackgroundJobs.Hangfire;
-using Hangfire;
-using MediatR;
 using ApiServer.Hubs;
 using ApiServer.Core.Merge;
 using ApiServer.Core.Email;
-using ApiServer.Core;
 
 namespace ApiServer
 {
