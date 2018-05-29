@@ -44,7 +44,8 @@ namespace AuthServer
                         new Secret("40A00C685411260BD89DF2459D8EE35FDE2FFAA3AD103EA9CD4362B544CEFE63".Sha256())
                     },
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    AllowOfflineAccess = true
+                    AllowOfflineAccess = true,
+                    AllowedCorsOrigins = new List<string>{ "http://localhost:4200", "http://localhost:52000", "http://192.168.100.29:52000", "http://192.168.100.5:52000"},
                 }
             };
         }

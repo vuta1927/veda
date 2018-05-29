@@ -25,7 +25,6 @@ namespace ApiServer
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
             .UseKestrel()
-            .UseUrls("http://localhost:52719")
             .UseStartup<Startup>()
             .Build();
     }

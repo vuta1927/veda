@@ -119,7 +119,7 @@ export class ProjectClassComponent implements OnInit {
         });
     }
 
-    addClass(data) {
+    addClass() {
         this.openCreateOrUpdateModal();
     }
 

@@ -5,6 +5,9 @@ import swal from 'sweetalert2';
 export class hub{
     public static _hubConnection: HubConnection;
     public static connectionId: string;
+    public constructor(){
+
+    }
     public static setupHub(apiUrl) {
         var mother = this;
         this._hubConnection = new HubConnection(apiUrl + '/hubs/image');

@@ -1,9 +1,10 @@
 version: '3.4'
 
 services:
+
   apiserver:
     image: vds_api
-    container_name: vds.api
+    container_name: vds_api
     ports:
       - "52719:80"
     build:
@@ -12,41 +13,18 @@ services:
     networks:
       vds_network:
         ipv4_address: 10.0.0.2
-    depends_on:
-      - db
-    links:
-      - db:db
 
   authserver:
     image: vds_identity_server
-    container_name: vds.identityserver
+    container_name: vds_identity_server
     ports:
       - "51927:80"
     build:
       context: .
       dockerfile: AuthServer/Dockerfile
-    depends_on:
-      - db
-    links:
-      - db:db
     networks:
       vds_network:
         ipv4_address: 10.0.0.3
-
-  db:
-    image: microsoft/mssql-server-linux:latest
-    container_name: vds.database
-    environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Express"
-      SA_PASSWORD: "Echo@1927"
-    expose:
-      - "1433"
-    ports:
-      - "1927:1433"
-    networks:
-      vds_network:
-        ipv4_address: 10.0.0.4
 
 networks:
   vds_network:

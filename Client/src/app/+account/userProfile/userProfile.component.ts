@@ -84,4 +84,5 @@ export class UserProfileComponent implements OnInit {
             return res.result ? null : { emailTaken: true };
         }).catch(_ => Observable.empty());
     }
+    saveChange(){}
 }

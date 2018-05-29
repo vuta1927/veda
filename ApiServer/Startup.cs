@@ -31,7 +31,7 @@ namespace ApiServer
 {
     public class Startup
     {
-        private static string _defaultCorsPolicyName = "http://localhost:4200";
+        private static string _defaultCorsPolicyName = "http://localhost:52000";
 
         public static IServiceProvider Provider { get; private set; }
 

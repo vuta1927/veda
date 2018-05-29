@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthServer", "AuthServer\Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{2551FE01-E7D2-4601-A6D3-FE58A8B047A1}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{B0B6D283-8D80-4056-8075-4527F5225F13}"
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{AF401A7A-27B4-4B78-91EB-7462BBB7F18D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,10 +67,10 @@ Global
 		{2551FE01-E7D2-4601-A6D3-FE58A8B047A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2551FE01-E7D2-4601-A6D3-FE58A8B047A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2551FE01-E7D2-4601-A6D3-FE58A8B047A1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B0B6D283-8D80-4056-8075-4527F5225F13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0B6D283-8D80-4056-8075-4527F5225F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0B6D283-8D80-4056-8075-4527F5225F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0B6D283-8D80-4056-8075-4527F5225F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF401A7A-27B4-4B78-91EB-7462BBB7F18D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF401A7A-27B4-4B78-91EB-7462BBB7F18D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF401A7A-27B4-4B78-91EB-7462BBB7F18D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF401A7A-27B4-4B78-91EB-7462BBB7F18D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
