@@ -22,6 +22,8 @@ using ApiServer.Hubs;
 using ApiServer.Core.SignalR;
 using ApiServer.Core.Queues;
 using VDS.Security;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 namespace ApiServer.Controllers
 {
     [Produces("application/json")]

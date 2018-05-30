@@ -10,7 +10,6 @@ COPY Core/VDS.IdentityServer4.EntityFrameworkCore/VDS.IdentityServer4.EntityFram
 COPY Core/VDS.Storage.EntityFrameworkCore/VDS.Storage.EntityFrameworkCore.csproj Core/VDS.Storage.EntityFrameworkCore/
 COPY Core/VDS/VDS.csproj Core/VDS/
 COPY Core/VDS.IdentityServer4/VDS.IdentityServer4.csproj Core/VDS.IdentityServer4/
-COPY Core/VDS.BackgroundJobs.Hangfire/VDS.BackgroundJobs.Hangfire.csproj Core/VDS.BackgroundJobs.Hangfire/
 COPY Core/VDS.AspNetCore/VDS.AspNetCore.csproj Core/VDS.AspNetCore/
 RUN dotnet restore ApiServer/ApiServer.csproj
 COPY . .

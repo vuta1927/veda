@@ -18,6 +18,8 @@ using System.IO.Compression;
 using VDS.Security;
 using ApiServer.Core;
 using ApiServer.Core.Queues;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing.Drawing;
 
 namespace ApiServer.Controllers
 {
@@ -158,7 +160,7 @@ namespace ApiServer.Controllers
 
         public async Task StoreImage(string filename, string filepath, Project proj, System.Drawing.Bitmap image)
         {
-            var newImg = new Image
+            var newImg = new Model.Image
             {
                 Id = Guid.Parse(filename),
                 Ignored = false,
