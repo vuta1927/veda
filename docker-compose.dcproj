@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>af401a7a-27b4-4b78-91eb-7462bbb7f18d</ProjectGuid>
+    <ProjectGuid>754ef6c4-59cc-4143-8bbd-757bebf3a879</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
     <DockerServiceName>apiserver</DockerServiceName>

@@ -6,12 +6,15 @@ import { ConfigurationService } from '../../shared/services/configuration.servic
 
 export class SignalRService {
 
-    private hubSource = new BehaviorSubject<HubConnection>(new HubConnection('http://localhost:52719/project'));
-    hubConnection = this.hubSource.asObservable();
-    constructor() { }
+    private hubSource:any;
+    private hubConnection: any;
+    constructor(private configurationService: ConfigurationService) {
+        this.hubSource = new BehaviorSubject<HubConnection>(new HubConnection(configurationService.serverSettings.apiUrl +'/project'));
+     }
 
     changeHub(hub: HubConnection) {
         this.hubSource.next(hub);
+        this.hubConnection  = this.hubSource.asObservable();
     }
 
     startHub() {

@@ -11,14 +11,12 @@ using ApiServer.Model.views;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Numerics;
-//using SixLabors.ImageSharp;
-//using SixLabors.ImageSharp.Advanced;
-//using SixLabors.ImageSharp.Processing;
-//using SixLabors.ImageSharp.Processing.Drawing;
-//using SixLabors.ImageSharp.PixelFormats;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.PixelFormats;
 using VDS.Security;
-using System.Drawing.Drawing2D;
 
 namespace ApiServer.Controllers
 {
@@ -147,56 +145,51 @@ namespace ApiServer.Controllers
                 foreach (var area in data.ExcluseAreas)
                 {
 
-                    //var points = new SixLabors.Primitives.PointF[100];
-                    //var t = area.Paths.Count();
-                    //for (var i = 0; i < area.Paths.Count(); i++)
+                    var points = new SixLabors.Primitives.PointF[100];
+                    var t = area.Paths.Count();
+                    for (var i = 0; i < area.Paths.Count(); i++)
+                    {
+                        points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
+                    }
+
+                    using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
+                    {
+                        img.Mutate(x => x.FillPolygon(Rgba32.Black, points));
+                        System.IO.File.Delete(imgPath);
+                        img.Save(imgPath);
+                    };
+
+                    //List<Point> curvePoints = new List<Point>();
+                    //foreach (var p in area.Paths)
                     //{
-                    //    points[i] = new Vector2(area.Paths[i].X, area.Paths[i].Y);
+                    //    var x = (int)p.X;
+                    //    var y = (int)p.Y;
+                    //    curvePoints.Add(new Point(x, y));
                     //}
-                    List<Point> curvePoints = new List<Point>();
-                    foreach (var p in area.Paths)
-                    {
-                        var x = (int)p.X;
-                        var y = (int)p.Y;
-                        curvePoints.Add(new Point(x, y));
-                    }
 
-                    try
-                    {
-                        Bitmap bitmap = null;
-                        using (var fs = new FileStream(imgPath, FileMode.Open))
-                        {
-                            var img = System.Drawing.Image.FromStream(fs);
-                            bitmap = new Bitmap(img);
-                        }
-
-                        using (var graphics = Graphics.FromImage(bitmap))
-                        {
-                            graphics.FillPolygon(new SolidBrush(Color.Black), curvePoints.ToArray());
-                        }
-                        bitmap.Save(imgPath);
-                        bitmap.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        return Content(ex.Message);
-                    }
-
-
-                    //using (var img = SixLabors.ImageSharp.Image.Load(imgPath))
+                    //try
                     //{
-                    //    var imgName = image.Path.Split('\\').Last();
-
-                    //    img.Mutate(x => x.FillPolygon(Rgba32.Black, points));
-                    //    string tempFolderName = "temp";
-                    //    string tempFileFullPath = webRootPath + "\\" + tempFolderName + '\\' + imgName;
-                    //    if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                    //    Bitmap bitmap = null;
+                    //    using (var fs = new FileStream(imgPath, FileMode.Open))
                     //    {
-                    //        Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                    //        var img = System.Drawing.Image.FromStream(fs);
+                    //        bitmap = new Bitmap(img);
                     //    }
-                    //    System.IO.File.Delete(imgPath);
-                    //    img.Save(imgPath);
-                    //};
+
+                    //    using (var graphics = Graphics.FromImage(bitmap))
+                    //    {
+                    //        graphics.FillPolygon(new SolidBrush(Color.Black), curvePoints.ToArray());
+                    //    }
+                    //    bitmap.Save(imgPath);
+                    //    bitmap.Dispose();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    return Content(ex.Message);
+                    //}
+
+
+
                 }
 
             }
@@ -246,8 +239,8 @@ namespace ApiServer.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
-                        await caculateClass(id, currentUser);
-                        await updateProject(projId);
+                        await ReCaculateClassAndTag(id, currentUser);
+                        await UpdateProjectInfo(projId);
                     }
                     catch (Exception ex)
                     {
@@ -289,8 +282,8 @@ namespace ApiServer.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
-                        await caculateClass(id, currentUser);
-                        await updateProject(projId);
+                        await ReCaculateClassAndTag(id, currentUser);
+                        await UpdateProjectInfo(projId);
                     }
                     catch (Exception ex)
                     {
@@ -311,23 +304,9 @@ namespace ApiServer.Controllers
             return Ok("OK");
 
         }
+        
 
-        private System.Drawing.Imaging.ImageFormat GetImageFormat(string extention)
-        {
-            switch (extention)
-            {
-                case "jpg":
-                    return System.Drawing.Imaging.ImageFormat.Jpeg;
-                case "png":
-                    return System.Drawing.Imaging.ImageFormat.Png;
-                case "bmp":
-                    return System.Drawing.Imaging.ImageFormat.Bmp;
-                default:
-                    return System.Drawing.Imaging.ImageFormat.Jpeg;
-            }
-        }
-
-        private async Task caculateClass(Guid imageId, User user)
+        private async Task ReCaculateClassAndTag(Guid imageId, User user)
         {
             var image = await _context.Images.Include(x => x.Tags).ThenInclude(x => x.Class).SingleOrDefaultAsync(x => x.Id == imageId);
 
@@ -379,7 +358,7 @@ namespace ApiServer.Controllers
             }
         }
 
-        private async Task updateProject(Guid projectId)
+        private async Task UpdateProjectInfo(Guid projectId)
         {
             var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == projectId);
 

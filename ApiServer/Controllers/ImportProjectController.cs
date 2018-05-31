@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using VDS.AspNetCore.Mvc.Authorization;
 using System.Drawing;
 using System.Security.Claims;
-
+using SixLabors.ImageSharp;
 namespace ApiServer.Controllers
 {
     [AppAuthorize(VdsPermissions.AddProject)]
@@ -219,7 +219,7 @@ namespace ApiServer.Controllers
             var width = double.Parse(data[3]);
             var height = double.Parse(data[4]);
 
-            using(var img = new Bitmap(imagePath))
+            using(var img = SixLabors.ImageSharp.Image.Load(imagePath))
             {
                 var imgWidth = img.Width;
                 var imgHeight = img.Height;

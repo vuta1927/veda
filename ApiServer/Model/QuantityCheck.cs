@@ -19,7 +19,8 @@ namespace ApiServer.Model
         public string CommentLevel3 { get; set; }
         public string CommentLevel4 { get; set; }
         public string CommentLevel5 { get; set; }
-        public virtual Image Image { get; set; }
+        public Guid ImageId { get; set; }
+        public Image Image { get; set; }
         public virtual List<UserQuantityCheck> UsersQc { get; set; }
         public string Comment { get; set; }
     }

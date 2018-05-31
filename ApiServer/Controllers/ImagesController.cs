@@ -111,7 +111,7 @@ namespace ApiServer.Controllers
             }
             return Ok(results);
         }
-        private ImageForView2 ImgForView(Image image)
+        private ImageForView2 ImgForView(Model.Image image)
         {
             var newImg = new ImageForView2()
             {
@@ -406,7 +406,7 @@ namespace ApiServer.Controllers
 
         // POST: api/Images
         [HttpPost]
-        public async Task<IActionResult> AddImage([FromBody] Image image)
+        public async Task<IActionResult> AddImage([FromBody] Model.Image image)
         {
             if (!ModelState.IsValid)
             {

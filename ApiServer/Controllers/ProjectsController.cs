@@ -118,16 +118,24 @@ namespace ApiServer.Controllers
                             {
                                 string name = Guid.NewGuid().ToString();
                                 string[] filenames = entry.FullName.Split('.');
-                                var newPathToDatabase = pathToDatabase + name + "." +filenames.Last();
+                                var newPathToDatabase = pathToDatabase + name + "." + filenames.Last();
+                                var nPath = Path.Combine(newPath, name + '.' + filenames.Last());
                                 if (AllowedFileExtensions.Contains(filenames.Last().ToLower()))
                                 {
-                                    entry.ExtractToFile(Path.Combine(newPath, name + '.' + filenames.Last()));
+                                    entry.ExtractToFile(nPath);
 
-                                    using (var entryStram = entry.Open())
-                                    using (var img = new System.Drawing.Bitmap(entryStram))
+                                    using (var img = SixLabors.ImageSharp.Image.Load(nPath))
                                     {
-                                        await StoreImage(name, newPathToDatabase, project, img);
+                                        await AddImageToDatabase(name, newPathToDatabase, project, img.Width, img.Height);
                                     }
+                                    //using (var entryStram = entry.Open())
+                                    //{
+
+                                    //}
+                                    //using (var img = new System.Drawing.Bitmap(entryStram))
+                                    //{
+                                    //    await AddImageToDatabase(name, newPathToDatabase, project, img);
+                                    //}
                                 }
                             }
                         }
@@ -143,9 +151,10 @@ namespace ApiServer.Controllers
                         using (var stream = new FileStream(fullPath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            using (var img = new System.Drawing.Bitmap(stream)) {
-                                await StoreImage(name, pathToDatabase, project, img);
-                            }
+                        }
+                        using (var img = SixLabors.ImageSharp.Image.Load(fullPath))
+                        {
+                            await AddImageToDatabase(name, pathToDatabase, project, img.Width, img.Height);
                         }
                     }
                 }
@@ -158,7 +167,7 @@ namespace ApiServer.Controllers
             }
         }
 
-        public async Task StoreImage(string filename, string filepath, Project proj, System.Drawing.Bitmap image)
+        public async Task AddImageToDatabase(string filename, string filepath, Project proj, double width, double height)
         {
             var newImg = new Model.Image
             {
@@ -166,8 +175,8 @@ namespace ApiServer.Controllers
                 Ignored = false,
                 Path = filepath,
                 Project = proj,
-                Width = image.Width,
-                Height = image.Height
+                Width = width,
+                Height = height
             };
 
             try
@@ -191,7 +200,7 @@ namespace ApiServer.Controllers
         // GET: api/Projects
         [HttpGet("{start}/{stop}")]
         [ActionName("GetProjects")]
-        public async Task<IActionResult> GetProjects([FromRoute] int start, [FromRoute]int stop)
+        public IActionResult GetProjects([FromRoute] int start, [FromRoute]int stop)
         {
             var results = new List<ProjectModel.ProjectForView>();
 
@@ -318,7 +327,7 @@ namespace ApiServer.Controllers
 
         [HttpGet]
         [ActionName("GetTotal")]
-        public async Task<IActionResult> GetTotal()
+        public IActionResult GetTotal()
         {
             var identity = (ClaimsIdentity)User.Identity;
             var currentUser = _userService.GetCurrentUser(identity);

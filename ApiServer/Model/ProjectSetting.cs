@@ -10,6 +10,7 @@ namespace ApiServer.Model
         public int Id { get; set; }
         public int QuantityCheckLevel { get; set; }
         public double TaggTimeValue { get; set; }
+        public Guid ProjectId { get; set; }
         public virtual Project Project { get; set; }
     }
 }
