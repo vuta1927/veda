@@ -131,7 +131,7 @@ namespace ApiServer.Controllers
 
             string webRootPath = _hostingEnvironment.WebRootPath;
             var imgPath = webRootPath + image.Path;
-            var temp = webRootPath + "\\temp";
+            var temp = webRootPath + "/temp";
 
             if (!Directory.Exists(temp))
             {
@@ -139,7 +139,7 @@ namespace ApiServer.Controllers
             }
 
             var filename = Path.GetFileName(imgPath);
-            temp += "\\" + filename;
+            temp += "/" + filename;
             if (data.ExcluseAreas.Count() > 0)
             {
                 foreach (var area in data.ExcluseAreas)

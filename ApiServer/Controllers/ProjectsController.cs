@@ -82,30 +82,40 @@ namespace ApiServer.Controllers
                     string folderName = DateTime.UtcNow.ToString("dd-MM-yyy", CultureInfo.InvariantCulture);
                     string tempFolderName = "temp";
                     string webRootPath = _hostingEnvironment.WebRootPath;
-                    string projectFolder = project.Name + "\\" + folderName;
-                    string newPath = Path.Combine(webRootPath, projectFolder);
-                    string pathToDatabase = "\\" + projectFolder + "\\";
-                    string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
+                    string projectFolder = project.Name + "/" + folderName;
 
-                    if (!AllowedFileExtensions.Contains(fileExtension.ToLower()))
+                    var projectPath = webRootPath + "/" + project.Name;
+                    var newPath = projectPath + "/" + folderName;
+
+                    if (!Directory.Exists(webRootPath + "/" + project.Name))
                     {
-                        return Content("File not allowed !");
+                        Directory.CreateDirectory(projectPath);
                     }
 
                     if (!Directory.Exists(newPath))
                     {
                         Directory.CreateDirectory(newPath);
                     }
+
+
+                    string pathToDatabase = "/" + projectFolder + "/";
+                    string fileExtension = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"').Split('.')[1];
+
+                    if (!AllowedFileExtensions.Contains(fileExtension.ToLower()))
+                    {
+                        return Content("File not allowed !");
+                    }
+                    
                     if (fileExtension.ToLower().Equals("zip") || fileExtension.ToLower().Equals("rar"))
                     {
-                        if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+                        if (!Directory.Exists(webRootPath + "/" + tempFolderName))
                         {
-                            Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                            Directory.CreateDirectory(webRootPath + "/" + tempFolderName);
                         }
 
                         string fileZipName = Guid.NewGuid().ToString() + "." + fileExtension;
 
-                        string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileZipName);
+                        string tempPath = Path.Combine(webRootPath + "/" + tempFolderName, fileZipName);
 
                         using (var stream = new FileStream(tempPath, FileMode.Create))
                         {

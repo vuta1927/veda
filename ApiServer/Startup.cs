@@ -94,13 +94,14 @@ namespace ApiServer
                 options => options.AddPolicy(
                     _defaultCorsPolicyName,
                     builder => builder
-                        .WithOrigins(
-                            // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
-                            Configuration["App:CorsOrigins"]
-                                .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                                .Select(o => o.RemovePreFix("/"))
-                                .ToArray()
-                        )
+                        .AllowAnyOrigin()
+                        //.WithOrigins(
+                        //    // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
+                        //    Configuration["App:CorsOrigins"]
+                        //        .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                        //        .Select(o => o.RemovePreFix("/"))
+                        //        .ToArray()
+                        //)
                         .AllowCredentials()
                         .AllowAnyHeader()
                         .AllowAnyMethod()

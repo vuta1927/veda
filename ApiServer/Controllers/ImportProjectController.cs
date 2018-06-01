@@ -307,14 +307,14 @@ namespace ApiServer.Controllers
             string tempFolderName = "temp";
             string folderName = DateTime.UtcNow.ToString("dd-MM-yyy", CultureInfo.InvariantCulture);
             string webRootPath = _hostingEnvironment.WebRootPath;
-            string projectFolder = project + "\\" + folderName;
+            string projectFolder = project + "/" + folderName;
             string newPath = Path.Combine(webRootPath, projectFolder);
-            string pathToDatabase = "\\" + projectFolder + "\\";
-            string tempPath = Path.Combine(webRootPath + "\\" + tempFolderName, fileName);
+            string pathToDatabase = "/" + projectFolder + "/";
+            string tempPath = Path.Combine(webRootPath + "/" + tempFolderName, fileName);
 
-            if (!Directory.Exists(webRootPath + "\\" + tempFolderName))
+            if (!Directory.Exists(webRootPath + "/" + tempFolderName))
             {
-                Directory.CreateDirectory(webRootPath + "\\" + tempFolderName);
+                Directory.CreateDirectory(webRootPath + "/" + tempFolderName);
             }
 
             if (!Directory.Exists(newPath))

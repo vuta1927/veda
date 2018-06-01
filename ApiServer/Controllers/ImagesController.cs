@@ -284,7 +284,7 @@ namespace ApiServer.Controllers
 
             if (image == null)
             {
-                return NotFound();
+                return Content("Image is using or not exsit!");
             }
 
             return Ok(image);
@@ -303,7 +303,7 @@ namespace ApiServer.Controllers
 
             if (image == null)
             {
-                return NotFound();
+                return Content("Image is using or not exsit!");
             }
 
             return Ok(image);

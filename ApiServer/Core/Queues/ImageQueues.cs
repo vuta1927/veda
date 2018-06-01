@@ -91,11 +91,12 @@ namespace ApiServer.Core.Queues
 
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x=>x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
-                    _image_Taken[projectId].Add(img);
+                    var imgTaken = new ImageForQueue() { ImageId = img.ImageId, UserId = userId, LastPing = DateTime.Now };
+                    _image_Taken[projectId].Add(imgTaken);
 
                     _image_notTaken[projectId].Remove(img);
 
-                    MonitorHeartbeat(projectId, img);
+                    MonitorHeartbeat(projectId, imgTaken);
 
                     if (image != null)
                     {
@@ -125,13 +126,12 @@ namespace ApiServer.Core.Queues
 
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
-                    img.LastPing = DateTime.Now;
-
-                    _image_Taken[projectId].Add(img);
+                    var imgTaken = new ImageForQueue() { ImageId = image.Id, UserId = userId, LastPing = DateTime.Now };
+                    _image_Taken[projectId].Add(imgTaken);
 
                     _image_notTaken[projectId].Remove(img);
 
-                    MonitorHeartbeat(projectId, img);
+                    MonitorHeartbeat(projectId, imgTaken);
 
                     if (image != null)
                     {
@@ -171,39 +171,34 @@ namespace ApiServer.Core.Queues
 
         public static async Task<Image> GetImageById(Guid projectId, Guid ImgId, long usrId)
         {
-            long userId;
             Image image;
 
-            if (_queues[projectId].TryDequeue(out userId))
+            if (_queues[projectId].TryDequeue(out usrId))
             {
-                ImageForQueue img;
-
-                if (_image_Taken[projectId].Any(x => x.ImageId == ImgId && x.UserId == usrId))
+                if (_image_Taken[projectId].Any(x => x.ImageId == ImgId))
                 {
-                    img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == ImgId && x.UserId == usrId);
-                }
-                else
-                {
-                    img = _image_notTaken[projectId].FirstOrDefault(x => x.ImageId == ImgId);
+                    return null;
                 }
 
-                if (img != null && _image_notTaken[projectId].Contains(img))
+                if (_image_notTaken[projectId].Any(x=>x.ImageId == ImgId))
                 {
+                    var img = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == ImgId);
+
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x=>x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == ImgId);
-                    img.LastPing = DateTime.Now;
-                    //img.TimeStart = DateTime.Now;
 
-                    _image_Taken[projectId].Add(img);
+                    var imgTaken = new ImageForQueue() { ImageId = image.Id, LastPing = DateTime.Now, UserId = usrId };
+
+                    _image_Taken[projectId].Add(imgTaken);
 
                     _image_notTaken[projectId].Remove(img);
 
-                    MonitorHeartbeat(projectId, img);
+                    MonitorHeartbeat(projectId, imgTaken);
 
                     if (image != null)
                     {
-                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
+                        var userImageForHub = new UserImageForHub() { ImageId = imgTaken.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
 
-                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { ImageTakent });
+                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { userImageForHub });
                     }
 
                     return image;

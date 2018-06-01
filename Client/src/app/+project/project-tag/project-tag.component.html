@@ -94,7 +94,7 @@
                             </button>
                         </div>
                         <div class="p-2">
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': tagMode, '': !tagMode }"
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-success m-btn--icon" [ngClass]="{ 'active': tagMode, '': !tagMode }"
                                 (click)="switchTagMode()" *ngIf="!hadQc && addTag">
                                 <span>
                                     <i class="la la-tag"></i>
@@ -103,7 +103,7 @@
                                     </span>
                                 </span>
                             </button>
-                            <button class="btn btn-sm m-btn m-btn--air btn-outline-primary m-btn--icon" [ngClass]="{ 'active': excluseMode, '': !excluseMode }"
+                            <button class="btn btn-sm m-btn m-btn--air btn-outline-danger m-btn--icon" [ngClass]="{ 'active': excluseMode, '': !excluseMode }"
                                 (click)="ExcluseAreaClick()" *ngIf="!hadQc && addTag">
                                 <span>
                                     <i class="la la-scissors"></i>

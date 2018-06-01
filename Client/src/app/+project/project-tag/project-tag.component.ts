@@ -164,7 +164,8 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error? err.error.text: err.message));
+        if(this.imageId)
+            this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error? err.error.text: err.message));
 
 
     }
@@ -239,6 +240,7 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
+                mother.imageId = null;
                 swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
                     mother.router.navigate(['project-details', { id: mother.projectId }]) });
             });
@@ -248,6 +250,7 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
+                mother.imageId = null;
                 
                 swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
                     mother.router.navigate(['project-details', { id: mother.projectId }]) });
