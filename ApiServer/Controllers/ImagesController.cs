@@ -471,7 +471,7 @@ namespace ApiServer.Controllers
             }
             try
             {
-                await updateProject(project.Id);
+                await UpdateProjectInfo(project.Id);
             }
             catch (Exception ex)
             {
@@ -482,7 +482,7 @@ namespace ApiServer.Controllers
             return Ok();
         }
 
-        private async Task updateProject(Guid projectId)
+        private async Task UpdateProjectInfo(Guid projectId)
         {
             var project = await _context.Projects.SingleOrDefaultAsync(x => x.Id == projectId);
 
@@ -526,9 +526,17 @@ namespace ApiServer.Controllers
 
         private void DeleteFile(string path)
         {
-            string webRootPath = _hostingEnvironment.WebRootPath;
-            string finalPath = webRootPath + path;
-            System.IO.File.Delete(finalPath);
+            try
+            {
+                string webRootPath = _hostingEnvironment.WebRootPath;
+                string finalPath = webRootPath + path;
+                System.IO.File.Delete(finalPath);
+            }
+            catch(Exception)
+            {
+                return;
+            }
+            
         }
 
         private bool ImageExists(Guid id)

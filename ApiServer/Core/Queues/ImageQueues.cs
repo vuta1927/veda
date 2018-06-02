@@ -63,8 +63,7 @@ namespace ApiServer.Core.Queues
                 {
                     imageForQueues.Add(new ImageForQueue()
                     {
-                        ImageId = imageId,
-                        UserId = userId
+                        ImageId = imageId
                     });
                 }
 
@@ -81,7 +80,7 @@ namespace ApiServer.Core.Queues
             var hadTaken = _image_Taken[projectId];
             var notTaken = _image_notTaken[projectId];
 
-            if (_queues[projectId].TryDequeue(out userId))
+            if (_queues[projectId].TryDequeue(out userId) && (userId == usrId))
             {
                 if (imgToRelease.ToString().Equals("00000000-0000-0000-0000-000000000000"))
                 {
@@ -89,7 +88,7 @@ namespace ApiServer.Core.Queues
 
                     //img.TimeStart = DateTime.Now;
 
-                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x=>x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
                     var imgTaken = new ImageForQueue() { ImageId = img.ImageId, UserId = userId, LastPing = DateTime.Now };
                     _image_Taken[projectId].Add(imgTaken);
@@ -100,73 +99,50 @@ namespace ApiServer.Core.Queues
 
                     if (image != null)
                     {
-                        var ImageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
+                        var imageTakent = new UserImageForHub() { ImageId = img.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName };
 
-                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { ImageTakent });
+                        await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { imageTakent });
                     }
 
                     return image;
                 }
                 else
                 {
-                    _image_notTaken[projectId].Add(new ImageForQueue() { ImageId = imgToRelease, UserId = userId });
-                    var imageRelease = new ImageForQueue();
                     var imgToRemoveInDict = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imgToRelease);
                     if (imgToRemoveInDict != null)
                     {
                         _image_Taken[projectId].Remove(imgToRemoveInDict);
-
-                        imageRelease = new ImageForQueue() { UserId = imgToRemoveInDict.UserId, ImageId = imgToRemoveInDict.ImageId };
-
-                        //await UpdateTaggedTime(imgToRemoveInDict.TimeStart, imgToRemoveInDict.ImageId);
                     }
-                    var img = _image_notTaken[projectId].FirstOrDefault();
 
-                    //img.TimeStart = DateTime.Now;
+                    var imgToTake = _image_notTaken[projectId].FirstOrDefault();
 
-                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == imgToTake.ImageId);
 
                     var imgTaken = new ImageForQueue() { ImageId = image.Id, UserId = userId, LastPing = DateTime.Now };
+
                     _image_Taken[projectId].Add(imgTaken);
 
-                    _image_notTaken[projectId].Remove(img);
+                    _image_notTaken[projectId].Remove(imgToTake);
+
+                    _image_notTaken[projectId].Add(new ImageForQueue() { ImageId = imgToRelease });
 
                     MonitorHeartbeat(projectId, imgTaken);
 
-                    if (image != null)
-                    {
+                    var a = new List<UserImageForHub>();
+                    a.Add(new UserImageForHub() { ImageId = imgToRelease, UserName = null });
+                    a.Add(new UserImageForHub() { ImageId = imgTaken.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName });
+                    await _hubContext.Clients.All.SendAsync("userUsingInfo", a);
 
-                        var a = new List<UserImageForHub>();
-                        a.Add(new UserImageForHub() { ImageId = imageRelease.ImageId, UserName = null });
-                        a.Add(new UserImageForHub() { ImageId = image.Id, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName });
-                        await _hubContext.Clients.All.SendAsync("userUsingInfo", a);
-                    }
 
                     return image;
                 }
 
             }
+            else
+            {
+                await GetImage(projectId, imgToRelease, usrId);
+            }
             return null;
-        }
-
-        private static async Task UpdateTaggedTime(DateTime timeStart, Guid imageId)
-        {
-            var timeStop = DateTime.Now;
-            var taggedTime = (timeStop - timeStart).TotalMinutes;
-            try
-            {
-
-                if (taggedTime > 0)
-                {
-                    var image = _context.Images.SingleOrDefault(x => x.Id == imageId);
-                    image.TagTime += taggedTime;
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                return;
-            }
         }
 
         public static async Task<Image> GetImageById(Guid projectId, Guid ImgId, long usrId)
@@ -180,11 +156,11 @@ namespace ApiServer.Core.Queues
                     return null;
                 }
 
-                if (_image_notTaken[projectId].Any(x=>x.ImageId == ImgId))
+                if (_image_notTaken[projectId].Any(x => x.ImageId == ImgId))
                 {
                     var img = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == ImgId);
 
-                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x=>x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == ImgId);
+                    image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == ImgId);
 
                     var imgTaken = new ImageForQueue() { ImageId = image.Id, LastPing = DateTime.Now, UserId = usrId };
 

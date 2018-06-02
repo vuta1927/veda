@@ -164,8 +164,9 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        if(this.imageId)
-            this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error? err.error.text: err.message));
+        console.log(this.imageId);
+        if (this.imageId)
+            this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error ? err.error.text : err.message));
 
 
     }
@@ -194,11 +195,10 @@ export class ProjecTagComponent {
             this.lastPing = new Date();
             this.imgService.sendPing(this.projectId, this.imageId).toPromise().then(Response => {
 
-            }).catch(err => { 
-                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
-                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
-                });
-                
+            }).catch(err => {
+                mother.router.navigate(['project-details', { id: mother.projectId }])
+            });
+
         });
 
         this.resetIdle();
@@ -209,7 +209,7 @@ export class ProjecTagComponent {
         this.timedOut = false;
     }
 
-    backImagePage(){
+    backImagePage() {
         this.router.navigate(['project-details', { id: this.projectId }]);
     }
 
@@ -232,7 +232,7 @@ export class ProjecTagComponent {
                 // mother.generateClassContainer();
             }
         }).catch(error => {
-            mother.showError(error.error.text);
+            mother.showError("Cant get classes!");
         });
         if (paramIdExist) {
             this.imgService.getImageById(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
@@ -240,9 +240,10 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
-                mother.imageId = null;
-                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
-                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
+                swal({ text: err.error ? err.error.text : err.message, type: 'error' }).then(() => {
+                    mother.imageId = null;
+                    mother.router.navigate(['project-details', { id: mother.projectId }])
+                });
             });
         } else {
             this.imgService.getNextImage(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
@@ -250,10 +251,10 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
-                mother.imageId = null;
-                
-                swal({text:err.error? err.error.text:err.message, type:'error'}).then(()=>{
-                    mother.router.navigate(['project-details', { id: mother.projectId }]) });
+                swal({ text: err.error ? err.error.text : err.message, type: 'error' }).then(() => {
+                    mother.imageId = null;
+                    mother.router.navigate(['project-details', { id: mother.projectId }])
+                });
 
             });
         }
@@ -264,11 +265,11 @@ export class ProjecTagComponent {
         this.hadQc = image.quantityCheck ? true : false;
         this.currentImage = image;
         try {
-            this.totalTaggedTime = image.userTaggedTimes? image.userTaggedTimes.find(x=>x.user.id == this.currentUserId).taggedTime : 0;    
+            this.totalTaggedTime = image.userTaggedTimes ? image.userTaggedTimes.find(x => x.user.id == this.currentUserId).taggedTime : 0;
         } catch (error) {
             this.totalTaggedTime = 0;
         }
-        
+
         console.log(this.totalTaggedTime);
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
@@ -430,7 +431,7 @@ export class ProjecTagComponent {
     nextImage() {
         Helpers.setLoading(true);
         this.btnSaveEnabled = false;
-        if(this.tagMode){
+        if (this.tagMode) {
             this.updateTaggedTime().toPromise().then(Response => {
                 this.GetNextImage();
             }).catch(Response => {
@@ -440,16 +441,16 @@ export class ProjecTagComponent {
                 });
             });
             this.tagMode = false;
-        }else{
+        } else {
             this.GetNextImage();
         }
-        
+
 
     }
 
     saveChange() {
         if (this.tagMode) {
-            if(this.timerSerive.timerStart){
+            if (this.timerSerive.timerStart) {
                 this.totalTaggedTime += (this.timerSerive.getTotalTime() / 60);
                 this.timerSerive.stop();
             }
@@ -470,7 +471,7 @@ export class ProjecTagComponent {
                 }
             }).catch(errorResp => {
                 Helpers.setLoading(false);
-                swal({text:errorResp.error? errorResp.error.text:errorResp.message, type: 'error'});
+                swal({ text: errorResp.error ? errorResp.error.text : errorResp.message, type: 'error' });
                 mother.btnSaveEnabled = true;
             });
         }
@@ -788,7 +789,7 @@ export class ProjecTagComponent {
 
                 mother.selectedTag = tag;
                 mother.selectedObject = obj;
-            }else{
+            } else {
                 mother.selectedTag = null;
                 mother.selectedObject = null;
             }
