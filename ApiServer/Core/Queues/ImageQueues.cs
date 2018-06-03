@@ -14,11 +14,11 @@ namespace ApiServer.Core.Queues
 {
     public static class ImageQueues
     {
-        private static Dictionary<Guid, ConcurrentQueue<long>> _queues = new Dictionary<Guid, ConcurrentQueue<long>>();
+        private static IDictionary<Guid, ConcurrentQueue<long>> _queues = new Dictionary<Guid, ConcurrentQueue<long>>();
 
-        private static Dictionary<Guid, List<ImageForQueue>> _image_notTaken = new Dictionary<Guid, List<ImageForQueue>>();
+        private static IDictionary<Guid, List<ImageForQueue>> _imageStorage = new Dictionary<Guid, List<ImageForQueue>>();
 
-        private static Dictionary<Guid, List<ImageForQueue>> _image_Taken = new Dictionary<Guid, List<ImageForQueue>>();
+        private static IDictionary<Guid, List<ImageForQueue>> _imagesUsed = new Dictionary<Guid, List<ImageForQueue>>();
 
         private static Dictionary<ImageForQueue, Timer> _monitorTimer = new Dictionary<ImageForQueue, Timer>();
 
@@ -67,8 +67,8 @@ namespace ApiServer.Core.Queues
                     });
                 }
 
-                _image_notTaken.Add(projectId, imageForQueues);
-                _image_Taken.Add(projectId, new List<ImageForQueue>());
+                _imageStorage.Add(projectId, imageForQueues);
+                _imagesUsed.Add(projectId, new List<ImageForQueue>());
             }
         }
 
@@ -77,23 +77,23 @@ namespace ApiServer.Core.Queues
             long userId;
             Image image;
 
-            var hadTaken = _image_Taken[projectId];
-            var notTaken = _image_notTaken[projectId];
+            var hadTaken = _imagesUsed[projectId];
+            var notTaken = _imageStorage[projectId];
 
             if (_queues[projectId].TryDequeue(out userId) && (userId == usrId))
             {
                 if (imgToRelease.ToString().Equals("00000000-0000-0000-0000-000000000000"))
                 {
-                    var img = _image_notTaken[projectId].FirstOrDefault();
+                    var img = _imageStorage[projectId].FirstOrDefault();
 
                     //img.TimeStart = DateTime.Now;
 
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == img.ImageId);
 
                     var imgTaken = new ImageForQueue() { ImageId = img.ImageId, UserId = userId, LastPing = DateTime.Now };
-                    _image_Taken[projectId].Add(imgTaken);
+                    _imagesUsed[projectId].Add(imgTaken);
 
-                    _image_notTaken[projectId].Remove(img);
+                    _imageStorage[projectId].Remove(img);
 
                     MonitorHeartbeat(projectId, imgTaken);
 
@@ -108,23 +108,23 @@ namespace ApiServer.Core.Queues
                 }
                 else
                 {
-                    var imgToRemoveInDict = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imgToRelease);
+                    var imgToRemoveInDict = _imagesUsed[projectId].FirstOrDefault(x => x.ImageId == imgToRelease);
                     if (imgToRemoveInDict != null)
                     {
-                        _image_Taken[projectId].Remove(imgToRemoveInDict);
+                        _imagesUsed[projectId].Remove(imgToRemoveInDict);
                     }
 
-                    var imgToTake = _image_notTaken[projectId].FirstOrDefault();
+                    var imgToTake = _imageStorage[projectId].FirstOrDefault();
 
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == imgToTake.ImageId);
 
                     var imgTaken = new ImageForQueue() { ImageId = image.Id, UserId = userId, LastPing = DateTime.Now };
 
-                    _image_Taken[projectId].Add(imgTaken);
+                    _imagesUsed[projectId].Add(imgTaken);
 
-                    _image_notTaken[projectId].Remove(imgToTake);
+                    _imageStorage[projectId].Remove(imgToTake);
 
-                    _image_notTaken[projectId].Add(new ImageForQueue() { ImageId = imgToRelease });
+                    _imageStorage[projectId].Add(new ImageForQueue() { ImageId = imgToRelease });
 
                     MonitorHeartbeat(projectId, imgTaken);
 
@@ -151,22 +151,22 @@ namespace ApiServer.Core.Queues
 
             if (_queues[projectId].TryDequeue(out usrId))
             {
-                if (_image_Taken[projectId].Any(x => x.ImageId == ImgId))
+                if (_imagesUsed[projectId].Any(x => x.ImageId == ImgId))
                 {
                     return null;
                 }
 
-                if (_image_notTaken[projectId].Any(x => x.ImageId == ImgId))
+                if (_imageStorage[projectId].Any(x => x.ImageId == ImgId))
                 {
-                    var img = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == ImgId);
+                    var img = _imageStorage[projectId].SingleOrDefault(x => x.ImageId == ImgId);
 
                     image = await _context.Images.Include(x => x.QuantityCheck).Include(x => x.UserTaggedTimes).SingleOrDefaultAsync(m => m.Id == ImgId);
 
                     var imgTaken = new ImageForQueue() { ImageId = image.Id, LastPing = DateTime.Now, UserId = usrId };
 
-                    _image_Taken[projectId].Add(imgTaken);
+                    _imagesUsed[projectId].Add(imgTaken);
 
-                    _image_notTaken[projectId].Remove(img);
+                    _imageStorage[projectId].Remove(img);
 
                     MonitorHeartbeat(projectId, imgTaken);
 
@@ -185,9 +185,9 @@ namespace ApiServer.Core.Queues
 
         public static void AddImage(Guid projectId, Guid imageId)
         {
-            if (_image_notTaken.ContainsKey(projectId))
+            if (_imageStorage.ContainsKey(projectId))
             {
-                _image_notTaken[projectId].Add(new ImageForQueue()
+                _imageStorage[projectId].Add(new ImageForQueue()
                 {
                     ImageId = imageId
                 });
@@ -195,9 +195,9 @@ namespace ApiServer.Core.Queues
         }
         public static async Task DeleteImage(Guid projectId, Guid imageId)
         {
-            if (!_image_Taken.ContainsKey(projectId)) return;
+            if (!_imagesUsed.ContainsKey(projectId)) return;
 
-            if (_image_Taken[projectId].Any(x => x.ImageId == imageId))
+            if (_imagesUsed[projectId].Any(x => x.ImageId == imageId))
             {
                 try
                 {
@@ -209,25 +209,25 @@ namespace ApiServer.Core.Queues
                 }
 
             }
-            if (_image_notTaken[projectId].Any(x => x.ImageId == imageId))
+            if (_imageStorage[projectId].Any(x => x.ImageId == imageId))
             {
-                var item = _image_notTaken[projectId].SingleOrDefault(x => x.ImageId == imageId);
-                _image_notTaken[projectId].Remove(item);
+                var item = _imageStorage[projectId].SingleOrDefault(x => x.ImageId == imageId);
+                _imageStorage[projectId].Remove(item);
             }
         }
 
         public static async Task<bool> ReleaseImage(Guid projectId, Guid imgId)
         {
-            var img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imgId);
-            if (img != null && _image_Taken[projectId].Contains(img))
+            var img = _imagesUsed[projectId].FirstOrDefault(x => x.ImageId == imgId);
+            if (img != null && _imagesUsed[projectId].Contains(img))
             {
                 var a = new UserImageForHub() { UserName = null, ImageId = imgId };
 
                 //await UpdateTaggedTime(img.TimeStart, img.ImageId);
 
-                _image_Taken[projectId].Remove(img);
+                _imagesUsed[projectId].Remove(img);
                 img.LastPing = new DateTime();
-                _image_notTaken[projectId].Add(img);
+                _imageStorage[projectId].Add(img);
 
                 await _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { a });
 
@@ -255,7 +255,7 @@ namespace ApiServer.Core.Queues
 
         public static void SetTimePing(Guid projectId, Guid imageId, DateTime pingTime)
         {
-            var img = _image_Taken[projectId].FirstOrDefault(x => x.ImageId == imageId);
+            var img = _imagesUsed[projectId].FirstOrDefault(x => x.ImageId == imageId);
             if (img != null)
             {
                 img.LastPing = pingTime;
@@ -281,9 +281,9 @@ namespace ApiServer.Core.Queues
         public static string GetUserUsing(Guid projectId, Guid ImageId, VdsContext context)
         {
             var result = new List<UserImageForHub>();
-            if (_image_Taken.ContainsKey(projectId))
+            if (_imagesUsed.ContainsKey(projectId))
             {
-                foreach (var data in _image_Taken[projectId])
+                foreach (var data in _imagesUsed[projectId])
                 {
                     if (data.ImageId == ImageId)
                         return context.Users.FirstOrDefault(x => x.Id == data.UserId).UserName;

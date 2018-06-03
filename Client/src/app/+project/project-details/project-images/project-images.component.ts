@@ -108,7 +108,7 @@ export class ProjectImagesComponent implements OnInit {
                         params += loadOptions.skip || 0;
                         params += '/';
                         params += loadOptions.take || 12;
-
+                        console.log(p.id);
                         return mother.imgService.getImages(p.id, params)
                             .toPromise().then(response => {
                                 // console.log(response.result);

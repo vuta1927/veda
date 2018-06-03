@@ -10,6 +10,5 @@ namespace ApiServer.Core.Queues
         public Guid ImageId { get; set; }
         public long UserId { get; set; }
         public DateTime LastPing { get; set; }
-        public DateTime TimeStart { get; set; }
     }
 }

@@ -101,7 +101,7 @@ export class ProjecTagComponent {
         private renderer: Renderer2
     ) {
         this.toastr.setRootViewContainerRef(vcr);
-        this.setUpIdleTimeout(600, 5); //value in second
+        this.setUpIdleTimeout(300, 5); //value in second
     }
 
     ngOnInit() {

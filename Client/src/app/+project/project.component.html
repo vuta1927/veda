@@ -94,8 +94,8 @@
             <dxo-paging [pageSize]="12"></dxo-paging>
             <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[8, 12, 20]"></dxo-pager>
 
-            <dxi-column caption="Projec Name" sortOrder="asc" cellTemplate="cellName" [width]="300"></dxi-column>
-            <dxi-column dataField="description" [allowSorting]="false" [width]="200"></dxi-column>
+            <dxi-column caption="Projec Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
+            <dxi-column dataField="description" [allowSorting]="false"></dxi-column>
             <dxi-column dataField="note" [allowSorting]="false"></dxi-column>
             <dxi-column cellTemplate="usersCell"  caption="User" sortOrder="asc"></dxi-column>
             <dxi-column caption="Status" dataField="isDisabled" [visible]="isAdmin" cellTemplate="statusCellTemplate"></dxi-column>

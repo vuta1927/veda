@@ -18,6 +18,7 @@ using ApiServer.Controllers.Auth;
 using ApiServer.Hubs;
 using ApiServer.Core.Merge;
 using ApiServer.Core.Email;
+using ApiServer.Core.Queues;
 
 namespace ApiServer
 {
@@ -38,7 +39,7 @@ namespace ApiServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
-
+            services.AddMemoryCache();
             services.AddMvc()
                 .AddJsonOptions(
                 options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -73,6 +74,7 @@ namespace ApiServer
             services.AddTransient<DashboardController>();
             services.AddTransient<UserProfileController>();
 
+            services.AddScoped<IImageQueueService, ImageQueueService>();
             services.AddScoped<IMergeService, MergeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEmailHelper, EmailHelper>();
@@ -95,13 +97,6 @@ namespace ApiServer
                     _defaultCorsPolicyName,
                     builder => builder
                         .AllowAnyOrigin()
-                        //.WithOrigins(
-                        //    // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
-                        //    Configuration["App:CorsOrigins"]
-                        //        .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                        //        .Select(o => o.RemovePreFix("/"))
-                        //        .ToArray()
-                        //)
                         .AllowCredentials()
                         .AllowAnyHeader()
                         .AllowAnyMethod()

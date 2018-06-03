@@ -34,17 +34,19 @@ namespace ApiServer.Controllers
         private readonly VdsContext _context;
 
         private readonly IHostingEnvironment _hostingEnvironment;
-        private IHubContext<VdsHub> _hubContext;
-        private IUserService _userService;
+        private readonly IHubContext<VdsHub> _hubContext;
+        private readonly IUserService _userService;
 
+        private readonly IImageQueueService _imageQueueService;
         //private IHubContext<VdsHub> _hubContext;
 
-        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext, IUserService userService)
+        public ImagesController(VdsContext context, IHostingEnvironment hostingEnvironment, IHubContext<VdsHub> hubContext, IUserService userService, IImageQueueService queueService)
         {
             _context = context;
             _hubContext = hubContext;
             _hostingEnvironment = hostingEnvironment;
             _userService = userService;
+            _imageQueueService = queueService;
         }
 
 
@@ -89,7 +91,7 @@ namespace ApiServer.Controllers
                 foreach (var img in imgs)
                 {
                     var imgForView = ImgForView(img);
-                    imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
+                    imgForView.UserUsing = await _imageQueueService.GetUserUsing(id, img.Id);
                     results.Add(imgForView);
                 }
             }
@@ -103,7 +105,7 @@ namespace ApiServer.Controllers
                     foreach (var img in imgs)
                     {
                         var imgForView = ImgForView(img);
-                        imgForView.UserUsing = ImageQueues.GetUserUsing(id, img.Id, _context);
+                        imgForView.UserUsing = await _imageQueueService.GetUserUsing(id, img.Id);
 
                         results.Add(imgForView);
                     }
@@ -190,7 +192,7 @@ namespace ApiServer.Controllers
             if (project == null) { return Content("Project not found !"); }
 
             var imgList = _context.Images.Where(x => x.Project == project).Select(x => x.Id);
-            if (imgList.Count() <= 0)
+            if (imgList.Any())
             {
                 return Content("Unknow Error !");
             }
@@ -274,15 +276,15 @@ namespace ApiServer.Controllers
         // GET: api/Images/5
         [HttpGet("{userId}/{projId}/{imgId}")]
         [ActionName("GetNextImage")]
-        public async Task<IActionResult> GetNextImage([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
+        public IActionResult GetNextImage([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
-            var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
+            var project = _context.Projects.SingleOrDefaultAsync(x => x.Id == projId);
+            if (project == null) return Content("project not found!");
 
-            ImageQueues.Append(userId, project.Id, _context, _hubContext);
+            var image = _imageQueueService.GetImage(projId, imgId, userId);
+            //var image = await ImageQueues.GetImage(projId, imgId, userId);
 
-            var image = await ImageQueues.GetImage(projId, imgId, userId);
-
-            if (image == null)
+            if (image == null || image.Id.ToString().Equals("00000000-0000-0000-0000-000000000000"))
             {
                 return Content("Image is using or not exsit!");
             }
@@ -293,15 +295,17 @@ namespace ApiServer.Controllers
 
         [HttpGet("{userId}/{projId}/{imgId}")]
         [ActionName("GetImageById")]
-        public async Task<IActionResult> GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
+        public IActionResult GetImageById([FromRoute] long userId, [FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
             var project = _context.Projects.SingleOrDefault(x => x.Id == projId);
+            if (project == null) return Content("project not found");
+;            var image = _imageQueueService.GetImageById(projId, imgId, userId);
 
-            ImageQueues.Append(userId, project.Id, _context, _hubContext);
+            //ImageQueues.Append(userId, project.Id, _context, _hubContext);
 
-            var image = await ImageQueues.GetImageById(projId, imgId, userId);
+            //var image = await ImageQueues.GetImageById(projId, imgId, userId);
 
-            if (image == null)
+            if (image == null || image.Id.ToString().Equals("00000000-0000-0000-0000-000000000000"))
             {
                 return Content("Image is using or not exsit!");
             }
@@ -319,7 +323,8 @@ namespace ApiServer.Controllers
                 return NotFound();
             }
 
-            if (await ImageQueues.ReleaseImage(projId, imgId))
+            //if (await ImageQueues.ReleaseImage(projId, imgId))
+            if(await _imageQueueService.ReleaseImage(projId, imgId))
             {
 
                 return Ok("Ok");
@@ -334,8 +339,8 @@ namespace ApiServer.Controllers
         [ActionName("Ping")]
         public IActionResult Ping([FromRoute] Guid projId, [FromRoute] Guid imgId)
         {
-            ImageQueues.SetTimePing(projId, imgId, DateTime.Now);
-
+            //ImageQueues.SetTimePing(projId, imgId, DateTime.Now);
+            _imageQueueService.SetTimePing(projId,imgId,DateTime.Now);
             return Ok();
         }
         // PUT: api/Images/5
