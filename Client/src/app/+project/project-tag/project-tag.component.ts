@@ -770,6 +770,42 @@ export class ProjecTagComponent {
         fabric.util.addListener(window, "keyup", function (evt) {
             if (evt.which === 13 && mother.excluseMode) {
                 mother.finalize();
+            };
+
+            if(evt.which === 84){
+                if (mother.tagMode) {
+                    mother.tagMode = false;
+                    $(':focus').blur();
+                    mother.updateTaggedTime().toPromise().catch(Response => {
+                        swal({
+                            title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                            animation: false
+                        });
+                    });
+                }
+                else {
+                    mother.tagMode = true;
+                    mother.excluseMode = false;
+                    mother.timerSerive.startTimer();
+                }
+            }
+
+            if(evt.which === 69){
+                if (this.excluseMode) {
+                    this.excluseMode = false;
+                    $(':focus').blur();
+                    this.updateTaggedTime().toPromise().catch(Response => {
+                        swal({
+                            title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
+                            animation: false
+                        });
+                    });
+                }
+                else {
+                    this.excluseMode = true;
+                    this.tagMode = false;
+                    this.timerSerive.startTimer();
+                }
             }
         });
 
@@ -1191,6 +1227,7 @@ export class ProjecTagComponent {
     }
 
     getHighestIndex() {
+        console.log(this.tags);
         let index: number = 0;
         this.tags.forEach(tag => {
             if (tag.index > index) {

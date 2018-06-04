@@ -19,13 +19,14 @@ export class ExportProjectComponent implements OnInit {
     classSource: any = {};
     selectedClasses: any[] = [];
     qcFilterOptions: QcOption[] = [];
-    qcLeves:any = Array(1).fill(1).map((x,i)=>i);
+    qcLeves:any;
     constructor(
         private classService: ClassService,
         private dataService: DataService,
         private exportService: ImportExportService,
         private projectSettingService: ProjectSettingService
     ){
+        this.qcLeves = Array(5).fill(1).map((x, i) => i + 1);
         const mother = this;
         this.dataService.currentProject.subscribe(p=>{
             mother.currentProject = p;
@@ -33,8 +34,8 @@ export class ExportProjectComponent implements OnInit {
                 mother.classSource = response.result;
                 mother.projectSettingService.getSetting(p.id).toPromise().then(Response=>{
                     if(Response.result){
-                        // mother.qcLeves = Response.result.quantityCheckLevel;
-                        // console.log(mother.qcLeves);
+                        mother.qcLeves = Array(Response.result.quantityCheckLevel).fill(1).map((x, i) => i + 1)
+                        console.log(mother.qcLeves);
                     }
                 }).catch(err=>{
                     if(err.error){

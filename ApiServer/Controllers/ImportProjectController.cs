@@ -229,8 +229,10 @@ namespace ApiServer.Controllers
                     Left = centerX * 2 - width,
                     Top = centerY * 2 - height,
                     Index = tagIndex,
-                    height = height,
+                    Height = height,
                     Width = width,
+                    HeightPixel = height * image.Height,
+                    WidthPixel = width * image.Width,
                     Image = image,
                     TaggedDate = DateTime.Now
                 };

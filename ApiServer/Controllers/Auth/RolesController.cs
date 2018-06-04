@@ -150,6 +150,7 @@ namespace ApiServer.Controllers.Auth
                 originRole.RoleName = role.RoleName;
                 originRole.LastModifierUserId = role.LastModifierUserId;
                 originRole.LastModificationTime = DateTime.Now;
+                originRole.NormalizedRoleName = role.RoleName.ToUpper();
             }
             //_context.Entry(role).State = EntityState.Modified;
 
@@ -190,7 +191,8 @@ namespace ApiServer.Controllers.Auth
                 RoleName = role.RoleName,
                 IsDeleted = false,
                 CreationTime = DateTime.Now,
-                CreatorUserId = role.CreatorUserId
+                CreatorUserId = role.CreatorUserId,
+                NormalizedRoleName = role.RoleName.ToUpper()
             };
             _context.Roles.Add(newRole);
             await _context.SaveChangesAsync();

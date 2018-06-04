@@ -80,7 +80,7 @@ namespace ApiServer.Controllers.Auth
                 isEditMode = false,
                 Roles = new List<Model.views.UserModel.UserRole>()
             };
-            var roles = _context.Roles.Where(x => x.NormalizedRoleName != "PROJECTMANAGER" && x.NormalizedRoleName != "Teacher" && x.NormalizedRoleName != "QuantityCheck");
+            var roles = _context.Roles.Where(x => x.NormalizedRoleName != "TEACHER" && x.NormalizedRoleName != "QUANTITYCHECK");
             if (id > 0)
             {
                 var user = await _context.Users.Include(x => x.Roles).SingleOrDefaultAsync(x => x.Id == id);

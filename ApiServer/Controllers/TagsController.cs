@@ -49,7 +49,7 @@ namespace ApiServer.Controllers
                     Index = tag.Index,
                     Top = tag.Top,
                     Width = tag.Width,
-                    height = tag.height,
+                    Height = tag.Height,
                     ImageId = tag.Image.Id
                 };
                 if (tag.QuantityCheck != null)
@@ -87,7 +87,7 @@ namespace ApiServer.Controllers
                 Left = tag.Left,
                 Top = tag.Top,
                 Width = tag.Width,
-                height = tag.height,
+                Height = tag.Height,
                 ClassId = tag.Class.Id,
                 QuantityCheckId = tag.QuantityCheck.Id,
                 ImageId = tag.Image.Id
@@ -140,7 +140,7 @@ namespace ApiServer.Controllers
 
             var filename = Path.GetFileName(imgPath);
             temp += "/" + filename;
-            if (data.ExcluseAreas.Count() > 0)
+            if (data.ExcluseAreas.Any())
             {
                 foreach (var area in data.ExcluseAreas)
                 {
@@ -158,38 +158,6 @@ namespace ApiServer.Controllers
                         System.IO.File.Delete(imgPath);
                         img.Save(imgPath);
                     };
-
-                    //List<Point> curvePoints = new List<Point>();
-                    //foreach (var p in area.Paths)
-                    //{
-                    //    var x = (int)p.X;
-                    //    var y = (int)p.Y;
-                    //    curvePoints.Add(new Point(x, y));
-                    //}
-
-                    //try
-                    //{
-                    //    Bitmap bitmap = null;
-                    //    using (var fs = new FileStream(imgPath, FileMode.Open))
-                    //    {
-                    //        var img = System.Drawing.Image.FromStream(fs);
-                    //        bitmap = new Bitmap(img);
-                    //    }
-
-                    //    using (var graphics = Graphics.FromImage(bitmap))
-                    //    {
-                    //        graphics.FillPolygon(new SolidBrush(Color.Black), curvePoints.ToArray());
-                    //    }
-                    //    bitmap.Save(imgPath);
-                    //    bitmap.Dispose();
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    return Content(ex.Message);
-                    //}
-
-
-
                 }
 
             }
@@ -226,7 +194,9 @@ namespace ApiServer.Controllers
                     originTag.Left = tag.Left;
                     originTag.Top = tag.Top;
                     originTag.Width = tag.Width;
-                    originTag.height = tag.height;
+                    originTag.Height = tag.Height;
+                    originTag.HeightPixel = tag.Height * image.Height;
+                    originTag.WidthPixel = tag.Width * image.Width;
                     originTag.Class = newClass;
                     originTag.TaggedDate = DateTime.Now;
                     if (!_context.UserTags.Any(x => x.UserId == currentUser.Id))
@@ -257,7 +227,9 @@ namespace ApiServer.Controllers
                         Left = tag.Left,
                         Top = tag.Top,
                         Width = tag.Width,
-                        height = tag.height,
+                        Height = tag.Height,
+                        WidthPixel = tag.Width * image.Width,
+                        HeightPixel = tag.Height * image.Height,
                         TaggedDate = DateTime.Now,
                         UsersTagged = new List<UserTag>()
                     };

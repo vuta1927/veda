@@ -251,12 +251,12 @@ namespace ApiServer.Controllers
             {
                 return Content("Role not found!");
             }
-            var RoleForUser = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
+            //var RoleForUser = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
 
-            if (RoleForUser == null)
-            {
-                return Content("Cant found role!");
-            }
+            //if (RoleForUser == null)
+            //{
+            //    return Content("Cant found role!");
+            //}
 
             var currentUser = GetCurrentUser();
             
