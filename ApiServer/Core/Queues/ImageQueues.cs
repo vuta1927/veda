@@ -74,13 +74,12 @@ namespace ApiServer.Core.Queues
 
         public static async Task<Image> GetImage(Guid projectId, Guid imgToRelease, long usrId)
         {
-            long userId;
             Image image;
 
             var hadTaken = _imagesUsed[projectId];
             var notTaken = _imageStorage[projectId];
 
-            if (_queues[projectId].TryDequeue(out userId) && (userId == usrId))
+            if (_queues[projectId].TryDequeue(out var userId) && (userId == usrId))
             {
                 if (imgToRelease.ToString().Equals("00000000-0000-0000-0000-000000000000"))
                 {

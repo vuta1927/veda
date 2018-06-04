@@ -42,7 +42,7 @@ namespace AuthServer
 
             foreach (var roleName in roleNames)
             {
-                var role = await _roleManager.FindByNameAsync(roleName);
+                var role = await _context.Roles.SingleOrDefaultAsync(x => x.RoleName == roleName);
                 if (role == null) continue;
                 var permissions = _context.PermissionRoles.Where(p => p.RoleId == role.Id)
                     .Include(p => p.Permission).Select(p => p.Permission).Select(p => p.Name);

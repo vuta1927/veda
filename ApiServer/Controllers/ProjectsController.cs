@@ -534,7 +534,7 @@ namespace ApiServer.Controllers
                         //User = currentUser,
                         UserId = currentUser.Id,
                         Project = newProject,
-                        RoleId = currentRoles.SingleOrDefault(x => x.ProjectRole).Id
+                        RoleId = _context.Roles.SingleOrDefault(x=>x.RoleName == "ProjectManager").Id
                     };
                     _context.ProjectUsers.Add(newProjectUser);
                 }

@@ -10,6 +10,7 @@ using static ApiServer.Model.views.ProjectUserModel;
 using System.Security.Claims;
 using VDS.AspNetCore.Mvc.Authorization;
 using ApiServer.Core.Authorization;
+using VDS.Security;
 
 namespace ApiServer.Controllers
 {
@@ -161,6 +162,30 @@ namespace ApiServer.Controllers
             return Ok(projectUser);
         }
 
+        [HttpGet("{projectId}")]
+        [ActionName("GetRole")]
+        public async Task<IActionResult> GetRole([FromRoute] Guid projectId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var currentUser = GetCurrentUser();
+
+            var projectUser = await _context.ProjectUsers.Include(x => x.Role).Include(a => a.User).SingleOrDefaultAsync(m => m.UserId == currentUser.Id && m.ProjectId == projectId);
+
+            if (projectUser == null) return Ok();
+            var results = new ProjectUserForView()
+            {
+                Id = projectUser.Id,
+                UserName = projectUser.User.UserName,
+                RoleName = projectUser.Role.RoleName,
+            };
+
+            return Ok(results);
+        }
+
         // PUT: api/ProjectUsers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] ProjectUserForView projectUser)
@@ -251,14 +276,21 @@ namespace ApiServer.Controllers
             {
                 return Content("Role not found!");
             }
-            //var RoleForUser = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
-
-            //if (RoleForUser == null)
-            //{
-            //    return Content("Cant found role!");
-            //}
+            var userRole = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
 
             var currentUser = GetCurrentUser();
+
+            if (userRole == null)
+            {
+                _context.UserRoles.Add(new UserRole()
+                {
+                    CreationTime = DateTime.Now,
+                    CreatorUserId = currentUser.Id,
+                    RoleId = role.Id,
+                    UserId = user.Id
+                });
+            }
+
             
             if(_context.ProjectUsers.Any(x=>x.UserId == user.Id && x.ProjectId == projectUser.Id)){
                 return Content("User already exsit!");
@@ -270,7 +302,7 @@ namespace ApiServer.Controllers
 
                 _context.ProjectUsers.Add(newProjectUser);
 
-                _context.UserRoles.Add(new VDS.Security.UserRole() { CreationTime = DateTime.Now, CreatorUserId = currentUser.Id, UserId = user.Id, RoleId = role.Id });
+                _context.UserRoles.Add(new UserRole() { CreationTime = DateTime.Now, CreatorUserId = currentUser.Id, UserId = user.Id, RoleId = role.Id });
                 
                 await _context.SaveChangesAsync();
 

@@ -22,9 +22,11 @@ import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
 import { Keepalive } from '@ng-idle/keepalive';
 import context_menu from 'devextreme/ui/context_menu';
 import { ProjectSettingService } from '../../+administrator/settings/settings.service';
+import {ProjectUserSecurityService } from '../../shared/services/projectUserRole.service';
 import { ProjectSetting } from '../../shared/models/project-setting.model';
 import { QuantityCheckForView } from '../../shared/models/quantityCheck.model';
 import swal from 'sweetalert2';
+import { JSONP_ERR_WRONG_RESPONSE_TYPE } from '@angular/common/http/src/jsonp';
 
 @Component({
     selector: 'app-project-tag',
@@ -59,8 +61,6 @@ export class ProjecTagComponent {
     lines: any = [];
     ExcluseAreas: ExcluseArea[] = [];
     excluseArea: ExcluseArea = new ExcluseArea();
-    tagBtnClass: string = 'btn btn-outline-primary btn-sm m-btn m-btn--icon m-btn--wide';
-    excluseBtnClass: string = 'btn btn-outline-danger btn-sm m-btn m-btn--icon m-btn--wide';
     dataToUpdate: DataUpdate;
     currentUserId: number;
     messageTypes: MessageTypes = new MessageTypes();
@@ -70,9 +70,10 @@ export class ProjecTagComponent {
     lastPing?: Date = null;
 
     isAdmin: boolean = false;
+    isProjectManager: boolean = false;
+    isTeacher: boolean = false;
     isQc: boolean = false;
-    viewTag: boolean = false; editTag: boolean = false; deleteTag: boolean = false; addTag: boolean = false; viewImg: boolean = false;
-    viewQc: boolean = false; addQc: boolean = false; editQc: boolean = false; deleteQc: boolean = false;
+
     qcComment: string = '';
     hadQc: boolean = false;
     tagsFromSrv: any = [];
@@ -98,31 +99,21 @@ export class ProjecTagComponent {
         private securityServce: SecurityService,
         private qcService: QcService,
         private settingService: ProjectSettingService,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        private projectUserService: ProjectUserSecurityService
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.setUpIdleTimeout(300, 5); //value in second
     }
 
     ngOnInit() {
-        this.isAdmin = this.securityServce.IsGranted(Constants.admin);
-        this.viewTag = this.securityServce.IsGranted(Constants.ViewTag);
-        this.editTag = this.securityServce.IsGranted(Constants.EditTag);
-        this.deleteTag = this.securityServce.IsGranted(Constants.DeleteTag);
-        this.addTag = this.securityServce.IsGranted(Constants.AddTag);
-        this.viewImg = this.securityServce.IsGranted(Constants.viewImage);
-        this.addQc = this.securityServce.IsGranted(Constants.QcAdd);
-        this.editQc = this.securityServce.IsGranted(Constants.QcEdit);
-        this.viewQc = this.securityServce.IsGranted(Constants.QcView);
-        this.deleteQc = this.securityServce.IsGranted(Constants.QcDelete);
-        this.isQc = this.securityServce.isInRole(Constants.QuantityCheck);
-
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
         Helpers.setLoading(true);
         this.route.queryParams.subscribe(params => {
             this.projectId = params.project;
+            this.CheckRole();
             if (params.id) {
                 this.imageId = params.id;
                 mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
@@ -155,7 +146,22 @@ export class ProjecTagComponent {
         });
     }
 
-
+    CheckRole():void{
+        this.projectUserService.getRoles(this.projectId).toPromise().then(Response=>{
+            if(Response.result){
+                if(Response.result.roleName == Constants.ProjectManager){
+                    this.isProjectManager = true;
+                }else if(Response.result.roleName == Constants.Teacher){
+                    this.isTeacher = true;
+                }else if(Response.result.roleName == Constants.QuantityCheck){
+                    this.isQc = true;
+                }
+            }
+        }).catch(Response=>{
+            console.log(Response);
+            this.router.navigate(['project-details', { id: this.projectId }]);
+        });
+    }
 
     ngOnDestroy(): void {
         //Called once, before the instance is destroyed.
@@ -461,7 +467,7 @@ export class ProjecTagComponent {
         var mother = this;
         this.btnSaveEnabled = false;
         console.log(this.currentImage.ignored);
-        if (this.addTag && this.editTag && !this.hadQc) {
+        if (this.isTeacher || this.isProjectManager && !this.hadQc) {
             this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.totalTaggedTime, this.ExcluseAreas, this.currentImage.ignored);
 
             this.tagSerivce.saveTags(this.projectId, this.imageId, this.dataToUpdate).toPromise().then(Response => {
@@ -482,7 +488,16 @@ export class ProjecTagComponent {
     saveQcStage() {
         const mother = this;
         Helpers.setLoading(true);
-        if (this.addQc || this.editQc) {
+        if(!this.tags || this.tags.length <= 0){
+            swal({
+                 text: 'Cannot set Quantity Check stage in image that not have tags !',
+                animation: false
+            }).then(() => {
+                Helpers.setLoading(false);
+            });
+            return;
+        }
+        if (this.isQc) {
             if (this.qcValue == 'false' && !this.qcComment) {
                 swal({
                     title: 'Empty Comment', text: 'Can not set quantity check to Unpassed without comment, please enter comment!', type: 'error',
@@ -656,20 +671,20 @@ export class ProjecTagComponent {
                 strokeWidth: 2,
                 fill: '',
                 transparentCorners: false,
-                hasRotatingPoint: mother.addTag,
-                hasControls: mother.addTag,
+                hasRotatingPoint: false,
+                hasControls: this.isProjectManager || this.isTeacher,
                 selectable: true
             });
             if (mother.hadQc) {
                 rect.hasRotatingPoint = false;
                 rect.hasControls = false;
             }
-            rect.lockMovementX = !mother.addTag;
-            rect.lockMovementY = !mother.addTag;
-            rect.lockScalingX = !mother.addTag;
-            rect.lockScalingY = !mother.addTag;
-            rect.lockUniScaling = !mother.addTag;
-            rect.lockRotation = !mother.addTag;
+            rect.lockMovementX = !this.isTeacher || !this.isProjectManager;
+            rect.lockMovementY = !this.isTeacher || !this.isProjectManager;
+            rect.lockScalingX = !this.isTeacher || !this.isProjectManager;
+            rect.lockScalingY = !this.isTeacher || !this.isProjectManager;
+            rect.lockUniScaling = !this.isTeacher || !this.isProjectManager;
+            rect.lockRotation = !this.isTeacher || !this.isProjectManager;
 
 
             this.bindingEvent(rect);
@@ -791,10 +806,10 @@ export class ProjecTagComponent {
             }
 
             if(evt.which === 69){
-                if (this.excluseMode) {
-                    this.excluseMode = false;
+                if (mother.excluseMode) {
+                    mother.excluseMode = false;
                     $(':focus').blur();
-                    this.updateTaggedTime().toPromise().catch(Response => {
+                    mother.updateTaggedTime().toPromise().catch(Response => {
                         swal({
                             title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
                             animation: false
@@ -802,9 +817,9 @@ export class ProjecTagComponent {
                     });
                 }
                 else {
-                    this.excluseMode = true;
-                    this.tagMode = false;
-                    this.timerSerive.startTimer();
+                    mother.excluseMode = true;
+                    mother.tagMode = false;
+                    mother.timerSerive.startTimer();
                 }
             }
         });
@@ -831,7 +846,7 @@ export class ProjecTagComponent {
             }
             // --- set up panning func ---
             var evt = event.e;
-            if (evt.altKey === true || mother.isQc && !mother.addTag) {
+            if (evt.altKey === true || mother.isQc && (!this.isTeacher || !this.isProjectManager)) {
                 isDragging = true;
                 lastPosX = evt.clientX;
                 lastPosY = evt.clientY;
@@ -882,7 +897,7 @@ export class ProjecTagComponent {
 
 
             //--- set up tag func ---
-            if (!mother.tagMode || isDragging || !mother.addTag || !mother.editTag || this.hadQc) return;
+            if (!mother.tagMode || isDragging ||!this.isTeacher || !this.isProjectManager || this.hadQc) return;
             isDown = true;
             var pointer = this.getPointer(evt);
             startPosition.x = pointer.x;
@@ -903,8 +918,8 @@ export class ProjecTagComponent {
                 strokeWidth: 2,
                 fill: '',
                 transparentCorners: false,
-                hasRotatingPoint: mother.addTag,
-                hasControls: mother.addTag,
+                hasRotatingPoint: this.isTeacher || this.isProjectManager,
+                hasControls: this.isTeacher || this.isProjectManager,
                 selectable: true
             });
             this.add(rect);
@@ -943,7 +958,7 @@ export class ProjecTagComponent {
                 return;
             } else if (!mother.tagMode) return;
 
-            if (!mother.addTag || !mother.editTag || this.hadQc) return;
+            if (!this.isTeacher || !this.isProjectManager || this.hadQc) return;
             mother.bindingEvent(rect);
             mother.canvas.remove(rect);
             mother.canvas.add(rect);
@@ -988,24 +1003,24 @@ export class ProjecTagComponent {
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
             // $("#deleteBtn").remove();
-            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
+            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
+            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
             // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
+            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
-            if (!mother.addTag || !mother.editTag || mother.hadQc) return;
+            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
-            if (!mother.tagMode || !mother.addTag || !mother.editTag || mother.hadQc) return;
+            if (!mother.tagMode || !this.isTeacher || !this.isProjectManager || mother.hadQc) return;
             mother.tagMode = true;
         });
 

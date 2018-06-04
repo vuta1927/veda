@@ -179,7 +179,7 @@ namespace ApiServer.Core.Merge
                         {
                             Class = newClass,
                             ClassId = newClass.Id,
-                            height = tag.height,
+                            Height = tag.Height,
                             Image = img,
                             Index = tag.Index,
                             Left = tag.Left,

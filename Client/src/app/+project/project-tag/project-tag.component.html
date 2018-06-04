@@ -95,7 +95,7 @@
                         </div>
                         <div class="p-2">
                             <button class="btn btn-sm m-btn m-btn--air btn-outline-success m-btn--icon" [ngClass]="{ 'active': tagMode, '': !tagMode }"
-                                (click)="switchTagMode()" *ngIf="!hadQc && addTag">
+                                (click)="switchTagMode()" *ngIf="!hadQc && (isTeacher || isProjectManager)">
                                 <span>
                                     <i class="la la-tag"></i>
                                     <span>
@@ -104,7 +104,7 @@
                                 </span>
                             </button>
                             <button class="btn btn-sm m-btn m-btn--air btn-outline-danger m-btn--icon" [ngClass]="{ 'active': excluseMode, '': !excluseMode }"
-                                (click)="ExcluseAreaClick()" *ngIf="!hadQc && addTag">
+                                (click)="ExcluseAreaClick()" *ngIf="!hadQc && (isTeacher || isProjectManager)">
                                 <span>
                                     <i class="la la-scissors"></i>
                                     <span>
@@ -164,7 +164,7 @@
                                 <div class="m-checkbox-list" style="overflow: visible;" data-scrollable="true">
                                     <div style="padding: 10px; margin: 10px 0px 10px; border: 1px solid rgb(239, 239, 239);">
                                         <label class="m-checkbox m-checkbox--state-brand">
-                                            <input type="checkbox" [(ngModel)]="currentImage.ignored" [disabled]="hadQc && !addTag"> Ignore image
+                                            <input type="checkbox" [(ngModel)]="currentImage.ignored" [disabled]="hadQc && !(isTeacher || isProjectManager)"> Ignore image
                                             <span></span>
                                         </label>
                                     </div>
@@ -176,16 +176,14 @@
                                     Classes
                                 </h6>
                                 <table>
-                                    <tr>
-                                        <td style="text-align: center; vertical-align: middle">
-                                            <h6>
-                                                Selected tag:
+                                    <tr  *ngIf="selectedTag">
+                                        <td style="text-align: left; vertical-align: middle">
+                                            <h6 class="m--font-primary m--font-bold">
+                                                Tag {{selectedTag.index}}:
                                             </h6>
                                         </td>
                                         <td>
-                                            <span class="m-badge m-badge--brand m-badge--success m-badge--wide" *ngIf="selectedTag">
-                                                Tag: {{selectedTag.index}} (width:{{selectedTag.width}}; height:{{selectedTag.height}})
-                                            </span>
+                                            <h6>{{selectedTag.width | number:'1.0-2'}} x {{selectedTag.height | number:'1.0-2'}} ({{selectedTag.width*imageWidth  | number:'1.0-0'}} x {{selectedTag.height*imageHeight  | number:'1.0-0'}})</h6>
                                         </td>
                                     </tr>
                                 </table>
@@ -195,7 +193,7 @@
                             </div>
                             <div class="col-xl-12">
                                 <div class="m-radio-list" style="overflow: visible;" data-scrollable="true">
-                                    <div *ngIf="(addTag && !hadQc) else qcTemplate">
+                                    <div *ngIf="((isTeacher || isProjectManager) && !hadQc) else qcTemplate">
                                         <div style="padding: 10px; margin: 10px 0px 10px; border: 1px solid rgb(239, 239, 239);">
                                             <label class="m-radio m-radio--solid m-radio--brand" *ngFor="let class of classData">
                                                 <input type="radio" [value]="class.id" [id]="class.id" (change)="classRadioChange($event)" [checked]="class.checked" [disabled]="!selectedTag">
@@ -220,7 +218,7 @@
                             </div>
                             <div class="col-xl-12">
                                 <button class="btn btn-sm btn-primary m-btn--wide btn-block m-btn--air" (click)="saveChange()" [disabled]="!btnSaveEnabled"
-                                    *ngIf="!hadQc && addTag">
+                                    *ngIf="!hadQc && (isTeacher || isProjectManager)">
                                     <span>
                                         <i class="la la-save"></i>
                                         <span>
@@ -229,9 +227,9 @@
                                     </span>
                                 </button>
                             </div>
-                            <div class="m-separator m-separator--dashed" *ngIf="(qcDone || hadQc || addQc)"></div>
+                            <div class="m-separator m-separator--dashed" *ngIf="(qcDone || hadQc || isQc)"></div>
                             <div class="col-xl-12" style="padding-top: 10px">
-                                <h6 class="m--font-brand" *ngIf="(qcDone || hadQc || addQc)" style="padding-top: 10px">
+                                <h6 class="m--font-brand" *ngIf="(qcDone || hadQc || isQc)" style="padding-top: 10px">
                                     Quantity Check
                                 </h6>
                             </div>
@@ -256,19 +254,19 @@
                                 </div>
                             </div>
 
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="addQc">
-                                <select class="form-control m-input m-input--air" id="QuantityValue" (change)="qcValueSelectChange($event)" *ngIf="(!qcDone && addQc)">
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
+                                <select class="form-control m-input m-input--air" id="QuantityValue" (change)="qcValueSelectChange($event)" *ngIf="(!qcDone && isQc)">
                                     <option *ngFor="let qc of qcValues" [value]="qc.value">
                                         <strong>{{qc.name}}</strong>
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="addQc">
-                                <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && addQc)"
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
+                                <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && isQc)"
                                     placeholder="Comment"></textarea>
                             </div>
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="addQc">
-                                <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && addQc)">
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
+                                <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && isQc)">
                                     <span>
                                         <i class="la la-save"></i>
                                         <span>

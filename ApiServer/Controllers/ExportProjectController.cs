@@ -65,9 +65,9 @@ namespace ApiServer.Controllers
                             ClassId = t.Class.Id,
                             Class = t.Class.Name,
                             CenterX = (t.Left + t.Width) / 2,
-                            CenterY = (t.Top + t.height) / 2,
+                            CenterY = (t.Top + t.Height) / 2,
                             Width = t.Width,
-                            Height = t.height,
+                            Height = t.Height,
                             Image = image
                         };
 

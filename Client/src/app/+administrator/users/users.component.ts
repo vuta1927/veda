@@ -78,7 +78,6 @@ export class UsersComponent {
         Helpers.setLoading(true);
         let mother = this;
         this.usersService.getUserForCreatOrEdit(id).subscribe(res => {
-            console.log(res.result);
             const modalRef = this.modalService.open(CreateOrUpdateUserComponent, config);
             modalRef.componentInstance.userForCreateOrEdit = res.result;
             modalRef.result.then(function () {
