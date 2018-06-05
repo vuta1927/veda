@@ -25,6 +25,8 @@ export class FilterOptions{
 }
 
 export class QcOption{
-    index: number;
-    value: number;
+    constructor(
+        public index: number,
+        public value: boolean
+    ){}
 }

@@ -7,10 +7,11 @@ namespace ApiServer.Model
 {
     public static class ExportModel
     {
-        public class Exoprt
+        public class Export
         {
-            public string[] Classes { get; set; }
-            public FilterOptions FilterOptions { get; set; }
+            public Guid ProjectId { get; set; }
+            public IEnumerable<string> Classes { get; set; }
+            public IEnumerable<QcOption> QcOptions { get; set; }
         }
 
         public class FilterOptions

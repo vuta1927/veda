@@ -14,7 +14,7 @@ namespace ApiServer.Controllers
 {
     [Produces("application/json")]
     [Route("api/QuantityChecks/[action]")]
-    [AppAuthorize(VdsPermissions.ViewQc)]
+    [AppAuthorize]
     public class QuantityChecksController : Controller
     {
         private readonly VdsContext _context;

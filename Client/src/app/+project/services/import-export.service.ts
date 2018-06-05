@@ -17,20 +17,23 @@ export class ImportExportService {
         let url = this.configurationService.serverSettings.apiUrl + '/api/ImportProject/' + projectId;
         return this.http.post<IAppCoreResponse<any>>(url, data);
     }
-
-    public Export(projectId: string, data: any) {
-        const token = this.auth.getToken();
-        const httpOptions = {
-            headers: new HttpHeaders({
-                'Content-Type': 'application/json',
-                'Accept': 'application/zip',
-                'Authorization': token
-            }),
-            responseType:'arraybuffer' as 'arraybuffer'
-        }
-
-        let url = this.configurationService.serverSettings.apiUrl + '/api/ExportProject/' + projectId;
-        return this.http.post(url, data, httpOptions);
+    public Export(data:any):Observable<IAppCoreResponse<any>>{
+        let url = this.configurationService.serverSettings.apiUrl + '/api/ExportProject';
+        return this.http.post<IAppCoreResponse<any>>(url,data);
     }
+    // public Export(data: any) {
+    //     const token = this.auth.getToken();
+    //     const httpOptions = {
+    //         headers: new HttpHeaders({
+    //             'Content-Type': 'application/json',
+    //             'Accept': 'application/zip',
+    //             'Authorization': token
+    //         }),
+    //         responseType:'arraybuffer' as 'arraybuffer'
+    //     }
+
+    //     let url = this.configurationService.serverSettings.apiUrl + '/api/ExportProject/Export';
+    //     return this.http.post(url, data, httpOptions);
+    // }
 
 }

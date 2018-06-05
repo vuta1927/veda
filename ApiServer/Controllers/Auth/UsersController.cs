@@ -142,7 +142,7 @@ namespace ApiServer.Controllers.Auth
                 return Ok(user);
             else
             {
-                return NotFound();
+                return Content("");
             }
         }
 
@@ -155,7 +155,7 @@ namespace ApiServer.Controllers.Auth
                 return Ok(user);
             else
             {
-                return NotFound();
+                return Content("");
             }
         }
 

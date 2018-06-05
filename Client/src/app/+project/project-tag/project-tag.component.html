@@ -227,9 +227,9 @@
                                     </span>
                                 </button>
                             </div>
-                            <div class="m-separator m-separator--dashed" *ngIf="(qcDone || hadQc || isQc)"></div>
+                            <div class="m-separator m-separator--dashed" *ngIf="(qcDone || hadQc || isQc || isProjectManager)"></div>
                             <div class="col-xl-12" style="padding-top: 10px">
-                                <h6 class="m--font-brand" *ngIf="(qcDone || hadQc || isQc)" style="padding-top: 10px">
+                                <h6 class="m--font-brand" *ngIf="(qcDone || hadQc || isQc || isProjectManager)" style="padding-top: 10px">
                                     Quantity Check
                                 </h6>
                             </div>
@@ -254,19 +254,19 @@
                                 </div>
                             </div>
 
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
-                                <select class="form-control m-input m-input--air" id="QuantityValue" (change)="qcValueSelectChange($event)" *ngIf="(!qcDone && isQc)">
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc || isProjectManager">
+                                <select class="form-control m-input m-input--air" id="QuantityValue" (change)="qcValueSelectChange($event)" *ngIf="(!qcDone && (isQc || isProjectManager))">
                                     <option *ngFor="let qc of qcValues" [value]="qc.value">
                                         <strong>{{qc.name}}</strong>
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
-                                <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && isQc)"
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc || isProjectManager">
+                                <textarea class="form-control m-input m-input--air" id="qcComment" rows="3" [(ngModel)]="qcComment" *ngIf="(!qcDone && (isQc || isProjectManager))"
                                     placeholder="Comment"></textarea>
                             </div>
-                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc">
-                                <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && isQc)">
+                            <div class="col-xl-12" style="padding-top: 10px" *ngIf="isQc || isProjectManager">
+                                <button class="btn btn-sm btn-primary btn-block m-btn m-btn--wide" type="button" (click)="saveQcStage()" *ngIf="(!qcDone && (isQc || isProjectManager))">
                                     <span>
                                         <i class="la la-save"></i>
                                         <span>

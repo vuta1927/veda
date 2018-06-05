@@ -49,4 +49,10 @@ export class ProjectService {
         let url = this.configurationService.serverSettings.apiUrl + '/api/projects/UploadImage/' + id;
         return this.http.post<IAppCoreResponse<any>>(url, data);
     }
+
+    public Export(data):Observable<IAppCoreResponse<any>>{
+        console.log(data);
+        let url = this.configurationService.serverSettings.apiUrl + '/api/ExportProject/Export';
+        return this.http.post<IAppCoreResponse<any>>(url,data);
+    }
 }

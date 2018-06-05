@@ -19,6 +19,7 @@ using ApiServer.Hubs;
 using ApiServer.Core.Merge;
 using ApiServer.Core.Email;
 using ApiServer.Core.Queues;
+using Hangfire;
 
 namespace ApiServer
 {
@@ -39,6 +40,7 @@ namespace ApiServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("Hangfire")));
             services.AddMemoryCache();
             services.AddMvc()
                 .AddJsonOptions(
@@ -119,6 +121,10 @@ namespace ApiServer
             app.UseCors(_defaultCorsPolicyName);
 
             app.UseAuthentication();
+
+            app.UseHangfireServer();
+
+            app.UseHangfireDashboard();
 
             app.UseSignalR(routes =>
             {

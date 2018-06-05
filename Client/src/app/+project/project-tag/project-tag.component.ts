@@ -488,7 +488,7 @@ export class ProjecTagComponent {
             });
             return;
         }
-        if (this.isQc) {
+        if (this.isQc || this.isProjectManager) {
             if (this.qcValue == 'false' && !this.qcComment) {
                 swal({
                     title: 'Empty Comment', text: 'Can not set quantity check to Unpassed without comment, please enter comment!', type: 'error',

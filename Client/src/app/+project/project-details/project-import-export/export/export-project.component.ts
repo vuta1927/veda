@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ClassService } from '../../../services/class.service';
 import { DataService } from '../../data.service';
-import { QcOption, FilterOptions } from '../../../../shared/models/merge.model';
-import { Export } from '../../../../shared/models/export.model';
-import { ImportExportService } from '../../../services/import-export.service';
+import { QcOption } from '../../../../shared/models/merge.model';
+import { ExportClass } from '../../../../shared/models/export.model';
+import { ProjectService } from '../../../project.service';
 import { ProjectSettingService } from '../../../../+administrator/settings/settings.service';
 import swal from 'sweetalert2';
 @Component({
@@ -18,12 +18,12 @@ export class ExportProjectComponent implements OnInit {
     currentProject: any = {};
     classSource: any = {};
     selectedClasses: any[] = [];
-    qcFilterOptions: QcOption[] = [];
+    qcOptions: QcOption[] = [];
     qcLeves:any;
     constructor(
         private classService: ClassService,
         private dataService: DataService,
-        private exportService: ImportExportService,
+        private projectService: ProjectService,
         private projectSettingService: ProjectSettingService
     ){
         this.qcLeves = Array(5).fill(1).map((x, i) => i + 1);
@@ -63,26 +63,33 @@ export class ExportProjectComponent implements OnInit {
 
     qcLevelChange(e): void {
         const ele = e.target;
-        const qcOpt = this.qcFilterOptions.find(x => x.index === ele.name);
+        const qcOpt = this.qcOptions.find(x => x.index === ele.name);
         if (qcOpt) {
-            qcOpt.value = ele.value;
+            if(ele.value == 3){
+                this.qcOptions.splice(this.qcOptions.indexOf(qcOpt),1);
+            }else{
+                qcOpt.value = ele.value;
+            }
         } else {
-            this.qcFilterOptions.push({ index: ele.name, value: ele.value });
+            if(ele.value == 3) return;
+            this.qcOptions.push(new QcOption(ele.name, ele.value == 1));
         }
     }
 
     Export(){
-        const exportData = new Export();
         const mother = this;
+        var classes = [];
         this.selectedClasses.forEach(c=>{
-            exportData.classes.push(c.name);
+            classes.push(c.name);
          });
          
-        exportData.filterOptions.qcOptions = this.qcFilterOptions;
-        this.exportService.Export(this.currentProject.id, exportData).toPromise().then(Response=>{
-            var blob = new Blob([Response], {type: "application/zip"});
-            mother.saveAs(blob, mother.currentProject.name+".zip");
+        const exportData = new ExportClass(this.currentProject.id, classes, this.qcOptions);
+        this.projectService.Export(exportData).toPromise().then(Response=>{
+            swal({text:'Export is processing. An download link will be send to your email when export complete!', type:"success"})
+            // var blob = new Blob([Response], {type: "application/zip"});
+            // mother.saveAs(blob, mother.currentProject.name+".zip");
         }).catch(resp=>{
+            console.log(resp);
             swal({
                 title: '',text: resp.error.message, type: 'error'
             })

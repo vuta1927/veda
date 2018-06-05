@@ -1,5 +1,14 @@
-import {FilterOptions} from './merge.model';
-export class Export{
-    classes: string[] = [];
-    filterOptions: FilterOptions = new FilterOptions();
+export class QcOption {
+    constructor(
+        public index: number,
+        public value: boolean) { }
+}
+
+export class ExportClass {
+    constructor(
+        public projectId: string,
+        public classes: string[],
+        public qcOptions: QcOption[]) {
+
+    }
 }

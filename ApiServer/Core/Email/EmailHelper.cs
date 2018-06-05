@@ -16,16 +16,19 @@ namespace ApiServer.Core.Email
         {
             context = vdsContext;
             source = "veda.futurisx@gmail.com";
-            smtpServer = new SmtpClient("smtp.gmail.com");
-            smtpServer.Port = 587;
-            smtpServer.Credentials = new System.Net.NetworkCredential("veda.futurisx", "veda@FUTURISX#2017");
-            smtpServer.EnableSsl = true;
+            smtpServer = new SmtpClient("smtp.gmail.com")
+            {
+                Port = 587,
+                Credentials = new System.Net.NetworkCredential("veda.futurisx", "veda@FUTURISX#2017"),
+                EnableSsl = true
+            };
         }
         public async Task Send(string destination, string subject, string body)
         {
-            var mail = new MailMessage();
-
-            mail.From = new MailAddress(source);
+            var mail = new MailMessage
+            {
+                From = new MailAddress(source)
+            };
             mail.To.Clear();
             mail.To.Add(destination);
             mail.Subject = subject;
@@ -33,7 +36,7 @@ namespace ApiServer.Core.Email
             mail.Body = body;
             try
             {
-                string userState = "ok";
+                var userState = "ok";
                 smtpServer.SendAsync(mail, userState);
             }
             catch (Exception ex)
@@ -43,9 +46,10 @@ namespace ApiServer.Core.Email
         }
         public async Task Broadcast(string subject, string body)
         {
-            var mail = new MailMessage();
-
-            mail.From = new MailAddress(source);
+            var mail = new MailMessage
+            {
+                From = new MailAddress(source)
+            };
             mail.To.Clear();
             mail.Subject = subject;
             mail.IsBodyHtml = true;
@@ -59,7 +63,7 @@ namespace ApiServer.Core.Email
 
             try
             {
-                string userState = "ok";
+                var userState = "ok";
                 smtpServer.SendAsync(mail, userState);
             }
             catch(Exception ex)

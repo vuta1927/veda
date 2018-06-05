@@ -104,7 +104,6 @@ export class CreateOrUpdateUserComponent implements OnInit {
             this.form.get('password').setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(50)])
             this.form.get('passwordRepeat').setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(50), matchOtherValidator('password')]);
         }
-        console.log(value);
         this.form.get('password').reset();
         this.form.get('passwordRepeat').reset();
         this.isSetRandomPassword = value;
@@ -138,8 +137,5 @@ export class CreateOrUpdateUserComponent implements OnInit {
         }).catch(Response=>{
             swal({text:Response.error? Response.error.text: Response.message, type:"error"});
         });
-
-
-        console.log(user);
     }
 }
