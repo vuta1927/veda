@@ -22,7 +22,7 @@ import { Idle, DEFAULT_INTERRUPTSOURCES } from '@ng-idle/core';
 import { Keepalive } from '@ng-idle/keepalive';
 import context_menu from 'devextreme/ui/context_menu';
 import { ProjectSettingService } from '../../+administrator/settings/settings.service';
-import {ProjectUserSecurityService } from '../../shared/services/projectUserRole.service';
+import { ProjectUserSecurityService } from '../../shared/services/projectUserRole.service';
 import { ProjectSetting } from '../../shared/models/project-setting.model';
 import { QuantityCheckForView } from '../../shared/models/quantityCheck.model';
 import swal from 'sweetalert2';
@@ -42,7 +42,7 @@ export class ProjecTagComponent {
     apiUrl: string = '';
     canvas: any;
     tagMode: boolean = false;
-    isDragging: boolean = false;
+    isPanning: boolean = false;
     selection: boolean = false;
     projectId: string = null;
     selectedTag: Tag;
@@ -146,18 +146,18 @@ export class ProjecTagComponent {
         });
     }
 
-    CheckRole():void{
-        this.projectUserService.getRoles(this.projectId).toPromise().then(Response=>{
-            if(Response.result){
-                if(Response.result.roleName == Constants.ProjectManager){
+    CheckRole(): void {
+        this.projectUserService.getRoles(this.projectId).toPromise().then(Response => {
+            if (Response.result) {
+                if (Response.result.roleName == Constants.ProjectManager) {
                     this.isProjectManager = true;
-                }else if(Response.result.roleName == Constants.Teacher){
+                } else if (Response.result.roleName == Constants.Teacher) {
                     this.isTeacher = true;
-                }else if(Response.result.roleName == Constants.QuantityCheck){
+                } else if (Response.result.roleName == Constants.QuantityCheck) {
                     this.isQc = true;
                 }
             }
-        }).catch(Response=>{
+        }).catch(Response => {
             console.log(Response);
             this.router.navigate(['project-details', { id: this.projectId }]);
         });
@@ -232,6 +232,7 @@ export class ProjecTagComponent {
         let mother = this;
         this.classService.getClasses(this.projectId).toPromise().then(Response => {
             if (Response && Response.result) {
+                mother.classData = [];
                 Response.result.forEach(tag => {
                     mother.classData.push(new ClassList(tag.id, tag.name, false, tag.classColor));
                 });
@@ -322,7 +323,7 @@ export class ProjecTagComponent {
         this.currentImage = {};
         this.classData = [];
         // this.tagMode = false;
-        // this.isDragging = false;
+        // this.isPanning = false;
         this.selection = false;
         this.selectedTag = null;
         this.tags = new Array<Tag>();
@@ -350,12 +351,7 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.tagMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response => {
-                swal({
-                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                    animation: false
-                });
-            });
+            this.updateTaggedTime().toPromise().catch();
         }
         else {
             this.tagMode = true;
@@ -440,12 +436,7 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.updateTaggedTime().toPromise().then(Response => {
                 this.GetNextImage();
-            }).catch(Response => {
-                swal({
-                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                    animation: false
-                });
-            });
+            }).catch();
             this.tagMode = false;
         } else {
             this.GetNextImage();
@@ -488,9 +479,9 @@ export class ProjecTagComponent {
     saveQcStage() {
         const mother = this;
         Helpers.setLoading(true);
-        if(!this.tags || this.tags.length <= 0){
+        if (!this.tags || this.tags.length <= 0) {
             swal({
-                 text: 'Cannot set Quantity Check stage in image that not have tags !',
+                text: 'Cannot set Quantity Check stage in image that not have tags !',
                 animation: false
             }).then(() => {
                 Helpers.setLoading(false);
@@ -549,7 +540,7 @@ export class ProjecTagComponent {
             }
         });
         // this.tagMode = false;
-        // this.isDragging = false;
+        // this.isPanning = false;
 
     }
 
@@ -563,12 +554,7 @@ export class ProjecTagComponent {
         if (this.excluseMode) {
             this.excluseMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response => {
-                swal({
-                    title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                    animation: false
-                });
-            });
+            this.updateTaggedTime().toPromise().catch();
         }
         else {
             this.excluseMode = true;
@@ -679,12 +665,21 @@ export class ProjecTagComponent {
                 rect.hasRotatingPoint = false;
                 rect.hasControls = false;
             }
-            rect.lockMovementX = !this.isTeacher || !this.isProjectManager;
-            rect.lockMovementY = !this.isTeacher || !this.isProjectManager;
-            rect.lockScalingX = !this.isTeacher || !this.isProjectManager;
-            rect.lockScalingY = !this.isTeacher || !this.isProjectManager;
-            rect.lockUniScaling = !this.isTeacher || !this.isProjectManager;
-            rect.lockRotation = !this.isTeacher || !this.isProjectManager;
+
+            let lock = false;
+            if(this.isProjectManager){
+                if(this.hadQc){
+                    lock = true;
+                }
+            }else if(this.isQc){
+                lock = true;
+            }
+            rect.lockMovementX = lock;
+            rect.lockMovementY = lock;
+            rect.lockScalingX = lock;
+            rect.lockScalingY = lock;
+            rect.lockUniScaling = lock;
+            rect.lockRotation = lock;
 
 
             this.bindingEvent(rect);
@@ -768,7 +763,6 @@ export class ProjecTagComponent {
         let startPosition: any = {};
         let rect: any = {};
         let mother = this;
-        let isDragging: boolean = false;
         let lastPosX;
         let lastPosY;
         $('body').on('contextmenu', 'canvas', function (options: any) {
@@ -787,16 +781,11 @@ export class ProjecTagComponent {
                 mother.finalize();
             };
 
-            if(evt.which === 84){
+            if (evt.which === 84) {
                 if (mother.tagMode) {
                     mother.tagMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch(Response => {
-                        swal({
-                            title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                            animation: false
-                        });
-                    });
+                    mother.updateTaggedTime().toPromise().catch();
                 }
                 else {
                     mother.tagMode = true;
@@ -805,16 +794,11 @@ export class ProjecTagComponent {
                 }
             }
 
-            if(evt.which === 69){
+            if (evt.which === 69) {
                 if (mother.excluseMode) {
                     mother.excluseMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch(Response => {
-                        swal({
-                            title: '', text: Response.error ? Response.error.text : Response.message, type: 'error',
-                            animation: false
-                        });
-                    });
+                    mother.updateTaggedTime().toPromise().catch();
                 }
                 else {
                     mother.excluseMode = true;
@@ -846,8 +830,8 @@ export class ProjecTagComponent {
             }
             // --- set up panning func ---
             var evt = event.e;
-            if (evt.altKey === true || mother.isQc && (!this.isTeacher || !this.isProjectManager)) {
-                isDragging = true;
+            if (evt.altKey === true || mother.isQc) {
+                mother.isPanning = true;
                 lastPosX = evt.clientX;
                 lastPosY = evt.clientY;
                 return;
@@ -893,36 +877,42 @@ export class ProjecTagComponent {
                 mother.lines.push(line);
 
                 this.add(line);
+                return;
             }
-
-
             //--- set up tag func ---
-            if (!mother.tagMode || isDragging ||!this.isTeacher || !this.isProjectManager || this.hadQc) return;
-            isDown = true;
-            var pointer = this.getPointer(evt);
-            startPosition.x = pointer.x;
-            startPosition.y = pointer.y;
+            if (mother.tagMode && (!mother.isQc || !mother.isPanning || !mother.hadQc)) {
+                isDown = true;
+                var pointer = this.getPointer(evt);
+                startPosition.x = pointer.x;
+                startPosition.y = pointer.y;
 
-            let index = mother.generateId();
+                let index = mother.generateId();
 
-            rect = new fabric.Rect({
-                id: -1,
-                index: index,
-                name: 'rect-' + index,
-                left: pointer.x,
-                top: pointer.y,
-                width: 0,
-                height: 0,
-                stroke: '#FFFFFF',
-                originColor: '#FFFFFF',
-                strokeWidth: 2,
-                fill: '',
-                transparentCorners: false,
-                hasRotatingPoint: this.isTeacher || this.isProjectManager,
-                hasControls: this.isTeacher || this.isProjectManager,
-                selectable: true
-            });
-            this.add(rect);
+                rect = new fabric.Rect({
+                    id: -1,
+                    index: index,
+                    name: 'rect-' + index,
+                    left: pointer.x,
+                    top: pointer.y,
+                    width: 0,
+                    height: 0,
+                    stroke: '#FFFFFF',
+                    originColor: '#FFFFFF',
+                    strokeWidth: 2,
+                    fill: '',
+                    transparentCorners: false,
+                    hasRotatingPoint: mother.isTeacher || mother.isProjectManager,
+                    hasControls: mother.isTeacher || mother.isProjectManager,
+                    selectable: true
+                });
+                this.add(rect);
+            } else {
+                if (!mother.selectedTag) {
+                    mother.isPanning = true;
+                    lastPosX = evt.clientX;
+                    lastPosY = evt.clientY;
+                }
+            }
         });
 
         this.canvas.on('mouse:move', function (event) {
@@ -934,7 +924,7 @@ export class ProjecTagComponent {
                 }).setCoords();
                 this.renderAll();
             }
-            if (isDragging) {
+            if (mother.isPanning) {
                 var evt = event.e;
                 this.viewportTransform[4] += evt.clientX - lastPosX;
                 this.viewportTransform[5] += evt.clientY - lastPosY;
@@ -942,23 +932,28 @@ export class ProjecTagComponent {
                 lastPosY = evt.clientY;
                 this.requestRenderAll();
                 return;
-            } else if (!isDown || !mother.tagMode) return;
+            }
 
-            var pointer = mother.canvas.getPointer(evt);
-            rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
-            mother.bindingEvent(rect);
-            mother.canvas.renderAll();
+            if(!isDown || mother.hadQc || mother.isQc) return;
+
+            if(mother.isTeacher || mother.isProjectManager){
+                var pointer = mother.canvas.getPointer(evt);
+                rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
+                mother.bindingEvent(rect);
+                mother.canvas.renderAll();
+            }
+            
 
         });
 
         this.canvas.on('mouse:up', function () {
             isDown = false;
-            if (isDragging) {
-                isDragging = false;
+            if (mother.isPanning) {
+                mother.isPanning = false;
                 return;
             } else if (!mother.tagMode) return;
 
-            if (!this.isTeacher || !this.isProjectManager || this.hadQc) return;
+            if (mother.hadQc) return;
             mother.bindingEvent(rect);
             mother.canvas.remove(rect);
             mother.canvas.add(rect);
@@ -1002,29 +997,34 @@ export class ProjecTagComponent {
 
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
+            mother.isPanning = false;
+
             // $("#deleteBtn").remove();
-            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
+            if (mother.isQc || mother.hadQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
-            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
+            if (mother.isQc || mother.hadQc) return;
             // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
-            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
+            mother.isPanning = false;
+            if (mother.isQc || mother.hadQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
-            if (!this.isTeacher || !this.isProjectManager || mother.hadQc) return;
+            mother.isPanning = false;
+            if (mother.isQc || mother.hadQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
-            if (!mother.tagMode || !this.isTeacher || !this.isProjectManager || mother.hadQc) return;
+            if (!mother.tagMode || mother.isQc || mother.hadQc) return;
             mother.tagMode = true;
         });
 
         this.canvas.on('object:moving', function (e) {
+            mother.isPanning = false;
             var target = e.target;
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);

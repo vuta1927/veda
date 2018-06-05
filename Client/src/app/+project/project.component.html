@@ -48,19 +48,25 @@
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, -136px, 0px); top: 0px; left: 0px; will-change: transform;">
               <a class="dropdown-item" (click)="addProjectClicked()">
-                <i class="la la-plus i-plus"></i>
+                <i class="la la-plus i-plus" style="color: blue"></i>
                 Add new project
               </a>
               <a class="dropdown-item" (click)="mergeProject()" *ngIf="selectedProjects.length">
-                <i class="la 	la-magnet i-magnet"></i>
+                <i class="la 	la-magnet i-magnet" style="color: blue"></i>
                 Merge
               </a>
               <a class="dropdown-item disabled" *ngIf="!selectedProjects.length">
-                  <i class="la la-magnet i-magnet"></i>
-                  Merge
-                </a>
+                <i class="la la-magnet i-magnet"></i>
+                Merge
+              </a>
+
               <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
-                <i class="la la-trash i-trash"></i> Delete selected projects</a>
+                <i class="la la-eraser" style="color: red"></i> Clear data</a>
+              <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
+                <i class="la la-eraser"></i> Clear data</a>
+
+              <a *ngIf="selectedProjects.length" class="dropdown-item" data-toggle="modal" data-target="#modalDeleteProject">
+                <i class="la la-trash i-trash" style="color: red"></i> Delete selected projects</a>
               <a *ngIf="!selectedProjects.length" class="dropdown-item disabled">
                 <i class="la la-trash i-trash"></i> Delete selected projects</a>
             </div>
@@ -97,7 +103,7 @@
             <dxi-column caption="Projec Name" sortOrder="asc" cellTemplate="cellName"></dxi-column>
             <dxi-column dataField="description" [allowSorting]="false"></dxi-column>
             <dxi-column dataField="note" [allowSorting]="false"></dxi-column>
-            <dxi-column cellTemplate="usersCell"  caption="User" sortOrder="asc"></dxi-column>
+            <dxi-column cellTemplate="usersCell" caption="User" sortOrder="asc"></dxi-column>
             <dxi-column caption="Status" dataField="isDisabled" [visible]="isAdmin" cellTemplate="statusCellTemplate"></dxi-column>
             <dxi-column dataField="totalImg" caption="Total Image"></dxi-column>
             <dxi-column dataField="totalImgNotTagged" caption="Total image not tagged"></dxi-column>

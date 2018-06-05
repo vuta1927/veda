@@ -109,7 +109,7 @@ namespace ApiServer.Model
                         NormalizedEmail = "ADMIN@DEMO.COM",
                         IsActive = true,
                         EmailConfirmed = true,
-                        PasswordHash = "AM4OLBpptxBYmM79lGOX9egzZk3vIQU3d/gFCJzaBjAPXzYIK3tQ2N7X4fcrHtElTw==" //123qwe
+                        PasswordHash = "AQAAAAEAACcQAAAAEJtgQFVsPu2OwWrq0EmFohzSY1uzvWD474ucMUmwLek5A8iXuWpjIl061y4C2z5Fow==" //vdsFuturisx@2018
                     };
 
                     _ctx.Users.Add(adminUser);

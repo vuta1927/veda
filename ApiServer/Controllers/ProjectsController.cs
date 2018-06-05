@@ -25,18 +25,20 @@ namespace ApiServer.Controllers
 {
     [Produces("application/json")]
     [Route("api/Projects/[action]")]
-    [AppAuthorize(VdsPermissions.ViewProject)]
+    [AppAuthorize]
     public class ProjectsController : Controller
     {
         private readonly VdsContext _context;
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IUserService _userService;
+        private readonly IImageQueueService _imageQueueService;
 
-        public ProjectsController(VdsContext context, IHostingEnvironment hostingEnvironment, IUserService userService)
+        public ProjectsController(VdsContext context, IHostingEnvironment hostingEnvironment, IUserService userService, IImageQueueService imageQueueService)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
             _userService = userService;
+            _imageQueueService = imageQueueService;
         }
 
         [HttpPost("{id}"), DisableRequestSizeLimit]
@@ -199,7 +201,7 @@ namespace ApiServer.Controllers
                 proj.TotalImgQC = 0;
                 await _context.SaveChangesAsync();
 
-                ImageQueues.AddImage(proj.Id, newImg.Id);
+                _imageQueueService.AddImage(proj.Id, newImg.Id);
             }
             catch (Exception ex)
             {

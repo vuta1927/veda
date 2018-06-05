@@ -465,7 +465,7 @@ namespace ApiServer.Controllers
                         _context.Images.Remove(img);
 
                         await _context.SaveChangesAsync();
-                        await ImageQueues.DeleteImage(project.Id, img.Id);
+                        await _imageQueueService.DeleteImage(project.Id, img.Id);
                         DeleteFile(img.Path);
                     }
                     catch (Exception ex)

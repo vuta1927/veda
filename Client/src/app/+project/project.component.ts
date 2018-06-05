@@ -65,7 +65,10 @@ export class ProjectComponent {
                             }
                         })
 
-                    }).catch(error => { throw 'Data Loading Error' });
+                    }).catch(error => { 
+                        console.log(error);
+                        throw 'Data Loading Error';
+                     });
             }
         });
     }

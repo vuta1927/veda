@@ -130,7 +130,7 @@
             <dxi-column cellTemplate="tagDetail" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
             <dxi-column caption="Image" cellTemplate="cellImgs" [width]="200" [allowFiltering]="false" [allowSorting]="false"></dxi-column>
             <dxi-column dataField="ignored" cellTemplate="ignoredCell"></dxi-column>
-            <dxi-column dataField="totalClass" caption="No of Classes"></dxi-column>
+            <dxi-column dataField="totalClass" caption="No of Class"></dxi-column>
             <dxi-column dataField="classes" cellTemplate="classesCell"></dxi-column>
             <dxi-column dataField="tagHasClass" caption="Tags have class"></dxi-column>
             <dxi-column dataField="tagNotHasClass" caption="Tags not have class"></dxi-column>
@@ -170,8 +170,8 @@
                 </div>
             </div>
             <div *dxTemplate="let data of 'ignoredCell'">
-                <label class="m-checkbox m-checkbox--state-primary m-checkbox--disabled">
-                    <input type="checkbox" disabled [checked]="data.data.ignored">
+                <label class="m-checkbox m-checkbox--solid m-checkbox--brand">
+                    <input type="checkbox" [checked]="data.data.ignored">
                     <span></span>
                 </label>
             </div>

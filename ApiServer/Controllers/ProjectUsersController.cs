@@ -276,21 +276,6 @@ namespace ApiServer.Controllers
             {
                 return Content("Role not found!");
             }
-            var userRole = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id);
-
-            var currentUser = GetCurrentUser();
-
-            if (userRole == null)
-            {
-                _context.UserRoles.Add(new UserRole()
-                {
-                    CreationTime = DateTime.Now,
-                    CreatorUserId = currentUser.Id,
-                    RoleId = role.Id,
-                    UserId = user.Id
-                });
-            }
-
             
             if(_context.ProjectUsers.Any(x=>x.UserId == user.Id && x.ProjectId == projectUser.Id)){
                 return Content("User already exsit!");
@@ -298,11 +283,25 @@ namespace ApiServer.Controllers
 
             try
             {
+                var currentUser = GetCurrentUser();
+
+                var userRole = await _context.UserRoles.FirstOrDefaultAsync(x => x.RoleId == role.Id && x.UserId == currentUser.Id);
+
+
+                if (userRole == null)
+                {
+                    _context.UserRoles.Add(new UserRole()
+                    {
+                        CreationTime = DateTime.Now,
+                        CreatorUserId = currentUser.Id,
+                        RoleId = role.Id,
+                        UserId = user.Id
+                    });
+                }
+
                 var newProjectUser = new ProjectUser() { User = user, Project = project, Role = role };
 
                 _context.ProjectUsers.Add(newProjectUser);
-
-                _context.UserRoles.Add(new UserRole() { CreationTime = DateTime.Now, CreatorUserId = currentUser.Id, UserId = user.Id, RoleId = role.Id });
                 
                 await _context.SaveChangesAsync();
 
