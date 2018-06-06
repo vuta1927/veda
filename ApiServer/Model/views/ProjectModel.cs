@@ -44,5 +44,11 @@ namespace ApiServer.Model.views
             public Guid Id { get; set; }
             public string Name { get; set; }
         }
+
+        public class MapClass
+        {
+            public int ClassId { get; set; }
+            public int Value { get; set; }
+        }
     }
 }

@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation, ViewChildren, OnInit, Input, ViewContainerRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormControl, FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { Tag } from '../../../shared/models/tag.model';
@@ -49,6 +50,7 @@ export class ProjectClassComponent implements OnInit {
         private ngxErrorsService: NgxErrorsService,
         public formService: FormService,
         private configurationService: ConfigurationService,
+        private router: Router
     ) {
         this.toastr.setRootViewContainerRef(vcr);
     }
@@ -74,7 +76,12 @@ export class ProjectClassComponent implements OnInit {
                                     return response.result;
                                 }
                             })
-                            .catch(error => { throw 'Data Loading Error' });
+                            .catch(error => { 
+                                if(error.status == 401 || error.status == 403){
+                                    this.router.navigate(['#']);
+                                    return;
+                                };
+                                throw 'Data Loading Error' });
                     },
                     totalCount: function(){
                         return mother.classService.getTotal(p.id).toPromise().then(x=>{
@@ -114,6 +121,10 @@ export class ProjectClassComponent implements OnInit {
                 mother.showInfo("class deleted");
             }
         }).catch(res => {
+            if(res.status == 401 || res.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            };
             let error = res.result;
             mother.showError(error);
         });

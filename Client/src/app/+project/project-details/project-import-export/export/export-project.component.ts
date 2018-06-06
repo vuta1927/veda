@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ClassService } from '../../../services/class.service';
 import { DataService } from '../../data.service';
 import { QcOption } from '../../../../shared/models/merge.model';
@@ -24,7 +25,8 @@ export class ExportProjectComponent implements OnInit {
         private classService: ClassService,
         private dataService: DataService,
         private projectService: ProjectService,
-        private projectSettingService: ProjectSettingService
+        private projectSettingService: ProjectSettingService,
+        private router: Router
     ){
         this.qcLeves = Array(5).fill(1).map((x, i) => i + 1);
         const mother = this;
@@ -38,6 +40,10 @@ export class ExportProjectComponent implements OnInit {
                         console.log(mother.qcLeves);
                     }
                 }).catch(err=>{
+                    if(err.status == 401 || err.status == 403){
+                        mother.router.navigate(['#']);
+                        return;
+                    };
                     if(err.error){
                         console.log(err.error.text);
                     }else{
@@ -89,7 +95,10 @@ export class ExportProjectComponent implements OnInit {
             // var blob = new Blob([Response], {type: "application/zip"});
             // mother.saveAs(blob, mother.currentProject.name+".zip");
         }).catch(resp=>{
-            console.log(resp);
+            if(resp.status == 401 || resp.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            };
             swal({
                 title: '',text: resp.error.message, type: 'error'
             })

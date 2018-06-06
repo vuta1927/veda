@@ -1,4 +1,5 @@
 import { Component, OnInit, Input, ViewContainerRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { ProjectForView } from '../../../shared/models/project.model';
 import { FormControl, FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
@@ -36,8 +37,8 @@ export class ProjectInfoComponent implements OnInit {
     private projectService: ProjectService,
     private ngxErrorsService: NgxErrorsService,
     public formService: FormService,
-    private securityService: SecurityService
-
+    private securityService: SecurityService,
+    private router: Router
   ) {
     this.toastr.setRootViewContainerRef(vcr);
   }

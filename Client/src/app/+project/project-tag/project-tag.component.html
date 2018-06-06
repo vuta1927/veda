@@ -157,7 +157,9 @@
                         <div class="card-body">
                             <div class="col-xl-12" style="padding-top: 10px">
                                 <h6 class="m--font-brand">
-                                    Image
+                                    Image:
+                                </h6>
+                                <h6>{{imageId}}
                                 </h6>
                             </div>
                             <div class="col-xl-12">
@@ -183,8 +185,12 @@
                                             </h6>
                                         </td>
                                         <td>
-                                            <h6>{{selectedTag.width | number:'1.0-2'}} x {{selectedTag.height | number:'1.0-2'}} ({{selectedTag.width*imageWidth  | number:'1.0-0'}} x {{selectedTag.height*imageHeight  | number:'1.0-0'}})</h6>
+                                            <h6 style="padding-left: 10px">{{selectedTag.width | number:'1.0-2'}} x {{selectedTag.height | number:'1.0-2'}}</h6>
                                         </td>
+                                    </tr>
+                                    <tr *ngIf="selectedTag">
+                                        <td></td>
+                                        <td><h6 style="padding-left: 10px">{{selectedTag.width*imageWidth  | number:'1.0-0'}} x {{selectedTag.height*imageHeight  | number:'1.0-0'}} pixel</h6></td>
                                     </tr>
                                 </table>
 

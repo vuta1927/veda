@@ -116,33 +116,25 @@ export class ProjecTagComponent {
             this.CheckRole();
             if (params.id) {
                 this.imageId = params.id;
-                mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
-                    mother.projectSetting = response.result;
-                    this.getImage(true);
-                }).catch(response => {
-                    swal({
-                        title: '', text: response.error ? response.error.message : response.message, type: 'error',
-                        animation: false
-                    }).then(() => {
-                        Helpers.setLoading(false);
-                        mother.router.navigate(['project-details', { id: mother.projectId }]);
-                    })
-                })
             } else {
                 this.imageId = '0';
-                mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
-                    mother.projectSetting = response.result;
-                    this.getImage();
-                }).catch(response => {
-                    swal({
-                        title: '', text: response.error ? response.error.message : response.message, type: 'error',
-                        animation: false
-                    }).then(() => {
-                        Helpers.setLoading(false);
-                        mother.router.navigate(['project-details', { id: mother.projectId }]);
-                    })
-                });
             }
+            mother.settingService.getSetting(mother.projectId).toPromise().then(response => {
+                mother.projectSetting = response.result;
+                this.getImage();
+            }).catch(response => {
+                if(response.status == 401 || response.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                }
+                swal({
+                    title: '', text: response.error ? response.error.message : response.message, type: 'error',
+                    animation: false
+                }).then(() => {
+                    Helpers.setLoading(false);
+                    mother.router.navigate(['project-details', { id: mother.projectId }]);
+                })
+            })
         });
     }
 
@@ -158,9 +150,16 @@ export class ProjecTagComponent {
                 }
             }
         }).catch(Response => {
-            console.log(Response);
-            this.router.navigate(['project-details', { id: this.projectId }]);
+            if(Response.status == 401 || Response.status == 403){
+                this.router.navigate(['#']);
+                return;
+            }
         });
+
+        this.isAdmin = this.securityServce.isInRole(Constants.admin);
+        if(this.isAdmin){
+            this.isProjectManager = this.isTeacher = this.isQc = true;
+        }
     }
 
     ngOnDestroy(): void {
@@ -170,9 +169,15 @@ export class ProjecTagComponent {
         if (this.idle) {
             this.idle.stop();
         }
-        console.log(this.imageId);
         if (this.imageId)
-            this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => console.log(err.error ? err.error.text : err.message));
+            this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => {
+                
+                if(err.status == 401 || err.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                }
+                console.log(err.error ? err.error.text : err.message)
+            });
 
 
     }
@@ -201,8 +206,11 @@ export class ProjecTagComponent {
             this.lastPing = new Date();
             this.imgService.sendPing(this.projectId, this.imageId).toPromise().then(Response => {
 
-            }).catch(err => {
-                mother.router.navigate(['project-details', { id: mother.projectId }])
+            }).catch(Response=>{
+                if(Response.status == 401 || Response.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                }
             });
 
         });
@@ -228,7 +236,7 @@ export class ProjecTagComponent {
         // this._hubConnection.on("send", data => { console.log(data) });
     }
 
-    getImage(paramIdExist: boolean = false) {
+    getImage() {
         let mother = this;
         this.classService.getClasses(this.projectId).toPromise().then(Response => {
             if (Response && Response.result) {
@@ -239,14 +247,22 @@ export class ProjecTagComponent {
                 // mother.generateClassContainer();
             }
         }).catch(error => {
+            if(error.status == 401 || error.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            }
             mother.showError("Cant get classes!");
         });
-        if (paramIdExist) {
+        if (this.imageId && this.imageId != '0') {
             this.imgService.getImageById(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
                 if (Response && Response.result) {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
+                if(err.status == 401 || err.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                }
                 swal({ text: err.error ? err.error.text : err.message, type: 'error' }).then(() => {
                     mother.imageId = null;
                     mother.router.navigate(['project-details', { id: mother.projectId }])
@@ -258,6 +274,10 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
+                if(err.status == 401 || err.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                }
                 swal({ text: err.error ? err.error.text : err.message, type: 'error' }).then(() => {
                     mother.imageId = null;
                     mother.router.navigate(['project-details', { id: mother.projectId }])
@@ -272,7 +292,7 @@ export class ProjecTagComponent {
         this.hadQc = image.quantityCheck ? true : false;
         this.currentImage = image;
         try {
-            this.totalTaggedTime = image.userTaggedTimes ? image.userTaggedTimes.find(x => x.user.id == this.currentUserId).taggedTime : 0;
+            this.totalTaggedTime = image.userTaggedTimes ? image.userTaggedTimes.find(x => x.userId == this.currentUserId).taggedTime : 0;
         } catch (error) {
             this.totalTaggedTime = 0;
         }
@@ -315,7 +335,37 @@ export class ProjecTagComponent {
 
     GetNextImage() {
         this.resetVariables();
-        this.getImage();
+        let mother = this;
+        this.classService.getClasses(this.projectId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                mother.classData = [];
+                Response.result.forEach(tag => {
+                    mother.classData.push(new ClassList(tag.id, tag.name, false, tag.classColor));
+                });
+                // mother.generateClassContainer();
+            }
+        }).catch(error => {
+            if(error.status == 401 || error.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            }
+            mother.showError("Cant get classes!");
+        });
+        this.imgService.getNextImage(this.currentUserId, this.projectId, this.imageId).toPromise().then(Response => {
+            if (Response && Response.result) {
+                mother.getTags(Response.result);
+            }
+        }).catch(err => {
+            if(err.status == 401 || err.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            }
+            swal({ text: err.error ? err.error.text : err.message, type: 'error' }).then(() => {
+                mother.imageId = null;
+                mother.router.navigate(['project-details', { id: mother.projectId }])
+            });
+
+        });
     }
 
     resetVariables() {
@@ -351,7 +401,12 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.tagMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch();
+            this.updateTaggedTime().toPromise().catch(Response=>{
+                if(Response.status == 401 || Response.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                }
+            });
         }
         else {
             this.tagMode = true;
@@ -436,7 +491,12 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.updateTaggedTime().toPromise().then(Response => {
                 this.GetNextImage();
-            }).catch();
+            }).catch(Response=>{
+                if(Response.status == 401 || Response.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                }
+            });
             this.tagMode = false;
         } else {
             this.GetNextImage();
@@ -467,6 +527,10 @@ export class ProjecTagComponent {
                     mother.GetNextImage();
                 }
             }).catch(errorResp => {
+                if(errorResp.status == 401 || errorResp.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                }
                 Helpers.setLoading(false);
                 swal({ text: errorResp.error ? errorResp.error.text : errorResp.message, type: 'error' });
                 mother.btnSaveEnabled = true;
@@ -505,6 +569,10 @@ export class ProjecTagComponent {
                         mother.GetNextImage();
                     }
                 }).catch(err => {
+                    if(err.status == 401 || err.status == 403){
+                        mother.router.navigate(['#']);
+                        return;
+                    }
                     swal({
                         title: '', text: err.error ? err.error.text : err.message, type: 'error',
                         animation: false
@@ -554,7 +622,12 @@ export class ProjecTagComponent {
         if (this.excluseMode) {
             this.excluseMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch();
+            this.updateTaggedTime().toPromise().catch(Response=>{
+                if(Response.status == 401 || Response.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                }
+            });
         }
         else {
             this.excluseMode = true;
@@ -667,11 +740,11 @@ export class ProjecTagComponent {
             }
 
             let lock = false;
-            if(this.isProjectManager){
-                if(this.hadQc){
+            if (this.isProjectManager) {
+                if (this.hadQc) {
                     lock = true;
                 }
-            }else if(this.isQc){
+            } else if (this.isQc) {
                 lock = true;
             }
             rect.lockMovementX = lock;
@@ -739,7 +812,12 @@ export class ProjecTagComponent {
                             }
                         }
                     }
-                }).catch(err => { console.log(err.error.text) });
+                }).catch(err => { 
+                    if(err.status == 401 || err.status == 403){
+                        this.router.navigate(['#']);
+                        return;
+                    }
+                    console.log(err.error.text) });
             } else {
                 tag = this.tagsForAddOrUpdate.find(x => x.index == currentObject.get('index'));
                 this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(tag), 1);
@@ -785,7 +863,12 @@ export class ProjecTagComponent {
                 if (mother.tagMode) {
                     mother.tagMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch();
+                    mother.updateTaggedTime().toPromise().catch(Response=>{
+                        if(Response.status == 401 || Response.status == 403){
+                            mother.router.navigate(['#']);
+                            return;
+                        }
+                    });
                 }
                 else {
                     mother.tagMode = true;
@@ -798,7 +881,12 @@ export class ProjecTagComponent {
                 if (mother.excluseMode) {
                     mother.excluseMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch();
+                    mother.updateTaggedTime().toPromise().catch(Response=>{
+                        if(Response.status == 401 || Response.status == 403){
+                            mother.router.navigate(['#']);
+                            return;
+                        }
+                    });
                 }
                 else {
                     mother.excluseMode = true;
@@ -934,15 +1022,15 @@ export class ProjecTagComponent {
                 return;
             }
 
-            if(!isDown || mother.hadQc || mother.isQc) return;
+            if (!isDown || mother.hadQc || mother.isQc) return;
 
-            if(mother.isTeacher || mother.isProjectManager){
+            if (mother.isTeacher || mother.isProjectManager) {
                 var pointer = mother.canvas.getPointer(evt);
                 rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
                 mother.bindingEvent(rect);
                 mother.canvas.renderAll();
             }
-            
+
 
         });
 

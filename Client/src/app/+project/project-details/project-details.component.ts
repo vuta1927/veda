@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation, ViewChild, ViewChildren, QueryList, ViewContainerRef, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import CustomStore from 'devextreme/data/custom_store';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DxDataGridComponent } from 'devextreme-angular';
@@ -43,7 +44,8 @@ export class ProjectDetailsComponent implements OnInit {
         public toastr: ToastsManager, 
         private vcr: ViewContainerRef,
         private route: ActivatedRoute,
-        private dataSerivce: DataService
+        private dataSerivce: DataService,
+        private router: Router
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.viewProject = this.securityService.IsGranted(Constants.viewProject);
@@ -66,6 +68,11 @@ export class ProjectDetailsComponent implements OnInit {
                     
                     this.dataSerivce.changeProject(this.currentProject);
                 }
+            }).catch(Response=>{
+                if(Response.status == 401 || Response.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                };
             });
         });
     }

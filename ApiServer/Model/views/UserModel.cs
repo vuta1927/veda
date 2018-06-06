@@ -40,7 +40,6 @@ namespace ApiServer.Model.views
             public bool SendActivationEmail { get; set; }
             public UserEdit User { get; set; }
             public List<string> AssignedRoleNames { get; set; }
-            public List<string> UnAssignedRoleNames { get; set; }
         }
 
         public class UserEdit

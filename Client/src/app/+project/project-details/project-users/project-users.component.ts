@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation, ViewChildren, OnInit, Input, ViewContainerRef } from '@angular/core';
+import { Router} from '@angular/router';
 import { FormControl, FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
 import { ProjectForView } from '../../../shared/models/project.model';
@@ -26,6 +27,7 @@ import { IUser } from '../../../shared/models/user.model';
 import { RoleForView } from '../../../shared/models/role.model';
 import { UsersService } from '../../../+administrator/users/users.service';
 import { RolesService } from '../../../+administrator/roles/roles.service';
+import swal from 'sweetalert2';
 @Component({
     selector: 'app-project-users',
     templateUrl: './project-users.component.html',
@@ -56,7 +58,8 @@ export class ProjectUsersComponent implements OnInit {
         private http: HttpClient,
         private configurationService: ConfigurationService,
         private roleService: RolesService,
-        private userService: UsersService
+        private userService: UsersService,
+        private router: Router
     ) {
         this.toastr.setRootViewContainerRef(vcr);
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
@@ -80,7 +83,13 @@ export class ProjectUsersComponent implements OnInit {
                             .then(response => {
                                 return response.result;
                             })
-                            .catch(error => { throw 'Data Loading Error' });
+                            .catch(error => { 
+                                if(error.status == 401 || error.status == 403){
+                                    mother.router.navigate(['#']);
+                                    return;
+                                };
+                                throw 'Data Loading Error';
+                             });
                     },
                     totalCount:function(){
                         return mother.projectUserService.getTotal(p.id).toPromise().then(resp => {
@@ -125,8 +134,11 @@ export class ProjectUsersComponent implements OnInit {
                 mother.showInfo("User deleted");
             }
         }).catch(res => {
-            let error = res.result;
-            mother.showError(error);
+            if(res.status == 401 || res.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            };
+            swal({text:"Cant delete there users", type:"error"});
         });
     }
 

@@ -66,6 +66,10 @@ export class ProjectComponent {
                         })
 
                     }).catch(error => { 
+                        if(error.status == 401 || error.status == 403){
+                            this.route.navigate(['#']);
+                            return;
+                        };
                         console.log(error);
                         throw 'Data Loading Error';
                      });

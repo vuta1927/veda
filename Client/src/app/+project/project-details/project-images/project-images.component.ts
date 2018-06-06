@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, ViewChildren, OnInit, Input, ViewContainerRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { FormControl, FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ToastsManager } from 'ng2-toastr/ng2-toastr';
@@ -79,7 +79,7 @@ export class ProjectImagesComponent implements OnInit {
         private configurationService: ConfigurationService,
         private securityService: SecurityService,
         private signalService: SignalRService,
-        private router: Router
+        private router: Router,
     ) {
         this.apiUrl = configurationService.serverSettings.apiUrl + '/';
     }
@@ -126,7 +126,13 @@ export class ProjectImagesComponent implements OnInit {
                                         }
                                     }
                                 })
-                            }).catch(error => { throw 'Data Loading Error' });
+                            }).catch(error => { 
+                                if(error.status == 401 || error.status == 403){
+                                    mother.router.navigate(['#']);
+                                    return;
+                                };
+                                throw 'Data Loading Error';
+                             });
                     }
                 })
             })
@@ -143,7 +149,13 @@ export class ProjectImagesComponent implements OnInit {
         this._hubConnection
             .start()
             .then(() => console.log('connection started!'))
-            .catch(err => console.log('Error while establishing connection (' + this.apiUrl + 'hubs/image' + ') !'));
+            .catch(err => {
+                if(err.status == 401 || err.status == 403){
+                    mother.router.navigate(['#']);
+                    return;
+                };
+                console.log('Error while establishing connection (' + this.apiUrl + 'hubs/image' + ') !');
+            });
         this._hubConnection.on("userUsingInfo", data => {
             console.log("userUsingInfo", data);
             mother.updateUserUsing(data);
@@ -207,6 +219,10 @@ export class ProjectImagesComponent implements OnInit {
             }
         }).catch(Response=>{
             Helpers.setLoading(false);
+            if(Response.status == 401 || Response.status == 403){
+                mother.router.navigate(['#']);
+                return;
+            };
             swal({
                 text: Response.error? Response.error.text: Response.message, type: 'error'
             });
@@ -250,6 +266,10 @@ export class ProjectImagesComponent implements OnInit {
                     this.upload();
                 }
             }).catch(res => {
+                if(res.status == 401 || res.status == 403){
+                    this.router.navigate(['#']);
+                    return;
+                };
                 this.uploading = false;
                 Helpers.setLoading(false);
                 $('#successMessage').css("display", "none");
@@ -298,6 +318,10 @@ export class ProjectImagesComponent implements OnInit {
             }
         }).catch(res => {
             Helpers.setLoading(false);
+            if(res.status == 401 || res.status == 403){
+                this.router.navigate(['#']);
+                return;
+            };
             this.uploading = false;
             this.messageHeader = 'Upload Error';
             this.message = res['error'].text;

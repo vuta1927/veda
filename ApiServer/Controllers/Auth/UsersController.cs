@@ -88,7 +88,7 @@ namespace ApiServer.Controllers.Auth
 
                 foreach (var role in roles)
                 {
-                    var isAssigned = user.Roles.Any(x => x.Id == role.Id);
+                    var isAssigned = user.Roles.Any(x => x.RoleId == role.Id);
                     result.Roles.Add(new Model.views.UserModel.UserRole
                     {
                         IsAssigned = isAssigned,
@@ -296,17 +296,7 @@ namespace ApiServer.Controllers.Auth
                     }
                 }
             }
-
-            foreach (var rolename in userData.UnAssignedRoleNames)
-            {
-                var role = _context.Roles.SingleOrDefault(x => x.NormalizedRoleName.Equals(rolename.ToUpper()));
-                if (role == null) continue;
-                var userRole = _context.UserRoles.SingleOrDefault(x => x.RoleId == role.Id && x.UserId == userData.User.Id);
-                if (userRole != null)
-                {
-                    _context.UserRoles.Remove(userRole);
-                }
-            }
+            
 
             try
             {

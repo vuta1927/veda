@@ -15,3 +15,7 @@ export class ProjectForAdd implements IProject{
 export class ProjectForUpdate{
     constructor(public id:string,public name: string,public description: string = null, public note: string = null){}
 }
+
+export class ClassMap{
+    constructor(public classId:number, public value: number){}
+}

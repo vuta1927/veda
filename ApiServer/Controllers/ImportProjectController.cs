@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 using VDS.AspNetCore.Mvc.Authorization;
 using System.Drawing;
 using System.Security.Claims;
+using ApiServer.Model.views;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 namespace ApiServer.Controllers
 {
@@ -67,6 +70,8 @@ namespace ApiServer.Controllers
             try
             {
                 var files = Request.Form.Files;
+                var json = Request.Form["data"];
+                var classMappingTable = JsonConvert.DeserializeObject<List<ProjectModel.MapClass>>(json);
                 foreach (var file in files)
                 {
                     if (file.Length <= 0)
@@ -92,7 +97,7 @@ namespace ApiServer.Controllers
                     {
                         try
                         {
-                            await ProccessFiles(folder.FinalPath, project);
+                            await ProccessFiles(folder.FinalPath, project, classMappingTable);
 
                             folder.Delete(folder.TempPath);
                         }
@@ -137,8 +142,14 @@ namespace ApiServer.Controllers
             return true;
         }
 
-        private async Task ProccessFiles(string folderPath, Project project)
+        private async Task ProccessFiles(string folderPath, Project project, List<ProjectModel.MapClass> classMaps)
         {
+            var classMapTable = new Dictionary<int, int>();
+            foreach (var m in classMaps)
+            {
+                classMapTable.Add(m.Value, m.ClassId);
+            }
+
             var textFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => Path.GetExtension(x).ToLower().Equals(".txt"));
             var imageFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories).Where(x => imageExtentions.Contains(Path.GetExtension(x).Split('.').Last()));
             var images = new List<Model.Image>();
@@ -179,7 +190,7 @@ namespace ApiServer.Controllers
                                 }
                                 try
                                 {
-                                    await AddDataToContext(count ,data, imagePath, image, tags);
+                                    await AddDataToContext(count ,data, imagePath, image, tags, classMapTable);
                                 }
                                 catch (Exception ex)
                                 {
@@ -210,10 +221,10 @@ namespace ApiServer.Controllers
             }
         }
 
-        private async Task AddDataToContext(int tagIndex, string[] data, string imagePath, Model.Image image, ICollection<Tag> tags)
+        private async Task AddDataToContext(int tagIndex, string[] data, string imagePath, Model.Image image, ICollection<Tag> tags, Dictionary<int,int> classMapTable)
         {
             //var classId = data[0].ToUpper().Equals("NULL")? 0: int.Parse(data[0]);
-            var className = data[0];
+            var classId = int.Parse(data[0]);
             var centerX = double.Parse(data[1]);
             var centerY = double.Parse(data[2]);
             var width = double.Parse(data[3]);
@@ -237,33 +248,35 @@ namespace ApiServer.Controllers
                     TaggedDate = DateTime.Now
                 };
 
-                if (!string.IsNullOrEmpty(className))
+                var klass = await _context.Classes.SingleOrDefaultAsync(x => x.Id == classMapTable[classId]);
+                newTag.Image.TagHasClass += 1;
+                newTag.Class = klass ?? throw new ArgumentNullException("Class not found!");
+                newTag.ClassId = klass.Id;
+
+                if (string.IsNullOrEmpty(image.Classes))
                 {
-                    var klass = await _context.Classes.SingleOrDefaultAsync(x => x.Name.ToUpper().Equals(className));
-                    newTag.Image.TagHasClass += 1;
-                    newTag.Class = klass ?? throw new ArgumentNullException("Class not found!");
-                    newTag.ClassId = klass.Id;
-
-                    if (string.IsNullOrEmpty(image.Classes))
-                    {
-                        image.Classes = klass.Name;
-                        image.TotalClass = 1;
-                    }
-                    else
-                    {
-                        var classes = image.Classes.Split(';');
-                        if (!classes.Contains(klass.Name))
-                        {
-                            image.Classes += ";" + klass.Name;
-                        }
-
-                        image.TotalClass = classes.Count();
-                    }
+                    image.Classes = klass.Name;
+                    image.TotalClass = 1;
                 }
                 else
                 {
-                    newTag.Image.TagNotHasClass += 1;
+                    var classes = image.Classes.Split(';');
+                    if (!classes.Contains(klass.Name))
+                    {
+                        image.Classes += ";" + klass.Name;
+                    }
+
+                    image.TotalClass = classes.Count();
                 }
+
+                //if (!string.IsNullOrEmpty(className))
+                //{
+                    
+                //}
+                //else
+                //{
+                //    newTag.Image.TagNotHasClass += 1;
+                //}
 
                 _context.Tags.Add(newTag);
                 tags.Add(newTag);

@@ -77,6 +77,9 @@
                     </button>
                     <!-- <p>{{uploadProgress}}</p> -->
                 </div>
+                <div class="col-lg-12" style="padding-top: 10px" *ngFor="let file of uploadfiles">
+                    <b>{{ file.name }} {{ (file.size / 1048576) | number:'.1-1' }} Mb</b>
+                </div>
                 <div class="col-lg-12" style="padding-top: 10px">
                     <div id="errorMessage" class="alert alert-danger alert-dismissible fade show m-alert m-alert--air m-alert--outline" role="alert"
                         *ngIf="message">
@@ -91,104 +94,23 @@
                     </span>
                 </div>
 
-                <div class="col-lg-6 col-md-6" style="padding-top: 10px" *ngIf="uploadfiles.length">
-                    <div class="m-datatable m-datatable--default m-datatable--brand m-datatable--loaded">
-                        <table class="m-datatable__table">
-                            <thead class="m-datatable__head">
-                                <tr class="m-datatable__row" style="left: 0px;">
-                                    <th title="Name" class="m-datatable__cell m-datatable__cell--sort" data-field="name">
-                                        <span style="width: 400px;">Name</span>
-                                    </th>
-                                    <th title="Size" class="m-datatable__cell m-datatable__cell--sort" data-field="size">
-                                        <span style="width: 100px;">Size</span>
-                                    </th>
-                                    <th title="Action" class="m-datatable__cell m-datatable__cell--sort">
-                                        <span style="width:110px;">Action</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="m-datatable__body">
-                                <tr class="m-datatable__row" *ngFor="let file of uploadfiles">
-                                    <td class="m-datatable__cell" data-field="name">
-                                        <span style="width: 400px; color: #5867DD">
-                                            <b>{{ file.name }}</b>
-                                        </span>
-                                    </td>
-                                    <td class="m-datatable__cell" data-field="size">
-                                        <span style="width: 100px;">{{ (file.size / 1048576) | number:'.1-1' }} Mb</span>
-                                    </td>
-                                    <td data-field="Actions" class="m-datatable__cell">
-                                        <span style="overflow: visible; width: 110px;">
-                                            <a class="m-portlet__nav-link btn m-btn m-btn--hover-accent m-btn--icon m-btn--icon-only m-btn--pill" title="Upload" (click)="uploadFile(file)">
-                                                <i class="la la-upload"></i>
-                                            </a>
-                                            <a class="m-portlet__nav-link btn m-btn m-btn--hover-danger m-btn--icon m-btn--icon-only m-btn--pill" title="Delete" (click)="removeFile(file)">
-                                                <i class="la la-trash"></i>
-                                            </a>
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            </div>
+            <div class="row">
                 <div class="col-lg-12" style="padding-top: 10px">
-                    <a href="#" class="btn btn-primary m-btn m-btn--icon m-btn--icon-only">
-                        <i class="fa flaticon-plus"></i>
-                    </a>
-                    <div class="btn-group bootstrap-select form-control m-bootstrap-select m_">
-                        <button type="button" class="btn dropdown-toggle btn-default" data-toggle="dropdown" role="button" title="Relish" aria-expanded="true">
-                            <span class="filter-option pull-left">
-                                <span class="m-badge m-badge--success m-badge--wide m-badge--rounded">Relish</span>
-                            </span>&nbsp;
-                            <span class="bs-caret">
-                                <span class="caret"></span>
-                            </span>
-                        </button>
-                        <div class="dropdown-menu open" role="combobox" x-placement="bottom-start" style="max-height: 575.578px; overflow: hidden; min-height: 15px; position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
-                            <ul class="dropdown-menu inner" role="listbox" aria-expanded="true" style="max-height: 561.578px; overflow-y: auto; min-height: 1px;">
-                                <!-- <li data-original-index="0" > class="selected" -->
-                                <li data-original-index="0" class="">
-                                    <a tabindex="0" class="" data-tokens="null" role="option" aria-disabled="false" aria-selected="true">
-                                        <span class="m-badge m-badge--success m-badge--wide m-badge--rounded">Relish</span>
-                                        <span class="glyphicon glyphicon-ok check-mark"></span>
-                                    </a>
-                                </li>
-                                <li data-original-index="1" class="">
-                                    <a tabindex="0" class="" data-tokens="null" role="option" aria-disabled="false" aria-selected="false">
-                                        <span class="m-badge m-badge--warning m-badge--wide m-badge--rounded">Ketchup</span>
-                                        <span class="glyphicon glyphicon-ok check-mark"></span>
-                                    </a>
-                                </li>
-                                <li data-original-index="2" class="">
-                                    <a tabindex="0" class="" data-tokens="null" role="option" aria-disabled="false" aria-selected="false">
-                                        <span class="m-badge m-badge--brand m-badge--wide m-badge--rounded">Relish</span>
-                                        <span class="glyphicon glyphicon-ok check-mark"></span>
-                                    </a>
-                                </li>
-                                <li data-original-index="3">
-                                    <a tabindex="0" class="" data-tokens="null" role="option" aria-disabled="false" aria-selected="false">
-                                        <span class="m-badge m-badge--danger m-badge--wide m-badge--rounded">Chili</span>
-                                        <span class="glyphicon glyphicon-ok check-mark"></span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <select class="form-control m-bootstrap-select m_selectpicker" tabindex="-98">
-                            <option data-content="<span class='m-badge m-badge--success m-badge--wide m-badge--rounded'>Relish</span>">
-                                Mustard
-                            </option>
-                            <option data-content="<span class='m-badge m-badge--warning m-badge--wide m-badge--rounded'>Ketchup</span>">
-                                Ketchup
-                            </option>
-                            <option data-content="<span class='m-badge m-badge--brand m-badge--wide m-badge--rounded'>Relish</span>">
-                                Relish
-                            </option>
-                            <option data-content="<span class='m-badge m-badge--danger m-badge--wide m-badge--rounded'>Chili</span>">
-                                Chili
-                            </option>
-                        </select>
-                    </div>
+                    <label class="m--font-bold">
+                        <h5>Mapping Table:</h5>
+                    </label>
+                </div>
+            </div>
+            <div class="row" *ngFor="let c of classes">
+                <div class="col-lg-2" style="padding-top: 10px">
+                    <input class="form-control m-input m-input--air" placeholder="ID" [id]="c.name" (change)="idBoxChange(c.id, $event)">
+                </div>
+                <div style="padding-top: 17px">
+                    <span>==></span>
+                </div>
+                <div class="col-lg-2" style="padding-top: 10px">
+                    <input class="form-control m-input m-input--air" placeholder="ID" [value]="c.importDisplay" readonly>
                 </div>
             </div>
         </div>
