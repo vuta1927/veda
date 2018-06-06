@@ -238,7 +238,7 @@ namespace ApiServer.Controllers.Auth
                     NormalizedEmail = userData.User.EmailAddress.ToUpper(),
                     NormalizedUserName = userData.User.Username.ToUpper(),
                     Roles = new List<UserRole>()
-            };
+                };
                 if (!string.IsNullOrEmpty(userData.User.Password))
                 {
                     user.PasswordHash = passHasher.HashPassword(user, userData.User.Password);
@@ -249,7 +249,7 @@ namespace ApiServer.Controllers.Auth
                     password = Utilities.GeneratePassword();
                     user.PasswordHash = passHasher.HashPassword(user, password);
                 }
-                
+
                 _context.Users.Add(user);
             }
             else
@@ -271,39 +271,51 @@ namespace ApiServer.Controllers.Auth
                 {
                     user.PasswordHash = passHasher.HashPassword(user, userData.User.Password);
                 }
-                    
+
                 user.Roles = new List<UserRole>();
             }
             var identity = (ClaimsIdentity)User.Identity;
             var currentUser = _userService.GetCurrentUser(identity);
 
-            foreach(var role in _context.UserRoles.Where(x=>x.UserId == userData.User.Id))
-            {
-                _context.UserRoles.Remove(role);
-            }
             foreach (var rolename in userData.AssignedRoleNames)
             {
                 var role = _context.Roles.SingleOrDefault(x => x.NormalizedRoleName.Equals(rolename.ToUpper()));
-                if(role != null)
+                if (role != null)
                 {
-                    user.Roles.Add(new UserRole()
+                    var userRole =
+                        _context.UserRoles.SingleOrDefault(x => x.RoleId == role.Id && x.UserId == userData.User.Id);
+                    if (userRole == null)
                     {
-                        CreationTime = DateTime.Now,
-                        CreatorUserId = currentUser.Id,
-                        RoleId = role.Id,
-                        UserId = user.Id,
-                    });
+                        user.Roles.Add(new UserRole()
+                        {
+                            CreationTime = DateTime.Now,
+                            CreatorUserId = currentUser.Id,
+                            RoleId = role.Id,
+                            UserId = user.Id,
+                        });
+                    }
+                }
+            }
+
+            foreach (var rolename in userData.UnAssignedRoleNames)
+            {
+                var role = _context.Roles.SingleOrDefault(x => x.NormalizedRoleName.Equals(rolename.ToUpper()));
+                if (role == null) continue;
+                var userRole = _context.UserRoles.SingleOrDefault(x => x.RoleId == role.Id && x.UserId == userData.User.Id);
+                if (userRole != null)
+                {
+                    _context.UserRoles.Remove(userRole);
                 }
             }
 
             try
             {
                 await _context.SaveChangesAsync();
-                if(userData.User.Id <= 0)
+                if (userData.User.Id <= 0)
                 {
                     if (userData.RandomPassword)
                     {
-                        var body = @"<p>You Veda Account info:</p><br /> <p>- username: <b>" + user.UserName + "</b></p> <br /><p>- password: <b>" + password +"</b><p>";
+                        var body = @"<p>You Veda Account info:</p><br /> <p>- username: <b>" + user.UserName + "</b></p> <br /><p>- password: <b>" + password + "</b><p>";
                         _emailHelper.Send(user.Email, "VEDA - Account Info", body);
                     }
                 }
@@ -319,15 +331,15 @@ namespace ApiServer.Controllers.Auth
                             _emailHelper.Send(user.Email, "VEDA - Account update", body);
                         }
                     }
-                    
+
                 }
                 return Ok();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Content(ex.Message);
             }
-            
+
 
         }
 
@@ -343,7 +355,7 @@ namespace ApiServer.Controllers.Auth
 
             var userIds = ids.Split(';');
 
-            foreach(var id in userIds)
+            foreach (var id in userIds)
             {
                 var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == long.Parse(id));
                 if (user == null)
@@ -358,11 +370,12 @@ namespace ApiServer.Controllers.Auth
             try
             {
                 await _context.SaveChangesAsync();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return Content(ex.Message);
             }
-            
+
 
             return Ok();
         }

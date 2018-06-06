@@ -18,7 +18,7 @@ using System.Security.Claims;
 using SixLabors.ImageSharp;
 namespace ApiServer.Controllers
 {
-    [AppAuthorize(VdsPermissions.AddProject)]
+    [AppAuthorize]
     [Produces("application/json")]
     [Route("api/ImportProject")]
     public class ImportProjectController : Controller

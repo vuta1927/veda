@@ -14,6 +14,7 @@ namespace ApiServer.Model.views
             public string Name { get; set; }
             public string Description { get; set; }
             public int TotalTag { get; set; }
+            public string ImportDisplay { get; set; }
 
             public string Project { get; set; }
         }

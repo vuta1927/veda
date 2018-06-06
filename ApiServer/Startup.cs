@@ -20,6 +20,7 @@ using ApiServer.Core.Merge;
 using ApiServer.Core.Email;
 using ApiServer.Core.Queues;
 using Hangfire;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace ApiServer
 {
@@ -42,6 +43,11 @@ namespace ApiServer
             services.AddSignalR();
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("Hangfire")));
             services.AddMemoryCache();
+            services.Configure<FormOptions>(x =>
+            {
+                x.ValueLengthLimit = int.MaxValue;
+                x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+            });
             services.AddMvc()
                 .AddJsonOptions(
                 options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore

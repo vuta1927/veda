@@ -16,7 +16,7 @@ namespace ApiServer.Controllers
 {
     [Produces("application/json")]
     [Route("api/ProjectUsers/[action]")]
-    [AppAuthorize(VdsPermissions.ViewProject)]
+    [AppAuthorize]
     public class ProjectUsersController : Controller
     {
         private readonly VdsContext _context;

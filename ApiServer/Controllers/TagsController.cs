@@ -22,7 +22,7 @@ namespace ApiServer.Controllers
 {
     [Produces("application/json")]
     [Route("api/Tags/[action]")]
-    [AppAuthorize(VdsPermissions.ViewTag)]
+    [AppAuthorize]
     public class TagsController : Controller
     {
         private readonly VdsContext _context;

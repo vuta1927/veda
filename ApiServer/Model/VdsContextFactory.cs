@@ -12,7 +12,7 @@ namespace ApiServer.Model
         {
             var builder = new DbContextOptionsBuilder<VdsContext>();
 
-            builder.UseSqlServer("server=localhost;Database=Vds;User ID=sa;Password=Echo@1927;Integrated Security=false;MultipleActiveResultSets=true");
+            builder.UseSqlServer("server=192.168.100.5,51433;Database=Vds;User ID=sa;Password=Echo@1927;Integrated Security=false;MultipleActiveResultSets=true");
             return new VdsContext(builder.Options, null, null);
         }
     }

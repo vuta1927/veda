@@ -30,7 +30,7 @@ namespace ApiServer.Controllers
         {
             var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id == id).Include(x=>x.Tags);
             var results = new List<ClassModel.ClassForView>();
-            if(classes.Count() > 0)
+            if(classes.Any())
             {
                 foreach (var c in classes)
                 {
@@ -40,7 +40,8 @@ namespace ApiServer.Controllers
                         Description = c.Description,
                         Name = c.Name,
                         TotalTag = c.Tags.Count,
-                        ClassColor = c.ClassColor
+                        ClassColor = c.ClassColor,
+                        ImportDisplay = c.Id +". "+ c.Name
                 };
                     results.Add(newClass);
                 }
@@ -59,7 +60,7 @@ namespace ApiServer.Controllers
             {
                 var classes = _context.Classes.Include(x => x.Project).Where(p => p.Project.Id.ToString().Equals(id)).Include(x => x.Tags);
 
-                if (classes.Count() > 0)
+                if (classes.Any())
                 {
                     foreach (var c in classes)
                     {

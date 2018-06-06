@@ -12,7 +12,7 @@ using ApiServer.Core.Authorization;
 
 namespace ApiServer.Controllers
 {
-    [AppAuthorize(VdsPermissions.ViewProject)]
+    [AppAuthorize]
     [Produces("application/json")]
     [Route("api/ProjectSettings/[action]")]
     public class ProjectSettingsController : Controller
@@ -52,7 +52,7 @@ namespace ApiServer.Controllers
 
         // PUT: api/ProjectSettings/5
         [HttpPut("{id}")]
-        [AppAuthorize(VdsPermissions.AddProject)]
+        [AppAuthorize]
         public async Task<IActionResult> PutProjectSetting([FromRoute] Guid id, [FromBody] ProjectSettingModel.ProjectSettingForUpdate projectSetting)
         {
             if (!ModelState.IsValid)
@@ -85,7 +85,7 @@ namespace ApiServer.Controllers
 
         // POST: api/ProjectSettings
         [HttpPost]
-        [AppAuthorize(VdsPermissions.AddProject)]
+        [AppAuthorize]
         public async Task<IActionResult> PostProjectSetting([FromBody] ProjectSettingModel.ProjectSettingForAdd projectSetting)
         {
             if (!ModelState.IsValid)

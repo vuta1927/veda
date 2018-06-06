@@ -62,50 +62,52 @@ namespace ApiServer.Core.Queues
                 {
                     if (queue.TryDequeue(out var imageId))
                     {
-                        if(RuntimeDataContainer.ImagesUsed[projectId].Any(x=>x.ImageId == imageId)) continue;
+                        if (RuntimeDataContainer.ImagesUsed[projectId].Any(x => x.ImageId == imageId)) continue;
 
-                        image = _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefault(m => m.Id == imageId);
-                        if (image != null)
+                        image = _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).SingleOrDefault(m => m.Id == imageId);
+                        image.UserTaggedTimes = new List<UserTaggedTime>(){
+                            _context.userTaggedTimes.SingleOrDefault(x => x.ImageId == image.Id && x.UserId == usrId)
+                        };
+
+                        var i = RuntimeDataContainer.ImagesUsed[projectId]
+                            .SingleOrDefault(x => x.ImageId == imgToRelease);
+                        if (i != null)
                         {
-                            var i = RuntimeDataContainer.ImagesUsed[projectId]
-                                .SingleOrDefault(x => x.ImageId == imgToRelease);
-                            if (i != null)
-                            {
-                                RuntimeDataContainer.ImagesUsed[projectId].Remove(i);
-                            }
+                            RuntimeDataContainer.ImagesUsed[projectId].Remove(i);
+                        }
 
-                            if (!imgToRelease.ToString().Equals("00000000-0000-0000-0000-000000000000"))
-                            {
-                                RuntimeDataContainer.ImageStorage[projectId].Enqueue(imgToRelease);
-                                RuntimeDataContainer.ImageStorageOptional[projectId].Add(imgToRelease);
-                            }
+                        if (!imgToRelease.ToString().Equals("00000000-0000-0000-0000-000000000000"))
+                        {
+                            RuntimeDataContainer.ImageStorage[projectId].Enqueue(imgToRelease);
+                            RuntimeDataContainer.ImageStorageOptional[projectId].Add(imgToRelease);
+                        }
 
-                            var im = new ImageForQueue()
-                            {
-                                ImageId = image.Id,
-                                LastPing = DateTime.Now,
-                                UserId = usrId
-                            };
+                        var im = new ImageForQueue()
+                        {
+                            ImageId = image.Id,
+                            LastPing = DateTime.Now,
+                            UserId = usrId
+                        };
 
-                            RuntimeDataContainer.ImagesUsed[projectId].Add(im);
-                            RuntimeDataContainer.ImageStorageOptional[projectId].Remove(imageId);
-                            MonitorIdle(projectId, RuntimeDataContainer.ImagesUsed[projectId].SingleOrDefault(x => x.ImageId == image.Id));
+                        RuntimeDataContainer.ImagesUsed[projectId].Add(im);
+                        RuntimeDataContainer.ImageStorageOptional[projectId].Remove(imageId);
+                        MonitorIdle(projectId, RuntimeDataContainer.ImagesUsed[projectId].SingleOrDefault(x => x.ImageId == image.Id));
 
-                            var a = new List<UserImageForHub>
+                        var a = new List<UserImageForHub>
                             {
                                 new UserImageForHub() { ImageId = imgToRelease, UserName = null },
                                 new UserImageForHub() { ImageId = im.ImageId, UserName = _context.Users.SingleOrDefault(x => x.Id == usrId).UserName }
                             };
-                            _hubContext.Clients.All.SendAsync("userUsingInfo", a);
-                        }
-                        else
-                        {
-                            RuntimeDataContainer.ImageStorage[projectId].Enqueue(imageId);
-                        }
-                        break;
+                        _hubContext.Clients.All.SendAsync("userUsingInfo", a);
                     }
+                    else
+                    {
+                        RuntimeDataContainer.ImageStorage[projectId].Enqueue(imageId);
+                    }
+                    break;
+
                 }
-                
+
             }
             return image;
         }
@@ -125,18 +127,18 @@ namespace ApiServer.Core.Queues
 
 
                 if (!storage[projectId].Any()) return image;
-                
-                image = _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).Include(x => x.UserTaggedTimes).SingleOrDefault(m => m.Id == imgId);
-                if (image != null)
-                {
-                    var i = new ImageForQueue() { ImageId = image.Id, LastPing = DateTime.Now, UserId = usrId };
 
-                    RuntimeDataContainer.ImagesUsed[projectId].Add(i);
-                    storage[projectId].Remove(imgId);
-                    MonitorIdle(projectId, RuntimeDataContainer.ImagesUsed[projectId].SingleOrDefault(x=>x.ImageId == image.Id));
-                    
-                    _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { i });
-                }
+                image = _context.Images.Include(x => x.QuantityCheck).Include(x => x.UsersTagged).SingleOrDefault(m => m.Id == imgId);
+                image.UserTaggedTimes = new List<UserTaggedTime>() { _context.userTaggedTimes.SingleOrDefault(x => x.ImageId == image.Id && x.UserId == usrId) };
+
+                var i = new ImageForQueue() { ImageId = image.Id, LastPing = DateTime.Now, UserId = usrId };
+
+                RuntimeDataContainer.ImagesUsed[projectId].Add(i);
+                storage[projectId].Remove(imgId);
+                MonitorIdle(projectId, RuntimeDataContainer.ImagesUsed[projectId].SingleOrDefault(x => x.ImageId == image.Id));
+
+                _hubContext.Clients.All.SendAsync("userUsingInfo", new object[] { i });
+
 
             }
             return image;

@@ -189,16 +189,16 @@ namespace ApiServer.Controllers
             {
                 foreach (var map in imageTagMap)
                 {
-
                     archive.CreateEntryFromFile(_hostingEnvironment.WebRootPath + "/" + map.Key.Path, Path.GetFileName(map.Key.Path)); //create and add image file to zip
 
                     var textEntry = archive.CreateEntry(Path.GetFileName(map.Key.Path).Split('.')[0] + ".txt"); //create an empty file txt in zip
 
                     using (var entryStream = textEntry.Open()) //write data to file txt
-                    using (var sw = new StreamWriter(entryStream))
+                    using (var sw = new StreamWriter(entryStream, System.Text.Encoding.UTF8))
                     {
                         foreach (var tag in map.Value)
                         {
+                            sw.NewLine = Environment.NewLine;
                             var data = tag.ClassId + ";" + tag.CenterX + ";" + tag.CenterY + ";" + tag.Width + ";" + tag.Height;
                             sw.WriteLine(data);
                         }
