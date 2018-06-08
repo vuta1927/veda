@@ -123,7 +123,7 @@ export class ProjecTagComponent {
                 mother.projectSetting = response.result;
                 this.getImage();
             }).catch(response => {
-                if(response.status == 401 || response.status == 403){
+                if (response.status == 401 || response.status == 403) {
                     mother.router.navigate(['#']);
                     return;
                 }
@@ -150,14 +150,14 @@ export class ProjecTagComponent {
                 }
             }
         }).catch(Response => {
-            if(Response.status == 401 || Response.status == 403){
+            if (Response.status == 401 || Response.status == 403) {
                 this.router.navigate(['#']);
                 return;
             }
         });
 
         this.isAdmin = this.securityServce.isInRole(Constants.admin);
-        if(this.isAdmin){
+        if (this.isAdmin) {
             this.isProjectManager = this.isTeacher = this.isQc = true;
         }
     }
@@ -171,8 +171,8 @@ export class ProjecTagComponent {
         }
         if (this.imageId)
             this.imgService.relaseImage(this.currentUserId, this.projectId, this.imageId).toPromise().then().catch(err => {
-                
-                if(err.status == 401 || err.status == 403){
+
+                if (err.status == 401 || err.status == 403) {
                     this.router.navigate(['#']);
                     return;
                 }
@@ -206,8 +206,8 @@ export class ProjecTagComponent {
             this.lastPing = new Date();
             this.imgService.sendPing(this.projectId, this.imageId).toPromise().then(Response => {
 
-            }).catch(Response=>{
-                if(Response.status == 401 || Response.status == 403){
+            }).catch(Response => {
+                if (Response.status == 401 || Response.status == 403) {
                     mother.router.navigate(['#']);
                     return;
                 }
@@ -247,7 +247,7 @@ export class ProjecTagComponent {
                 // mother.generateClassContainer();
             }
         }).catch(error => {
-            if(error.status == 401 || error.status == 403){
+            if (error.status == 401 || error.status == 403) {
                 mother.router.navigate(['#']);
                 return;
             }
@@ -259,7 +259,7 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
-                if(err.status == 401 || err.status == 403){
+                if (err.status == 401 || err.status == 403) {
                     mother.router.navigate(['#']);
                     return;
                 }
@@ -274,7 +274,7 @@ export class ProjecTagComponent {
                     mother.getTags(Response.result);
                 }
             }).catch(err => {
-                if(err.status == 401 || err.status == 403){
+                if (err.status == 401 || err.status == 403) {
                     mother.router.navigate(['#']);
                     return;
                 }
@@ -345,7 +345,7 @@ export class ProjecTagComponent {
                 // mother.generateClassContainer();
             }
         }).catch(error => {
-            if(error.status == 401 || error.status == 403){
+            if (error.status == 401 || error.status == 403) {
                 mother.router.navigate(['#']);
                 return;
             }
@@ -356,7 +356,7 @@ export class ProjecTagComponent {
                 mother.getTags(Response.result);
             }
         }).catch(err => {
-            if(err.status == 401 || err.status == 403){
+            if (err.status == 401 || err.status == 403) {
                 mother.router.navigate(['#']);
                 return;
             }
@@ -401,8 +401,8 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.tagMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response=>{
-                if(Response.status == 401 || Response.status == 403){
+            this.updateTaggedTime().toPromise().catch(Response => {
+                if (Response.status == 401 || Response.status == 403) {
                     this.router.navigate(['#']);
                     return;
                 }
@@ -491,8 +491,8 @@ export class ProjecTagComponent {
         if (this.tagMode) {
             this.updateTaggedTime().toPromise().then(Response => {
                 this.GetNextImage();
-            }).catch(Response=>{
-                if(Response.status == 401 || Response.status == 403){
+            }).catch(Response => {
+                if (Response.status == 401 || Response.status == 403) {
                     this.router.navigate(['#']);
                     return;
                 }
@@ -527,7 +527,7 @@ export class ProjecTagComponent {
                     mother.GetNextImage();
                 }
             }).catch(errorResp => {
-                if(errorResp.status == 401 || errorResp.status == 403){
+                if (errorResp.status == 401 || errorResp.status == 403) {
                     mother.router.navigate(['#']);
                     return;
                 }
@@ -569,7 +569,7 @@ export class ProjecTagComponent {
                         mother.GetNextImage();
                     }
                 }).catch(err => {
-                    if(err.status == 401 || err.status == 403){
+                    if (err.status == 401 || err.status == 403) {
                         mother.router.navigate(['#']);
                         return;
                     }
@@ -622,8 +622,8 @@ export class ProjecTagComponent {
         if (this.excluseMode) {
             this.excluseMode = false;
             $(':focus').blur();
-            this.updateTaggedTime().toPromise().catch(Response=>{
-                if(Response.status == 401 || Response.status == 403){
+            this.updateTaggedTime().toPromise().catch(Response => {
+                if (Response.status == 401 || Response.status == 403) {
                     this.router.navigate(['#']);
                     return;
                 }
@@ -744,7 +744,7 @@ export class ProjecTagComponent {
                 if (this.hadQc) {
                     lock = true;
                 }
-            } else if (this.isQc) {
+            } else if (this.isQc && !this.isProjectManager) {
                 lock = true;
             }
             rect.lockMovementX = lock;
@@ -812,12 +812,13 @@ export class ProjecTagComponent {
                             }
                         }
                     }
-                }).catch(err => { 
-                    if(err.status == 401 || err.status == 403){
+                }).catch(err => {
+                    if (err.status == 401 || err.status == 403) {
                         this.router.navigate(['#']);
                         return;
                     }
-                    console.log(err.error.text) });
+                    console.log(err.error.text)
+                });
             } else {
                 tag = this.tagsForAddOrUpdate.find(x => x.index == currentObject.get('index'));
                 this.tagsForAddOrUpdate.splice(this.tagsForAddOrUpdate.indexOf(tag), 1);
@@ -841,12 +842,17 @@ export class ProjecTagComponent {
         let startPosition: any = {};
         let rect: any = {};
         let mother = this;
-        let lastPosX;
-        let lastPosY;
         $('body').on('contextmenu', 'canvas', function (options: any) {
             options.preventDefault();
+            if(mother.isPanning)
+                mother.isPanning = false;
+            else 
+                mother.isPanning = true;
+
             return false;
+
         });
+
         fabric.util.addListener(window, "dblclick", function () {
             if (mother.excluseMode) {
                 mother.finalize();
@@ -863,8 +869,8 @@ export class ProjecTagComponent {
                 if (mother.tagMode) {
                     mother.tagMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch(Response=>{
-                        if(Response.status == 401 || Response.status == 403){
+                    mother.updateTaggedTime().toPromise().catch(Response => {
+                        if (Response.status == 401 || Response.status == 403) {
                             mother.router.navigate(['#']);
                             return;
                         }
@@ -881,8 +887,8 @@ export class ProjecTagComponent {
                 if (mother.excluseMode) {
                     mother.excluseMode = false;
                     $(':focus').blur();
-                    mother.updateTaggedTime().toPromise().catch(Response=>{
-                        if(Response.status == 401 || Response.status == 403){
+                    mother.updateTaggedTime().toPromise().catch(Response => {
+                        if (Response.status == 401 || Response.status == 403) {
                             mother.router.navigate(['#']);
                             return;
                         }
@@ -918,12 +924,10 @@ export class ProjecTagComponent {
             }
             // --- set up panning func ---
             var evt = event.e;
-            if (evt.altKey === true || mother.isQc) {
-                mother.isPanning = true;
-                lastPosX = evt.clientX;
-                lastPosY = evt.clientY;
-                return;
-            }
+            // if (evt.altKey === true || mother.hadQc || (mother.isQc && !mother.isProjectManager)) {
+            //     mother.isPanning = true;
+            //     return;
+            // }
             //--- end pan func ---
 
 
@@ -968,7 +972,7 @@ export class ProjecTagComponent {
                 return;
             }
             //--- set up tag func ---
-            if (mother.tagMode && (!mother.isQc || !mother.isPanning || !mother.hadQc)) {
+            if (mother.tagMode && (mother.isProjectManager || mother.isTeacher || !mother.hadQc)) {
                 isDown = true;
                 var pointer = this.getPointer(evt);
                 startPosition.x = pointer.x;
@@ -994,13 +998,7 @@ export class ProjecTagComponent {
                     selectable: true
                 });
                 this.add(rect);
-            } else {
-                if (!mother.selectedTag) {
-                    mother.isPanning = true;
-                    lastPosX = evt.clientX;
-                    lastPosY = evt.clientY;
-                }
-            }
+            } 
         });
 
         this.canvas.on('mouse:move', function (event) {
@@ -1013,19 +1011,15 @@ export class ProjecTagComponent {
                 this.renderAll();
             }
             if (mother.isPanning) {
-                var evt = event.e;
-                this.viewportTransform[4] += evt.clientX - lastPosX;
-                this.viewportTransform[5] += evt.clientY - lastPosY;
-                lastPosX = evt.clientX;
-                lastPosY = evt.clientY;
-                this.requestRenderAll();
+                var delta = new fabric.Point(event.e.movementX, event.e.movementY);
+                this.relativePan(delta);
                 return;
             }
 
-            if (!isDown || mother.hadQc || mother.isQc) return;
+            if (!isDown || mother.hadQc || (mother.isQc && !mother.isProjectManager)) return;
 
             if (mother.isTeacher || mother.isProjectManager) {
-                var pointer = mother.canvas.getPointer(evt);
+                var pointer = mother.canvas.getPointer(event.e);
                 rect.set({ 'width': Math.abs(pointer.x - startPosition.x), 'height': Math.abs(pointer.y - startPosition.y) });
                 mother.bindingEvent(rect);
                 mother.canvas.renderAll();
@@ -1036,10 +1030,7 @@ export class ProjecTagComponent {
 
         this.canvas.on('mouse:up', function () {
             isDown = false;
-            if (mother.isPanning) {
-                mother.isPanning = false;
-                return;
-            } else if (!mother.tagMode) return;
+            if (!mother.tagMode) return;
 
             if (mother.hadQc) return;
             mother.bindingEvent(rect);
@@ -1085,25 +1076,22 @@ export class ProjecTagComponent {
 
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
-            mother.isPanning = false;
 
             // $("#deleteBtn").remove();
-            if (mother.isQc || mother.hadQc) return;
+            if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
-            if (mother.isQc || mother.hadQc) return;
+            if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
             // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
-            mother.isPanning = false;
-            if (mother.isQc || mother.hadQc) return;
+            if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
-            mother.isPanning = false;
-            if (mother.isQc || mother.hadQc) return;
+            if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
@@ -1112,7 +1100,6 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('object:moving', function (e) {
-            mother.isPanning = false;
             var target = e.target;
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);

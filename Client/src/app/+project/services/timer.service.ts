@@ -37,6 +37,10 @@ export class TimeService{
     public stop(){
         this.sub.unsubscribe();
         this.timerStart = false;
+        this._ticks = 0;
+        this.minutesDisplay = 0;
+        this.hoursDisplay = 0;
+        this.secondsDisplay = 0;
     }
     public getTotalTime(){
         return this._ticks;

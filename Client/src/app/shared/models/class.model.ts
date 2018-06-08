@@ -18,7 +18,7 @@ export class Class implements IClass {
         public totalTag: number =0, 
         public classColor:string='#000000',
         public project:string = '',
-        public importDisplay: string
+        public importDisplay: string = ''
     ){
 
     }
