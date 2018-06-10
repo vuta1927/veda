@@ -159,8 +159,36 @@
                                 <h6 class="m--font-brand">
                                     Image:
                                 </h6>
-                                <h6>{{imageId}}
-                                </h6>
+                                <h6>{{imageId}}</h6>
+                                <div class="m-list-timeline">
+                                    <div class="m-list-timeline__items">
+                                        <div class="m-list-timeline__item">
+                                            <span class="m-list-timeline__badge"></span>
+                                            <span class="m-list-timeline__text">
+                                                Size: {{currentImage.width}} x {{currentImage.height}}
+                                            </span>
+                                        </div>
+                                        <div class="m-list-timeline__item">
+                                            <span class="m-list-timeline__badge"></span>
+                                            <span class="m-list-timeline__text">
+                                                Tags: {{tags.length}}
+                                            </span>
+                                        </div>
+                                        <div class="m-list-timeline__item">
+                                            <span class="m-list-timeline__badge"></span>
+                                            <span class="m-list-timeline__text">
+                                                Tag have class: {{currentImage.tagHasClass}}
+                                            </span>
+                                        </div>
+                                        <div class="m-list-timeline__item">
+                                            <span class="m-list-timeline__badge"></span>
+                                            <span class="m-list-timeline__text">
+                                                Tag not have class: {{currentImage.tagNotHasClass}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                             <div class="col-xl-12">
                                 <div class="m-checkbox-list" style="overflow: visible;" data-scrollable="true">
@@ -178,7 +206,7 @@
                                     Classes
                                 </h6>
                                 <table>
-                                    <tr  *ngIf="selectedTag">
+                                    <tr *ngIf="selectedTag">
                                         <td style="text-align: left; vertical-align: middle">
                                             <h6 class="m--font-primary m--font-bold">
                                                 Tag {{selectedTag.index}}:
@@ -190,7 +218,10 @@
                                     </tr>
                                     <tr *ngIf="selectedTag">
                                         <td></td>
-                                        <td><h6 style="padding-left: 10px">{{selectedTag.width*imageWidth  | number:'1.0-0'}} x {{selectedTag.height*imageHeight  | number:'1.0-0'}} pixel</h6></td>
+                                        <td>
+                                            <h6 style="padding-left: 10px">{{selectedTag.width*imageWidth | number:'1.0-0'}} x {{selectedTag.height*imageHeight
+                                                | number:'1.0-0'}} pixel</h6>
+                                        </td>
                                     </tr>
                                 </table>
 

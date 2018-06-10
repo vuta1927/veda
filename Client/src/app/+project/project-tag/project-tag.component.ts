@@ -107,6 +107,7 @@ export class ProjecTagComponent {
     }
 
     ngOnInit() {
+        this.setUpGlobalEvent();
         this.currentUserId = this.authSevice.getUserId();
         this.apiUrl = this.configurationService.serverSettings.apiUrl;
         let mother = this;
@@ -227,15 +228,6 @@ export class ProjecTagComponent {
         this.router.navigate(['project-details', { id: this.projectId }]);
     }
 
-    setupHub() {
-        // this._hubConnection = new HubConnection(this.apiUrl + '/project');
-        // this._hubConnection
-        //     .start()
-        //     .then(() => console.log('connection started!'))
-        //     .catch(err => console.log('Error while establishing connection !'));
-        // this._hubConnection.on("send", data => { console.log(data) });
-    }
-
     getImage() {
         let mother = this;
         this.classService.getClasses(this.projectId).toPromise().then(Response => {
@@ -297,7 +289,7 @@ export class ProjecTagComponent {
             this.totalTaggedTime = 0;
         }
 
-        console.log(this.totalTaggedTime);
+        // console.log(this.totalTaggedTime);
         this.imageUrl = this.apiUrl + '/' + this.currentImage.path;
 
         this.getQc(image);
@@ -369,7 +361,6 @@ export class ProjecTagComponent {
     }
 
     resetVariables() {
-        this.canvas.clear();
         this.currentImage = {};
         this.classData = [];
         // this.tagMode = false;
@@ -411,6 +402,7 @@ export class ProjecTagComponent {
         else {
             this.tagMode = true;
             this.excluseMode = false;
+            this.isPanning = false;
             this.timerSerive.startTimer();
         }
     }
@@ -517,7 +509,7 @@ export class ProjecTagComponent {
         Helpers.setLoading(true);
         var mother = this;
         this.btnSaveEnabled = false;
-        console.log(this.currentImage.ignored);
+        // console.log(this.currentImage.ignored);
         if (this.isTeacher || this.isProjectManager && !this.hadQc) {
             this.dataToUpdate = new DataUpdate(this.currentUserId, this.tagsForAddOrUpdate, this.totalTaggedTime, this.ExcluseAreas, this.currentImage.ignored);
 
@@ -632,6 +624,7 @@ export class ProjecTagComponent {
         else {
             this.excluseMode = true;
             this.tagMode = false;
+            this.isPanning = false;
             this.timerSerive.startTimer();
         }
     }
@@ -656,7 +649,7 @@ export class ProjecTagComponent {
         this.setBackgroundImg();
         this.autoResizeCanvas();
         this.setupZoomFunc();
-        this.setUpMouseEvent();
+        this.setUpCanvasEvents();
     }
 
 
@@ -837,30 +830,9 @@ export class ProjecTagComponent {
         }
     }
 
-    setUpMouseEvent() {
-        let isDown: boolean = false;
-        let startPosition: any = {};
-        let rect: any = {};
-        let mother = this;
-        $('body').on('contextmenu', 'canvas', function (options: any) {
-            options.preventDefault();
-            if(mother.isPanning)
-                mother.isPanning = false;
-            else 
-                mother.isPanning = true;
-
-            return false;
-
-        });
-
-        fabric.util.addListener(window, "dblclick", function () {
-            if (mother.excluseMode) {
-                mother.finalize();
-            }
-        });
-
-        //
-        fabric.util.addListener(window, "keyup", function (evt) {
+    setUpGlobalEvent(){
+        var mother = this;
+        $(window).on("keyup", function(evt){
             if (evt.which === 13 && mother.excluseMode) {
                 mother.finalize();
             };
@@ -879,6 +851,7 @@ export class ProjecTagComponent {
                 else {
                     mother.tagMode = true;
                     mother.excluseMode = false;
+                    mother.isPanning = false;
                     mother.timerSerive.startTimer();
                 }
             }
@@ -897,18 +870,37 @@ export class ProjecTagComponent {
                 else {
                     mother.excluseMode = true;
                     mother.tagMode = false;
+                    mother.isPanning = false;
                     mother.timerSerive.startTimer();
                 }
             }
-        });
+        })
 
-        fabric.util.addListener(window, "keydown", function (evt) {
+        $(window).on("keydown", function (evt) {
             if (evt.which === 46) {
                 mother.deleteObject();
             }
         });
+    }
+
+    setUpCanvasEvents() {
+        let isDown: boolean = false;
+        let startPosition: any = {};
+        let rect: any = {};
+        let mother = this;
+        $('body').on('contextmenu', 'canvas', function (event: any) {
+            event.preventDefault();
+
+        });
+
+        fabric.util.addListener(window, "dblclick", function () {
+            if (mother.excluseMode) {
+                mother.finalize();
+            }
+        });
 
         this.canvas.on('mouse:down', function (event) {
+            // console.log(event.button);
             var obj = event.target;
 
             if (obj && obj.get('type') != 'image') {
@@ -924,10 +916,10 @@ export class ProjecTagComponent {
             }
             // --- set up panning func ---
             var evt = event.e;
-            // if (evt.altKey === true || mother.hadQc || (mother.isQc && !mother.isProjectManager)) {
-            //     mother.isPanning = true;
-            //     return;
-            // }
+            if ( !mother.tagMode && !mother.excluseMode) { //evt.ctrlKey === true ||
+                mother.isPanning = true;
+                return;
+            }
             //--- end pan func ---
 
 
@@ -1029,6 +1021,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('mouse:up', function () {
+            mother.isPanning = false;
             isDown = false;
             if (!mother.tagMode) return;
 
@@ -1076,30 +1069,35 @@ export class ProjecTagComponent {
 
         this.canvas.on('object:selected', function (e) {
             mother.tagMode = false;
-
+            mother.isPanning = false;
             // $("#deleteBtn").remove();
             if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('object:modified', function (e) {
+            mother.isPanning = false;
             if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
             // mother.addDeleteBtn(e.target.oCoords.tr.x, e.target.oCoords.tr.y);
         });
 
         this.canvas.on('object:scaling', function (e) {
+            mother.isPanning = false;
             if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('object:rotating', function (e) {
+            mother.isPanning = false;
             if ((mother.isQc && !mother.isProjectManager) || mother.hadQc) return;
         });
 
         this.canvas.on('selection:cleared', function () {
+            mother.isPanning = false;
             if (!mother.tagMode || mother.isQc || mother.hadQc) return;
             mother.tagMode = true;
         });
 
         this.canvas.on('object:moving', function (e) {
+            mother.isPanning = false;
             var target = e.target;
             // var scaleValue = target.scaleX;
             var pointer = mother.canvas.getPointer(e.e);
@@ -1119,6 +1117,7 @@ export class ProjecTagComponent {
         });
 
         this.canvas.on('object:rotating', function (e) {
+            mother.isPanning = false;
             var target = e.target;
             var angle = target.get('angle');
             var pointer = mother.canvas.getPointer(e.e);
@@ -1272,7 +1271,25 @@ export class ProjecTagComponent {
             this.canvas.calcOffset();
         }
         var mother = this;
-        $(window).resize(function () {
+        // $(window).resize(function () {
+        //     if (mother.canvas.width != $("#canvas-wrapper").width()) {
+        //         var scaleMultiplier = $("#canvas-wrapper").width() / mother.canvas.width;
+        //         var objects = mother.canvas.getObjects();
+        //         for (var i in objects) {
+        //             objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        //             objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        //             objects[i].left = objects[i].left * scaleMultiplier;
+        //             objects[i].top = objects[i].top * scaleMultiplier;
+        //             objects[i].setCoords();
+        //         }
+
+        //         mother.canvas.setWidth(mother.canvas.getWidth() * scaleMultiplier);
+        //         mother.canvas.setHeight(mother.canvas.getHeight() * scaleMultiplier);
+        //         mother.canvas.renderAll();
+        //         mother.canvas.calcOffset();
+        //     }
+        // });
+        $("#canvas-wrapper").resize(function () {
             if (mother.canvas.width != $("#canvas-wrapper").width()) {
                 var scaleMultiplier = $("#canvas-wrapper").width() / mother.canvas.width;
                 var objects = mother.canvas.getObjects();
@@ -1317,7 +1334,7 @@ export class ProjecTagComponent {
     }
 
     getHighestIndex() {
-        console.log(this.tags);
+        // console.log(this.tags);
         let index: number = 0;
         this.tags.forEach(tag => {
             if (tag.index > index) {

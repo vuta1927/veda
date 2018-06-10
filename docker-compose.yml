@@ -2,18 +2,7 @@ version: '3.4'
 
 services:
   apiserver:
-    image: vds_api
-    container_name: vds_api
-    ports:
-      - "52719:80"
+    image: ${DOCKER_REGISTRY}apiserver
     build:
       context: .
       dockerfile: ApiServer/Dockerfile
-  authserver:
-    image: vds_auth
-    container_name: vds_auth
-    ports:
-      - "51927:80"
-    build:
-      context: .
-      dockerfile: AuthServer/Dockerfile
